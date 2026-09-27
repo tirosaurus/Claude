@@ -1,41 +1,48 @@
-# Vaelmoor — Prototipo
+# Vaelmoor — Demo jugable
 
-Proyecto Godot 4.x. Para probarlo:
+RPG de rol en pixel art (Godot 4.3). La demo va desde que te despiertas en
+tu casa de Tortosa hasta el combate contra el lobo corrupto en el Bosque
+Santo, y termina con la primera pista de lo que se avecina.
 
-1. Abre Godot 4 (Godot 4.2 o superior recomendado).
-2. "Importar" y selecciona el archivo `project.godot` de esta carpeta.
-3. Pulsa Play (F5). Empieza en `scenes/CharacterCreation.tscn`.
+## Jugar sin instalar nada (Windows)
+1. Descarga `builds/Vaelmoor-Windows.zip` del repositorio.
+2. Descomprímelo y ejecuta `Vaelmoor/Vaelmoor.exe`.
+   (Windows puede avisar de "editor desconocido": *Más información → Ejecutar de todas formas*.)
+
+## Jugar desde Godot
+1. Abre Godot 4 (4.3 o superior) → Importar → `game/project.godot`.
+2. Pulsa Play (F5).
 
 ## Controles
-- Mover: WASD o flechas.
-- Interactuar: E (habla con NPCs, la cama, etc.).
-- En combate: botones en pantalla (Atacar / Curar / Defender).
+| Acción | Teclado | Mando |
+|---|---|---|
+| Moverse | WASD / flechas | Cruceta |
+| Correr | Mayús | X / Cuadrado |
+| Hablar / interactuar / avanzar texto | E, Espacio o Intro | A / Cruz |
+| Acelerar texto / saltar intro | X o Retroceso | B / Círculo |
+| Pausa | Esc | Start |
 
-## Flujo actual del prólogo
-1. **Creación de personaje** — nombre y raza.
-2. **Dormitorio** — interactúa con la cama, luego baja las escaleras.
-3. **Casa** — tu madre te saluda; sal por la puerta.
-4. **Plaza de Tortosa** — habla con **Kaelen** (te invita al bosque); el
-   camino al bosque se desbloquea al hacerlo.
-5. **Bosque Santo** — habla con **Yara** (cogiendo flores) y luego busca
-   la "bestia del bosque" para el primer combate. Al ganar y subir de
-   nivel, elige tu primera rama: Cuerpo a cuerpo / A distancia / DPS /
-   Sanador / Tanque.
+## Qué incluye
+- **Creación de personaje**: nombre y raza (6 razas; la raza ya queda registrada para el futuro).
+- **Prólogo completo**: tu habitación, tu madre, el pueblo de Tortosa con la Catedral Vieja,
+  vecinos con los que hablar, Kaelen y Yara uniéndose al grupo y siguiéndote.
+- **Decisiones con consecuencias**: cada respuesta mueve la amistad/rivalidad con Kaelen,
+  la aprobación de Yara o su corrupción; se resumen al final.
+- **Combate por turnos en grupo**: Atacar / Defender / Curar; Kaelen y Yara actúan solos,
+  el lobo se enfurece a mitad de combate. Al subir de nivel eliges tu rama
+  (Cuerpo a cuerpo, A distancia, DPS, Sanador, Tanque).
+- Pixel art, música y efectos originales; luces con parpadeo, partículas,
+  profundidad (pasas por delante y detrás de árboles y muebles) y colisiones.
 
-## Qué lleva el motor de estado (`GameState.gd`)
-- Datos del personaje: nombre, raza elegida.
-- Progresión: nivel, XP, HP/maná, rama elegida.
-- Aprobación de cada compañero, el eje amistad↔rivalidad de Kaelen, la
-  relación aparte de Yara con Kaelen, la corrupción de Yara (curandera ↔
-  bruja oscura) y hacia quién apunta su romance (jugador/Kaelen/ambos).
-- `quest_flags`: flags narrativos simples (p. ej. `kaelen_invited`,
-  `yara_met`) para desbloquear puertas y diálogos.
-- Reputación de facciones.
+## Cómo está hecho
+- `tools/build_assets.py` (en la raíz del repo) genera **todo** el arte, los mapas y el audio
+  en `game/assets/` (Python + Pillow + numpy). Para regenerar: `python3 tools/build_assets.py`.
+  - `tools/chars.py`: personajes y retratos · `tools/props.py`: muebles, casas, catedral,
+    árboles, lobo · `tools/maps.py`: diseño de los mapas · `tools/ui.py`: interfaz y fondos ·
+    `tools/audio.py`: música y efectos.
+- `scripts/world/World.gd` monta cada mapa desde su JSON (suelo, colisiones, props, luces,
+  salidas y zonas de evento).
+- `scripts/story/Story.gd` contiene el guion: escenas, diálogos y decisiones.
+- `scripts/battle/Battle.gd` es el combate; `scripts/autoload/` el estado, audio, diálogos y transiciones.
 
-Ver `DESIGN.md` (en la raíz del repo) para el diseño completo.
-
-## Qué falta (siguiente en la lista)
-- Sprites de pixel art reales (todo son placeholders de color).
-- Una primera decisión de diálogo con ramas reales (que mueva la
-  rivalidad de Kaelen o la corrupción/relación de Yara según lo elegido).
-- La Catedral Vieja en ruinas.
+Fuente: Pixelify Sans (SIL Open Font License, ver `assets/fonts/OFL.txt`).

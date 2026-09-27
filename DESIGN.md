@@ -239,16 +239,15 @@ no el arte.
 
 ---
 
-## 5. Próximos pasos inmediatos
-- [x] Documento de diseño inicial.
-- [ ] Prototipo Godot: mover un personaje por un mapa con colisiones.
-- [ ] Un NPC de prueba con diálogo y barra de aprobación.
-- [ ] Definir estilo visual pixel art (resolución de sprite, paleta).
-- [x] Nombrar y perfilar a los primeros 2-3 compañeros fijos (Kaelen, Yara).
-- [x] Prólogo jugable: casa, madre, plaza, invitación de Kaelen, bosque
-      con Yara, primer combate y elección de rama al subir de nivel.
-- [ ] Primera decisión de diálogo real con ramas narrativas (mover
-      rivalidad de Kaelen o la relación/corrupción de Yara según lo que
-      se elija responder).
-- [ ] Escena de la Catedral Vieja en ruinas (aún no visitada).
-- [ ] Sprites de pixel art reales para jugador, Kaelen, Yara y madre.
+## 5. Estado actual y próximos pasos
+- [x] Documento de diseño, mundo, facciones, trío protagonista.
+- [x] Demo jugable pulida: título, creación de personaje, intro, habitación, casa,
+      pueblo de Tortosa con la Catedral Vieja, Bosque Santo, combate de grupo contra
+      el lobo corrupto, elección de rama y final con resumen de vínculos.
+- [x] Pixel art, mapas, música y efectos generados por `tools/build_assets.py`.
+- [x] Decisiones que ya mueven la rivalidad de Kaelen, la aprobación de Yara y su corrupción.
+- [ ] Aspecto distinto por raza y reacciones del mundo a la raza elegida.
+- [ ] Habilidades propias de cada rama en combate; más enemigos (primeros Moronguls).
+- [ ] Interior de la Catedral Vieja.
+- [ ] Guardado/carga de partida.
+- [ ] Capítulo 1: la corrupción llega a Tortosa.

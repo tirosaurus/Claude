@@ -1,0 +1,4 @@
+builds/windows/
+builds/linux/
+tools/__pycache__/
+*.pyc
