@@ -43,7 +43,7 @@ position = Vector2(400, 120)
 shape = SubResource("RectangleShape2D_bed02")
 
 [node name="Bed" type="Area2D" parent="." groups=["interactable"]]
-position = Vector2(80, 60)
+position = Vector2(120, 100)
 script = ExtResource("3_bed03")
 
 [node name="Sprite2D" type="Sprite2D" parent="Bed"]
@@ -53,13 +53,14 @@ shape = SubResource("RectangleShape2D_bed03")
 
 [node name="Stairs" type="Area2D" parent="."]
 script = ExtResource("4_bed04")
-position = Vector2(320, 200)
+position = Vector2(330, 170)
 target_scene = "res://scenes/HouseMain.tscn"
+label = "Escaleras"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Stairs"]
 shape = SubResource("RectangleShape2D_stairs")
 
 [node name="Player" parent="." instance=ExtResource("1_bed01")]
-position = Vector2(180, 160)
+position = Vector2(200, 150)
 
 [node name="DialogueBox" parent="." instance=ExtResource("2_bed02")]

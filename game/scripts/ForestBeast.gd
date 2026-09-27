@@ -23,6 +23,13 @@ func _ready() -> void:
 		var img := Image.create(20, 20, false, Image.FORMAT_RGBA8)
 		img.fill(Color(0.5, 0.15, 0.15))
 		sprite.texture = ImageTexture.create_from_image(img)
+	queue_redraw()
+
+
+func _draw() -> void:
+	var font := ThemeDB.fallback_font
+	var w := font.get_string_size(enemy_name, HORIZONTAL_ALIGNMENT_LEFT, -1, 8).x
+	draw_string(font, Vector2(-w / 2.0, -14), enemy_name, HORIZONTAL_ALIGNMENT_LEFT, -1, 8, Color(1, 0.6, 0.6))
 
 
 func interact() -> void:

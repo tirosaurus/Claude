@@ -11,6 +11,13 @@ func _ready() -> void:
 		var img := Image.create(48, 32, false, Image.FORMAT_RGBA8)
 		img.fill(Color(0.55, 0.4, 0.75))
 		sprite.texture = ImageTexture.create_from_image(img)
+	queue_redraw()
+
+
+func _draw() -> void:
+	var font := ThemeDB.fallback_font
+	var w := font.get_string_size("Cama", HORIZONTAL_ALIGNMENT_LEFT, -1, 8).x
+	draw_string(font, Vector2(-w / 2.0, -20), "Cama", HORIZONTAL_ALIGNMENT_LEFT, -1, 8, Color.WHITE)
 
 
 func interact() -> void:

@@ -21,6 +21,19 @@ func _ready() -> void:
 		var img := Image.create(16, 24, false, Image.FORMAT_RGBA8)
 		img.fill(color)
 		sprite.texture = ImageTexture.create_from_image(img)
+	queue_redraw()
+
+
+func _draw() -> void:
+	_draw_name_tag(self, display_name)
+
+
+static func _draw_name_tag(canvas: CanvasItem, text: String, y_offset: float = -18.0) -> void:
+	if text == "":
+		return
+	var font := ThemeDB.fallback_font
+	var w := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, 8).x
+	canvas.draw_string(font, Vector2(-w / 2.0, y_offset), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 8, Color.WHITE)
 
 
 func interact() -> void:

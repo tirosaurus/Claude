@@ -11,6 +11,21 @@ var _interactables: Array[Node] = []
 func _ready() -> void:
 	if sprite.texture == null:
 		sprite.texture = _make_placeholder_texture(Color(0.3, 0.55, 0.9))
+	_limit_camera_to_ground()
+
+
+## Evita que la cámara enseñe lo que hay fuera del mapa: usa el nodo
+## "Ground" de la escena como límites.
+func _limit_camera_to_ground() -> void:
+	var ground := get_parent().get_node_or_null("Ground") as Control
+	var camera := get_node_or_null("Camera2D") as Camera2D
+	if ground == null or camera == null:
+		return
+	var rect := ground.get_rect()
+	camera.limit_left = int(rect.position.x)
+	camera.limit_top = int(rect.position.y)
+	camera.limit_right = int(rect.end.x)
+	camera.limit_bottom = int(rect.end.y)
 
 
 func _make_placeholder_texture(color: Color) -> ImageTexture:

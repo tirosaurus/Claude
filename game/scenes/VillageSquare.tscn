@@ -39,7 +39,7 @@ position = Vector2(640, 180)
 shape = SubResource("RectangleShape2D_vs02")
 
 [node name="Kaelen" type="Area2D" parent="." groups=["interactable"]]
-position = Vector2(280, 160)
+position = Vector2(270, 230)
 script = ExtResource("3_vs003")
 companion_id = "kaelen"
 display_name = "Kaelen"
@@ -57,12 +57,14 @@ script = ExtResource("4_vs004")
 position = Vector2(320, 340)
 target_scene = "res://scenes/Forest.tscn"
 required_flag = "kaelen_invited"
+label = "Al bosque"
+color = Color(0.45, 0.7, 0.35, 0.85)
 blocked_message = "Tal vez deberías hablar antes con Kaelen, se le ve con ganas de charla."
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="ForestPath"]
 shape = SubResource("RectangleShape2D_vs04")
 
 [node name="Player" parent="." instance=ExtResource("1_vs001")]
-position = Vector2(320, 220)
+position = Vector2(330, 260)
 
 [node name="DialogueBox" parent="." instance=ExtResource("2_vs002")]

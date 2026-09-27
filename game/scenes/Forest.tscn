@@ -43,7 +43,7 @@ position = Vector2(640, 180)
 shape = SubResource("RectangleShape2D_frs02")
 
 [node name="Yara" type="Area2D" parent="." groups=["interactable"]]
-position = Vector2(260, 150)
+position = Vector2(230, 250)
 script = ExtResource("3_frs03")
 companion_id = "yara"
 display_name = "Yara"
