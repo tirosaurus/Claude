@@ -153,9 +153,9 @@ def cathedral():
         m.prop("pew", 328, y) if row != 2 else m.prop("rubble", 330, y)
     for (x, y) in ((168, 140), (248, 140), (168, 220), (248, 220), (168, 300), (248, 300)):
         m.prop("pillar" if (x + y) % 3 else "pillar_broken", x, y)
-    m.prop("rune_off", 32, 132, "rune_1")
-    m.prop("rune_off", 384, 132, "rune_2")
-    m.prop("rune_off", 40, 360, "rune_3")
+    m.prop("rune_off", 32, 132, "rune_1", light={"r": 46, "color": [0.45, 0.65, 1.0], "e": 0.9, "flicker": True, "oy": -8})
+    m.prop("rune_off", 384, 132, "rune_2", light={"r": 46, "color": [0.45, 0.65, 1.0], "e": 0.9, "flicker": True, "oy": -8})
+    m.prop("rune_off", 40, 360, "rune_3", light={"r": 46, "color": [0.45, 0.65, 1.0], "e": 0.9, "flicker": True, "oy": -8})
     m.prop("rubble", 372, 70, "crypt_rubble")
     m.prop("chest", 380, 368, "chest_cath1")
     m.prop("chest", 40, 200, "chest_cath2")

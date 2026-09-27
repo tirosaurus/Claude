@@ -1387,7 +1387,7 @@ def draw_map_frame(spec, direction, frame):
         leg_i = [1, 1, 0, 2, 2, 0][ph]
         bob = [0, 1, 0, 0, 1, 0][ph]
         swing = [1, 1, 0, -1, -1, 0][ph]
-        hbob = [0, 1, 0, 0, 1, 0][(ph - 1) % 6]     # el pelo va un paso por detrás
+        hbob = bob     # el pelo va pegado a la cabeza
     fr3 = leg_i
     hy += 0
 

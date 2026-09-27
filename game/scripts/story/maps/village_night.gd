@@ -47,13 +47,13 @@ func _first_attack() -> void:
 	var ftex := Appearance.tex("res://assets/chars/villager_f.png")
 	var ttex := Appearance.tex("res://assets/chars/thrall.png")
 	# 1) Un vecino huye por la calle; un siervo lo alcanza
-	await pan_to(Vector2(520, 330), 1.1)
-	var v1 = world.spawn_npc("vill1", Vector2(690, 336), 1, 0, vtex)
-	var t1 = world.spawn_npc("th1", Vector2(740, 330), 1, 0, ttex)
-	v1.walk_to(Vector2(470, 336), 78)
+	await pan_to(Vector2(540, 410), 1.1)
+	var v1 = world.spawn_npc("vill1", Vector2(700, 412), 1, 0, vtex)
+	var t1 = world.spawn_npc("th1", Vector2(740, 408), 1, 0, ttex)
+	v1.walk_to(Vector2(470, 412), 78)
 	await wait(0.3)
 	await say(["«¡Socorro! ¡Que alguien me ayude!»"])
-	await t1.walk_to(Vector2(492, 334), 96)
+	await t1.walk_to(Vector2(492, 410), 96)
 	Audio.sfx("growl", -4.0, 1.3)
 	t1.face(1)
 	await wait(0.15)
@@ -61,15 +61,23 @@ func _first_attack() -> void:
 	shake(3.0, 0.3)
 	await wait(0.6)
 	await say(["El siervo se inclina sobre él. Tiene la cara gris, los ojos violetas... y lleva la ropa del molinero."])
-	# 2) Larvas saliendo de la casa en llamas
-	await pan_to(Vector2(190, 390), 1.2)
-	var l1 := monster("res://assets/enemies/larva.png", 2, Vector2(150, 372), 0.9)
-	var l2 := monster("res://assets/enemies/larva.png", 2, Vector2(180, 366), 0.9)
-	var v2 = world.spawn_npc("vill2", Vector2(250, 400), 1, 0, ftex)
-	move_node(l1, Vector2(215, 400), 1.4)
-	await move_node(l2, Vector2(238, 394), 1.4)
-	v2.walk_to(Vector2(330, 440), 80)
-	await say(["Del fuego salen larvas del tamaño de un perro, chillando. Una vecina huye con un niño en brazos."])
+	# 2) Larvas brotando de una grieta de savia en el suelo
+	await pan_to(Vector2(420, 380), 1.2)
+	var l1 := monster("res://assets/enemies/larva.png", 2, Vector2(420, 360), 0.9)
+	var l2 := monster("res://assets/enemies/larva.png", 2, Vector2(416, 362), 0.9)
+	l1.modulate.a = 0.0
+	l2.modulate.a = 0.0
+	var fade := create_tween().set_parallel(true)
+	fade.tween_property(l1, "modulate:a", 1.0, 0.5)
+	fade.tween_property(l2, "modulate:a", 1.0, 0.5)
+	dust(Vector2(420, 360), Color(0.4, 0.2, 0.5))
+	Audio.sfx("dark", -8.0, 1.3)
+	var v2 = world.spawn_npc("vill2", Vector2(470, 392), 1, 0, ftex)
+	move_node(l1, Vector2(372, 392), 1.4)
+	await move_node(l2, Vector2(452, 396), 1.4)
+	v2.walk_to(Vector2(620, 440), 80)
+	await say(["Del suelo, por una grieta que rezuma savia negra, brotan larvas del tamaño de un perro.",
+		"Una vecina huye con un niño en brazos."])
 	# 3) Siervos golpeando los escombros de la Catedral
 	await pan_to(Vector2(368, 250), 1.3)
 	var t2 = world.spawn_npc("th2", Vector2(346, 236), 3, 0, ttex)
@@ -205,13 +213,13 @@ func _after_choice() -> void:
 func _brute_arrives() -> void:
 	Audio.stop_music(0.6)
 	await wait(0.3)
-	await pan_to(Vector2(420, 230), 1.0)
+	await pan_to(Vector2(440, 230), 1.0)
 	Audio.sfx("growl", 0.0, 0.6)
 	shake(3.0, 0.5)
 	await say(["La tierra tiembla.", "Algo enorme sale de entre el humo y se dirige a la Catedral."])
-	_brute = monster("res://assets/enemies/brute.png", 2, Vector2(560, 262), 0.75)
+	_brute = monster("res://assets/enemies/brute.png", 2, Vector2(560, 246), 0.75)
 	for k in 4:
-		await move_node(_brute, _brute.position + Vector2(-34, -8), 0.35)
+		await move_node(_brute, _brute.position + Vector2(-34, -4), 0.35)
 		shake(2.5, 0.2)
 		Audio.sfx("hit", -8.0, 0.5)
 	for k in 2:

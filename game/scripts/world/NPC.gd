@@ -125,19 +125,26 @@ func _wander(delta: float) -> void:
 	_frame(2 + int(_anim_t * 1.5) % 6)
 
 
-func walk_to(target: Vector2, speed: float = 60.0) -> void:
+func walk_to(target: Vector2, speed: float = 60.0, direct: bool = false) -> void:
 	busy = true
-	while position.distance_to(target) > 1.0:
-		var d := target - position
-		_face_dir(d)
-		var step := d.normalized() * speed * get_physics_process_delta_time()
-		if step.length() > d.length():
-			step = d
-		position += step
-		_anim_t += get_physics_process_delta_time() * 7.5
-		_frame(2 + int(_anim_t * 1.5) % 6)
-		await get_tree().physics_frame
-	position = target
+	var w = get_tree().current_scene
+	var pts := PackedVector2Array([target])
+	if not direct and w and w.has_method("find_path"):
+		pts = w.find_path(position, target)
+	for goal in pts:
+		while is_inside_tree() and position.distance_to(goal) > 1.0:
+			var d: Vector2 = goal - position
+			_face_dir(d)
+			var step := d.normalized() * speed * get_physics_process_delta_time()
+			if step.length() > d.length():
+				step = d
+			position += step
+			_anim_t += get_physics_process_delta_time() * 7.5
+			_frame(2 + int(_anim_t * 1.5) % 6)
+			await get_tree().physics_frame
+	if not is_inside_tree():
+		return
+	position = target if pts.size() > 0 and position.distance_to(target) < 3.0 else position
 	_frame(-1)
 	busy = false
 

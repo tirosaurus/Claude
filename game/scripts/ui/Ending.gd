@@ -73,6 +73,10 @@ func _kaelen_heroic_death() -> bool:
 
 func _ending() -> Array:
 	# [id, categoría, título]
+	if f("ending_sealed"):
+		return ["sealed", "Final secreto verdadero", "El Velo sellado"]
+	if f("ending_sovereign"):
+		return ["sovereign", "Final secreto", "El Nuevo Soberano"]
 	if f("pact_accepted"):
 		return ["pact", "Final malo", "La paz de la Torre"]
 	if f("ending_king"):
@@ -94,6 +98,16 @@ func _slides(id: String) -> Array:
 	var n := GameState.player_name()
 	var out: Array = []
 	match id:
+		"sealed":
+			out.append("El Velo se cerró con el alma de Vael, el Primer Soberano. Nhal'Zur volvió al hambre sin fondo de la que había salido.")
+			out.append("Sin su señor, la Torre Negra se derrumbó en una sola noche. Los Moronguls regresaron al sur, confusos, como quien despierta de un sueño.")
+			out.append("La Semilla floreció en el Corazón del Bosque. En Tortosa, las campanas de la Catedral volvieron a sonar después de mil años.")
+			out.append("Nadie supo nunca qué pasó de verdad en el Corazón. Solo %s, y un nombre que ya nadie olvidaría: Vael." % n)
+		"sovereign":
+			out.append("%s volvió a Tortosa con una corona de cristal negro. Nadie se atrevió a preguntar." % n)
+			out.append("El bosque sanó. La Torre Negra cayó. Los Moronguls juraron lealtad al nuevo Soberano de Vaelmoor.")
+			out.append("Hubo paz. Una paz perfecta, absoluta, que nadie se atrevía a discutir.")
+			out.append("Y a veces, por las noches, el Soberano oye un susurro en el acero: «Tengo hambre». Cada año, un poco más alto.")
 		"pact":
 			out.append("La Madre Raíz se durmió aquella noche, tal y como prometió el Emisario. Los Moronguls se retiraron al sur.")
 			out.append("Una semana después, las banderas negras de la Torre ondeaban sobre la Catedral de Tortosa.")
@@ -214,7 +228,7 @@ func _player_fate(id: String) -> String:
 
 func _run() -> void:
 	var e := _ending()
-	_good = e[0] in ["best", "good", "sacrifice"]
+	_good = e[0] in ["best", "good", "sacrifice", "sealed"]
 	GameState.set_meta("ending_id", e[0])
 	Audio.play_music("ending_good" if _good else "ending_bad", 1.5)
 	_bg.texture = load("res://assets/bg/ending_dawn.png") if _good else load("res://assets/bg/title.png")

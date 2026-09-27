@@ -170,7 +170,11 @@ func _overlord() -> void:
 	GameState.add_item(eid)
 	GameState.equip("player", "weapon", eid)
 	Audio.sfx("levelup", 0.0, 0.7)
-	await say(["Obtienes: %s." % DB.EQUIP[eid]["name"], "(Se ha equipado. Tu ataque es ahora... absurdo.)"])
+	await say(["Obtienes: %s." % DB.EQUIP[eid]["name"], "(Se ha equipado. Tu ataque es ahora... absurdo.)",
+		"«Una cosa más, heredero. No te he despertado para matar lobos.»",
+		"«Busca mis tres ecos: donde la luz selló la puerta, donde el árbol recuerda, y donde el corazón late.»",
+		"«Cuando los tengas, sabrás contra quién luchas de verdad.»",
+		"(Misión secreta: «La Ruta del Soberano».)"])
 	glow.queue_free()
 	await world.set_tint(world._map_modulate(), 1.0)
 	if has("kaelen"):
@@ -250,6 +254,12 @@ func _post_wolf() -> void:
 	setf("post_wolf_done")
 	setf("act2_started")
 	GameState.set_meta("tod", "dusk")
+	var j := await choose(["Volver a Tortosa ahora.", "Echar un vistazo por el bosque primero."])
+	if j == 1:
+		await say([K("Vale, pero no tardes. Se está haciendo de noche."),
+			"(Cuando quieras volver, sal por el camino del oeste.)"])
+		end()
+		return
 	end()
 	Transition.go_to_map("village", "from_forest")
 

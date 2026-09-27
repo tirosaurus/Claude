@@ -99,10 +99,16 @@ func _seed_scene() -> void:
 			await say([Y("Es... preciosa. Y está sufriendo. Puedo sentirlo."),
 				"Yara acuna la Semilla entre las manos. La luz azul se tiñe, apenas, de un matiz oscuro.",
 				Y("Dice que puede curarlo todo. Que solo necesita... que le haga caso.")])
-	await say(["Subís de nuevo a la Catedral. Fuera, el cielo empieza a clarear."])
 	setf("night_over")
 	GameState.set_meta("tod", "dawn")
 	GameState.heal_all()
+	var i := await choose(["Volver a la superficie ahora.", "Explorar la cripta antes de salir."],
+		K("La Semilla está a salvo. ¿Nos vamos?") if has("kaelen") else "La Semilla está a salvo. ¿Qué hacéis?")
+	if i == 1:
+		await say(["(Tómate tu tiempo: abre cofres y explora. Cuando quieras salir, sube por las escaleras del norte.)"])
+		end()
+		return
+	await say(["Subís de nuevo a la Catedral. Fuera, el cielo empieza a clarear."])
 	end()
 	Transition.go_to_map("village_dawn", "cathedral_front")
 

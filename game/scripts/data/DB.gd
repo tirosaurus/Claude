@@ -280,6 +280,10 @@ const SKILLS := {
 	"e_escudo": {"name": "Escudo de cristal", "target": "self", "kind": "buff", "status": ["protect"], "turns": 4},
 	"e_latido": {"name": "Latido negro", "target": "enemies", "kind": "mag", "power": 1.0, "el": "dark"},
 	"e_raices": {"name": "Raíces", "target": "enemy", "kind": "phys", "power": 1.3, "inflict": "stun", "chance": 0.3},
+	"e_velo": {"name": "Desgarro del Velo", "target": "enemies", "kind": "mag", "power": 1.0, "el": "dark"},
+	"e_hambre": {"name": "Hambre", "target": "enemies", "kind": "mag", "power": 0.9, "el": "dark", "heal_party": 0.4},
+	"e_garra": {"name": "Garra del Abismo", "target": "enemy", "kind": "phys", "power": 1.8},
+	"e_mirada": {"name": "Mirada vacía", "target": "enemy", "kind": "status", "inflict": "stun", "chance": 0.55},
 	"e_invocar": {"name": "Brotes", "target": "self", "kind": "summon"},
 	"e_regenerar": {"name": "Regenerar", "target": "self", "kind": "buff", "status": ["regen"], "turns": 4},
 }
@@ -509,6 +513,8 @@ const ENEMIES := {
 		"xp": 30, "gold": 14, "weak": ["ice", "light"], "resist": ["fire", "dark"], "ai": [["e_lamento", 2], ["e_escupir", 3]], "drops": [["eter", 0.25]]},
 	"boar": {"name": "Jabalí de cristal negro", "sprite": "enemies/boar", "frames": 2, "scale": 1.7, "hp": 110, "atk": 18, "def": 10, "mag": 2, "res": 4, "spd": 9,
 		"xp": 40, "gold": 18, "weak": ["fire", "bolt"], "resist": ["phys"], "ai": [["e_feroz", 3], ["e_mordisco", 3]], "drops": [["pan", 0.4], ["pocion", 0.2]]},
+	"nhalzur": {"name": "Nhal'Zur, el Hambre bajo el Mundo", "sprite": "enemies/nhalzur", "frames": 2, "scale": 1.15, "hp": 800000, "atk": 25, "def": 20, "mag": 23, "res": 20, "spd": 13,
+		"xp": 0, "gold": 0, "weak": ["light"], "resist": ["dark", "nature", "ice"], "ai": [["e_velo", 3], ["e_hambre", 2], ["e_garra", 3], ["e_mirada", 1]], "boss": true},
 	"mother_root": {"name": "Madre Raíz", "sprite": "enemies/mother_root", "frames": 2, "scale": 1.25, "hp": 1500, "atk": 22, "def": 11, "mag": 20, "res": 13, "spd": 9,
 		"xp": 0, "gold": 0, "weak": ["fire", "light"], "resist": ["dark", "nature"], "ai": [["e_raices", 3], ["e_latido", 2], ["e_escupir", 2]], "boss": true},
 }

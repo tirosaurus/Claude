@@ -90,10 +90,27 @@ func _animate(s: Sprite2D, frames: int) -> void:
 		await get_tree().create_timer(0.22).timeout
 
 
-func move_node(n: Node2D, to: Vector2, t: float) -> void:
-	var tw := create_tween()
-	tw.tween_property(n, "position", to, t)
-	await tw.finished
+## Mueve un nodo (monstruo de escena) rodeando obstáculos; t = duración total aproximada.
+func move_node(n: Node2D, to: Vector2, t: float, direct: bool = false) -> void:
+	var pts := PackedVector2Array([to])
+	if not direct and n.position.distance_to(to) > 24.0:
+		pts = world.find_path(n.position, to)
+	var total := 0.0
+	var prev := n.position
+	for p in pts:
+		total += prev.distance_to(p)
+		prev = p
+	prev = n.position
+	for p in pts:
+		if not is_instance_valid(n):
+			return
+		var seg := prev.distance_to(p)
+		var tw := create_tween()
+		tw.tween_property(n, "position", p, maxf(0.05, t * seg / maxf(total, 1.0)))
+		if n is Sprite2D and absf(p.x - prev.x) > 2.0:
+			(n as Sprite2D).flip_h = p.x < prev.x if not n.has_meta("faces_left") else p.x > prev.x
+		await tw.finished
+		prev = p
 
 
 ## Un aldeano cae (herido) tumbado en el suelo.
@@ -282,8 +299,45 @@ func _track_secret(id: String) -> void:
 		Audio.sfx("magic", -24.0, 0.5)
 
 
+## Ruta del Soberano: ecos del arma Overlord.
+func _sovereign_echo(id: String) -> bool:
+	if not flag("ov_done"):
+		return false
+	var map := GameState.current_map
+	if map == "cathedral" and id == "altar" and not flag("ov_e1"):
+		setf("ov_e1")
+		await _echo(["El arma del Soberano arde en tu mano. El altar se tiñe de rojo.",
+			"Ves a un hombre con una corona de cristal negro y a un monje con una túnica blanca, espalda contra espalda.",
+			"«Soy Vael, el Primer Soberano. Esta tierra lleva mi nombre, aunque nadie recuerda por qué.»",
+			"«Bajo este altar, Ermengol y yo cerramos la puerta. Él puso la luz. Yo puse mi alma en el acero que ahora empuñas.»",
+			"«Lo que encerramos no era un monstruo. Era un hambre. Se llama Nhal'Zur.»",
+			"(Primer eco del Soberano: 1/3)"])
+		return true
+	if map == "elf_camp" and id == "sacred_tree" and not flag("ov_e2"):
+		setf("ov_e2")
+		await _echo(["Rozas el Árbol Sagrado con el arma. La corteza sangra luz roja.",
+			"«La druida Ysolde plantó la Semilla para que el bosque sujetara el Velo con sus raíces.»",
+			"«Pero Nhal'Zur aprendió a hablar a través de ellas. La Madre Raíz es su voz. La Torre Negra, sus manos.»",
+			"«Si la Madre Raíz cae, el Velo se abrirá del todo. Y él saldrá a comer.»",
+			"«Por eso te elegí, heredero. Solo mi acero puede herir lo que no tiene cuerpo.»",
+			"(Segundo eco del Soberano: 2/3)"])
+		return true
+	return false
+
+
+func _echo(lines: Array) -> void:
+	begin()
+	Audio.sfx("dark", -4.0, 0.6)
+	await world.set_tint(Color(0.6, 0.18, 0.25), 0.8)
+	await say(lines)
+	await world.set_tint(world._map_modulate(), 0.8)
+	end()
+
+
 func on_interact(id: String) -> void:
 	_track_secret(id)
+	if await _sovereign_echo(id):
+		return
 	if id.begins_with("chest_"):
 		await open_chest(id)
 		return

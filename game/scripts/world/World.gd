@@ -137,6 +137,83 @@ func _spawn_facing(spawn_name: String) -> int:
 	return 0
 
 
+# ------------------------------------------------------------ Navegación (caminos en cinemáticas)
+const NAV_CELL := 8
+var _nav_rects: Array = []
+var _nav_dirty := true
+var _astar: AStarGrid2D
+
+
+func _build_nav() -> void:
+	_astar = AStarGrid2D.new()
+	var cols := int(ceil(map_size.x / NAV_CELL))
+	var rows := int(ceil(map_size.y / NAV_CELL))
+	_astar.region = Rect2i(0, 0, cols, rows)
+	_astar.cell_size = Vector2(NAV_CELL, NAV_CELL)
+	_astar.diagonal_mode = AStarGrid2D.DIAGONAL_MODE_ONLY_IF_NO_OBSTACLES
+	_astar.update()
+	for e in _nav_rects:
+		var r: Rect2 = e["rect"].grow_individual(6, 4, 6, 3)
+		var x0 := clampi(int(floor(r.position.x / NAV_CELL)), 0, cols - 1)
+		var y0 := clampi(int(floor(r.position.y / NAV_CELL)), 0, rows - 1)
+		var x1 := clampi(int(floor(r.end.x / NAV_CELL)), 0, cols - 1)
+		var y1 := clampi(int(floor(r.end.y / NAV_CELL)), 0, rows - 1)
+		for y in range(y0, y1 + 1):
+			for x in range(x0, x1 + 1):
+				_astar.set_point_solid(Vector2i(x, y), true)
+	_nav_dirty = false
+
+
+func _nav_cell(p: Vector2) -> Vector2i:
+	return Vector2i(clampi(int(p.x / NAV_CELL), 0, _astar.region.size.x - 1),
+		clampi(int(p.y / NAV_CELL), 0, _astar.region.size.y - 1))
+
+
+func _free_cell_near(c: Vector2i) -> Vector2i:
+	if not _astar.is_point_solid(c):
+		return c
+	for r in range(1, 12):
+		for dy in range(-r, r + 1):
+			for dx in range(-r, r + 1):
+				var n := c + Vector2i(dx, dy)
+				if _astar.region.has_point(n) and not _astar.is_point_solid(n):
+					return n
+	return c
+
+
+## Camino que rodea paredes, casas y objetos. Si no hay camino, línea recta.
+func find_path(from: Vector2, to: Vector2) -> PackedVector2Array:
+	if _nav_dirty or _astar == null:
+		_build_nav()
+	var a := _free_cell_near(_nav_cell(from))
+	var b := _free_cell_near(_nav_cell(to))
+	var ids := _astar.get_id_path(a, b)
+	var out := PackedVector2Array()
+	if ids.is_empty():
+		out.append(to)
+		return out
+	var half := Vector2(NAV_CELL, NAV_CELL) / 2.0
+	var pts: Array = []
+	for id in ids:
+		pts.append(Vector2(id) * NAV_CELL + half)
+	# simplificar: quitar puntos intermedios alineados
+	var simp: Array = [pts[0]]
+	for i in range(1, pts.size() - 1):
+		var d1: Vector2 = (pts[i] - simp[simp.size() - 1]).normalized()
+		var d2: Vector2 = (pts[i + 1] - pts[i]).normalized()
+		if d1.distance_to(d2) > 0.01:
+			simp.append(pts[i])
+	simp.append(pts[pts.size() - 1])
+	for i in range(1, simp.size()):
+		out.append(simp[i])
+	if not _astar.is_point_solid(_nav_cell(to)):
+		if out.size() > 0:
+			out[out.size() - 1] = to
+		else:
+			out.append(to)
+	return out
+
+
 func marker(name: String) -> Vector2:
 	var m: Array = data["markers"][name]
 	return Vector2(m[0], m[1])
@@ -152,6 +229,8 @@ func _build_walls() -> void:
 		_add_rect_shape(body, r)
 	for s in data["solids"]:
 		_add_rect_shape(body, Rect2(s[0], s[1], s[2], s[3]))
+		_nav_rects.append({"id": "", "rect": Rect2(s[0], s[1], s[2], s[3])})
+	_nav_dirty = true
 
 
 func _add_rect_shape(body: CollisionObject2D, r: Rect2) -> void:
@@ -185,6 +264,8 @@ func _build_prop(p: Dictionary) -> void:
 		body.name = "Body"
 		node.add_child(body)
 		_add_rect_shape(body, Rect2(c[0], c[1], c[2], c[3]))
+		_nav_rects.append({"id": str(p.get("id", "")), "rect": Rect2(node.position + Vector2(c[0], c[1]), Vector2(c[2], c[3]))})
+		_nav_dirty = true
 	if p.has("id"):
 		var pid := str(p["id"])
 		props_by_id[pid] = node
@@ -194,7 +275,7 @@ func _build_prop(p: Dictionary) -> void:
 			r = Rect2(node.position + Vector2(c2[0], c2[1]), Vector2(c2[2], c2[3]))
 		else:
 			r = Rect2(node.position - Vector2(8, 8), Vector2(16, 8))
-		interact_zones.append({"id": pid, "rect": r.grow(2)})
+		interact_zones.append({"id": pid, "rect": r.grow(4)})
 		if pid.begins_with("chest_") and GameState.has_flag("opened_" + pid):
 			spr.modulate = Color(0.55, 0.5, 0.5)
 	if p.has("light"):
@@ -212,6 +293,8 @@ func set_prop_sprite(pid: String, sprite_name: String) -> void:
 
 
 func remove_prop(pid: String) -> void:
+	_nav_rects = _nav_rects.filter(func(r): return r["id"] != pid)
+	_nav_dirty = true
 	if props_by_id.has(pid):
 		props_by_id[pid].queue_free()
 		props_by_id.erase(pid)

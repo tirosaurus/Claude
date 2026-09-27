@@ -24,7 +24,7 @@ func on_map_ready(_m: String) -> void:
 			"Vidrieras de colores imposibles filtran la luz de las llamas. Huele a piedra húmeda, a incienso antiguo... y a savia.",
 			K("Nunca habíamos entrado tan lejos. De críos no pasábamos de la puerta."),
 			Y("Algo se mueve ahí dentro. Con cuidado."),
-			"(Busca las tres runas: Fe, Memoria y Sacrificio. Hay cofres escondidos.)"])
+			"(Busca las tres runas del suelo, que brillan en azul: junto a la pared izquierda, junto a la derecha y en la esquina de abajo a la izquierda. Examínalas con E. Hay cofres escondidos.)"])
 		end()
 
 
@@ -63,6 +63,14 @@ func _rune(id: String) -> void:
 
 func interact_lines(id: String) -> Array:
 	match id:
+		"crypt_rubble":
+			var missing: Array = []
+			var where := {"rune_1": "Fe (pared izquierda)", "rune_2": "Memoria (pared derecha)", "rune_3": "Sacrificio (abajo a la izquierda)"}
+			for r in RUNES:
+				if not flag("lit_" + r):
+					missing.append(where[r])
+			return ["Escombros que tapan unas escaleras. Tienen tallado el símbolo de tres runas.",
+				"Faltan por encender: %s." % ", ".join(missing)]
 		"altar":
 			return ["Un altar de piedra cubierto con un paño rojo que el tiempo no ha logrado pudrir.",
 				"En el centro hay una marca con forma de semilla, como si algo hubiera descansado aquí durante siglos."]

@@ -16,7 +16,7 @@ func exit_requirement(_to: String, default_req: String) -> String:
 func on_map_ready(_m: String) -> void:
 	var tod: String = GameState.get_meta("tod", "day")
 	if flag("night_over"):
-		var mom = world.spawn_npc("mother", Vector2(110, 110), 0)
+		var mom = world.spawn_npc("mother", Vector2(150, 96), 0)
 		if flag("mother_wounded"):
 			mom.face(0)
 		return
@@ -52,7 +52,12 @@ func on_map_ready(_m: String) -> void:
 		setf("mother_hidden")
 		GameState.add_item("pocion", 2)
 		await say(["Obtienes 2 pociones del armario de la cocina."])
-		await mom2.walk_to(Vector2(40, 150), 70)
+		await mom2.walk_to(Vector2(62, 96), 60)
+		await mom2.walk_to(Vector2(62, 136), 60)
+		await say(["Tu madre levanta la trampilla de la bodega y baja, sin dejar de mirarte."])
+		var tw := create_tween()
+		tw.tween_property(mom2, "modulate:a", 0.0, 0.5)
+		await tw.finished
 		world.remove_npc("mother")
 		end()
 		return

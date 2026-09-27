@@ -85,23 +85,26 @@ func _physics_process(delta: float) -> void:
 		world.try_interact(self)
 
 
-func walk_to(target: Vector2, speed: float = 60.0) -> void:
+func walk_to(target: Vector2, speed: float = 60.0, direct: bool = false) -> void:
 	locked = true
-	while position.distance_to(target) > 1.0:
-		var d := target - position
-		if absf(d.x) > absf(d.y):
-			facing = 2 if d.x > 0 else 1
-		else:
-			facing = 0 if d.y > 0 else 3
-		var step := d.normalized() * speed * get_physics_process_delta_time()
-		if step.length() > d.length():
-			step = d
-		position += step
-		_record_trail()
-		_anim_t += get_physics_process_delta_time() * 7.5
-		_update_frame(2 + int(_anim_t * 1.5) % 6)
-		await get_tree().physics_frame
-	position = target
+	var pts := PackedVector2Array([target])
+	if not direct and world and world.has_method("find_path") and position.distance_to(target) > 20.0:
+		pts = world.find_path(position, target)
+	for goal in pts:
+		while position.distance_to(goal) > 1.0:
+			var d := goal - position
+			if absf(d.x) > absf(d.y):
+				facing = 2 if d.x > 0 else 1
+			else:
+				facing = 0 if d.y > 0 else 3
+			var step := d.normalized() * speed * get_physics_process_delta_time()
+			if step.length() > d.length():
+				step = d
+			position += step
+			_record_trail()
+			_anim_t += get_physics_process_delta_time() * 7.5
+			_update_frame(2 + int(_anim_t * 1.5) % 6)
+			await get_tree().physics_frame
 	_update_frame(-1)
 	locked = false
 

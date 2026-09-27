@@ -16,6 +16,9 @@ func on_map_ready(_m: String) -> void:
 	if flag("won_horde") and not flag("kaelen_resolved"):
 		await _after_horde()
 		return
+	if flag("won_nhalzur") and not flag("ov_end_chosen"):
+		await _after_nhalzur()
+		return
 	if flag("won_final") and not flag("final_done"):
 		await _after_final()
 		return
@@ -153,6 +156,14 @@ func _final() -> void:
 	world.player.face(3)
 	await say(["La Madre Raíz ocupa toda la caverna: un corazón monstruoso atravesado por raíces, con ojos que se abren y se cierran.",
 		"Cada latido os golpea en el pecho."])
+	if flag("ov_done") and not flag("ov_e3"):
+		setf("ov_e3")
+		Audio.sfx("dark", -4.0, 0.6)
+		await say(["El arma del Soberano vibra como un animal que huele la sangre.",
+			"«Aquí late. Debajo de la Madre Raíz, detrás del Velo. Nhal'Zur.»",
+			"(Tercer eco del Soberano: 3/3)" if flag("ov_e1") and flag("ov_e2") else "«Te faltan ecos, heredero. No estás preparad" + GameState.g("o", "a") + " para verle la cara.»"])
+		if flag("ov_e1") and flag("ov_e2"):
+			setf("ov_ready")
 	var em = world.spawn_npc("emissary", world.player.position + Vector2(-50, -10), 2)
 	em.sprite.modulate.a = 0.0
 	var tw := create_tween()
@@ -205,6 +216,9 @@ func _yara_turns() -> void:
 func _after_final() -> void:
 	begin()
 	setf("final_done")
+	if flag("ov_ready"):
+		await _nhalzur()
+		return
 	await say(["La Madre Raíz se estremece por última vez. Sus ojos se apagan uno a uno.",
 		"Las raíces se agrietan. Por las grietas se cuela, por primera vez, un rayo de luz verde.",
 		"La Semilla late con fuerza. Sabe que ha llegado su momento."])
@@ -241,6 +255,55 @@ func _after_final() -> void:
 				"El poder te inunda. Las raíces se inclinan ante ti. La Madre Raíz no ha muerto: ahora eres tú."])
 		2:
 			setf("ending_sacrifice")
+	end()
+	_go_ending()
+
+
+# ------------------------------------------------------------ Ruta del Soberano
+func _nhalzur() -> void:
+	Audio.stop_music(1.0)
+	await say(["La Madre Raíz se estremece por última vez... y en lugar de morir, se abre como una flor podrida.",
+		"Detrás de ella no hay tierra. Hay un desgarrón en el aire, negro y rojo, que cruje como hielo.",
+		"El Velo."])
+	shake(6.0, 1.0)
+	var em = world.spawn_npc("emissary", world.player.position + Vector2(-40, -30), 2)
+	await say([{"who": "emissary", "text": "Por fin. Mil años esperando a que alguien fuera lo bastante fuerte para matar a la Madre."},
+		{"who": "emissary", "text": "Gracias, heredero de Vael. Me has abierto la puerta."},
+		"La capucha del Emisario se hunde hacia dentro, como si detrás no hubiera cara. Su cuerpo se deshace en humo y entra en el desgarrón."])
+	world.remove_npc("emissary")
+	await world.set_tint(Color(0.5, 0.12, 0.22), 1.0)
+	await say(["Del Velo sale una cabeza coronada de cristal negro. Luego unos brazos. Luego ojos, demasiados ojos.",
+		"«NHAL'ZUR», dice la voz, y no es una voz: es hambre con forma de palabra.",
+		"El arma del Soberano grita en tu mano: «¡AHORA, HEREDERO! ¡TERMINA LO QUE EMPEZAMOS!»"])
+	if has("yara"):
+		await say([Y("{name}... ¿Qué es eso? ¿Qué es esa arma?"), P("Luego te lo explico. Si hay un luego.")])
+	end()
+	await battle("nhalzur", ["nhalzur"], "heart", "soberano", true)
+
+
+func _after_nhalzur() -> void:
+	begin()
+	await say(["Nhal'Zur se retuerce. Sus ojos se apagan uno a uno, y su grito hace temblar el mundo entero.",
+		"El desgarrón del Velo empieza a cerrarse... pero no del todo. Algo lo mantiene abierto: el arma que llevas.",
+		"«Heredero», susurra el Soberano. «Ya lo has visto. Hay dos caminos.»",
+		"«Puedes quedarte conmigo. Ocupar mi trono. Con este acero, nadie volverá a amenazar Vaelmoor... nunca. Ni nadie te dirá nunca que no.»",
+		"«O puedes romperme contra el Velo. Mi alma lo sellará para siempre, y yo descansaré por fin. Pero el arma desaparecerá contigo... o sin ti.»"])
+	var i := await choose(["Ocupar el trono del Soberano.", "Romper el arma y sellar el Velo para siempre."], "El arma espera.")
+	setf("ov_end_chosen")
+	if i == 0:
+		setf("ending_sovereign")
+		await say(["Levantas el arma. La corona de cristal negro se forma sola sobre tu cabeza.",
+			"Las raíces se inclinan. El Velo se cierra... a tu voluntad. Todo en Vaelmoor sabe, de golpe, quién manda."])
+	else:
+		setf("ending_sealed")
+		var w := GameState.equipped("player", "weapon")
+		if w.begins_with("overlord_"):
+			GameState.equipment["player"].erase("weapon")
+			Appearance.clear_cache()
+		await say(["Clavas el arma en el desgarrón. El acero se agrieta, brilla en blanco... y estalla.",
+			"«Gracias, heredero», dice Vael, y por primera vez su voz suena en paz.",
+			"El Velo se cierra con un sonido de campana. En el Corazón del Bosque, la Semilla echa raíces sola.",
+			"Y todo, por fin, se queda en silencio."])
 	end()
 	_go_ending()
 

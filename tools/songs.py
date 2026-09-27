@@ -442,11 +442,48 @@ def ending_bad():
     return s
 
 
+def soberano():
+    """Tema de Nhal'Zur: el tema principal en Re menor, coro y órgano, a lo grande."""
+    s = Song(128, 4 + 8 + 8 + 8)
+    A = P("Dm Bb Gm A Dm Eb C A")
+    B = P("Bb C Am Dm Gm Eb A A")
+    s.pad("organ", P("Dm Dm Eb A"), 0, 38, 62, 0.55, count=5)
+    s.pad("choir", P("Dm Dm Eb A"), 0, 50, 69, 0.5)
+    s.note("roll", "D2", 0, 12, 0.8)
+    s.note("swell", "C4", s.b(3), 4, 0.9)
+    s.drums("h...h...h.h.h...", 0, 0.25, 3, 1.0)
+    melA = ("A4:1.5 D5:.5 E5:1 F5:1 G5:1.5 F5:.5 E5:1 D5:1 E5:1.5 F5:.5 A5:1 G5:.5 F5:.5 E5:3 -:1 "
+            "A4:1.5 D5:.5 E5:1 F5:1 G5:1.5 A5:.5 Bb5:1 A5:.5 G5:.5 F5:1 E5:1 D5:1 E5:1 C#5:4")
+    melB = "F5:2 Bb5:1 A5:1 G5:2 C5:1 E5:1 F5:1.5 E5:.5 D5:1 C5:1 D5:4 Bb5:2 A5:1 G5:1 C6:2 Bb5:1 G5:1 A5:4 C#6:4"
+    low16 = [(0, .25, 0), (.25, .25, 0), (.5, .25, 3), (.75, .25, 0)]
+
+    def section(st, prog, mel, big):
+        s.note("cymbal", "C4", st, 1, 1.0)
+        s.note("timp", "D2", st, 1, 1.0)
+        s.melody("brass", mel, st, 0.95, pan=-0.1)
+        s.melody("choir", mel, st, 0.55)
+        s.melody("strings", mel, st, 0.5, octave=1, pan=0.25)
+        s.pad("organ", prog, st, 38, 62, 0.35, count=5)
+        s.ostinato("spic", prog, st, low16, 2, 0.55, pan=-0.3)
+        s.ostinato("spic", prog, st, [(0, .25, 3), (.25, .25, 2), (.5, .25, 1), (.75, .25, 2)], 4, 0.35, pan=0.3)
+        s.bassline("bass", prog, st, 1, 0.75)
+        s.bassline("timp", prog, st, 2, 0.9, pattern=[(0, 1, 0), (.75, .25, 0), (1.5, .5, 0), (2, 1, 7), (3, .5, 0), (3.5, .5, 0)])
+        for k in range(8):
+            s.drums("T.tTT.tTT.tTTTTT" if big else "T.tTT.t.T.tT.T.T", st + k * 4, 0.25, 1, 0.95)
+            s.drums("....S.......S.SS", st + k * 4, 0.25, 1, 0.6)
+            s.drums("a...............", st + k * 4, 0.25, 1, 0.5)
+        s.melody("bell", "D5:4 Bb4:4 G4:4 A4:4 D5:4 Eb5:4 C5:4 A4:4", st, 0.35, pan=0.4)
+    section(s.b(4), A, melA, False)
+    section(s.b(12), B, melB, True)
+    section(s.b(20), A, melA, True)
+    return s
+
+
 TRACKS = {
     "title": (title, True), "battle": (battle, True), "boss": (boss, True), "final": (final, True),
     "victory": (victory, False), "village": (village, True), "home": (home, True), "forest": (forest, True),
     "night": (night, True), "cathedral": (cathedral, True), "deep": (deep, True), "elves": (elves, True),
-    "heart": (heart, True), "sad": (sad, True), "ending_good": (ending_good, True), "ending_bad": (ending_bad, True),
+    "heart": (heart, True), "sad": (sad, True), "soberano": (soberano, True), "ending_good": (ending_good, True), "ending_bad": (ending_bad, True),
 }
 
 

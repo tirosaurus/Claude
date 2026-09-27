@@ -437,8 +437,53 @@ def boar(f):
     return c
 
 
+def nhalzur(f):
+    """Nhal'Zur, el Hambre bajo el Mundo: jefe secreto."""
+    W, H = 200, 176
+    s = Sculpt(W, H)
+    br = [0, 2][f]
+    # tentáculos de sombra al fondo
+    for i in range(12):
+        a = math.pi * (0.1 + 0.8 * i / 11)
+        x1 = 100 + math.cos(a) * 96 + math.sin(i * 2 + f) * 4
+        y1 = 120 - math.sin(a) * 100
+        s.capsule(100, 100, x1, y1, 9, 2, "dark", cz=-12)
+    for i in range(8):
+        x0 = 30 + i * 20
+        s.capsule(100, 130, x0 + math.sin(i + f) * 5, 172, 8, 3, "dark", cz=-10)
+    # cuerpo
+    s.ellipsoid(100, 104 + br, 58, 50, "dark", cz=0, flat=0.9)
+    s.ellipsoid(100, 128 + br, 44, 20, "chitin", cz=10)
+    # corona de cristal negro
+    for k in range(7):
+        x = 58 + k * 14
+        hgt = 26 + (10 if k == 3 else (6 if k in (2, 4) else 0))
+        s.polygon([(x - 6, 62 + br), (x, 62 - hgt + br), (x + 6, 62 + br)], "chitin", cz=18, normal=(-0.4, -0.6, 0.7))
+    # brazos con garras
+    for side in (-1, 1):
+        s.capsule(100 + side * 46, 100 + br, 100 + side * 84, 132 + br, 12, 8, "dark", cz=14)
+        for c in range(3):
+            s.capsule(100 + side * 84, 132 + br, 100 + side * (90 + c * 5), 150 + c * 3 + br, 3, 1, "bone", cz=16)
+    c = s.render()
+    # fauces
+    c.ellipse(100, 128 + br, 26, 9 + br, (12, 2, 12))
+    for k in range(9):
+        x = 78 + k * 5.5
+        c.px(int(x), 121 + br, (240, 230, 210))
+        c.px(int(x), 122 + br, (240, 230, 210))
+        c.px(int(x) + 2, 135 + br, (240, 230, 210))
+    # ojos
+    for (x, y, r) in ((100, 92, 9), (74, 84, 5), (126, 84, 5), (62, 104, 3), (138, 104, 3), (88, 70, 3), (112, 70, 3)):
+        c.ellipse(x, y + br, r, r * 0.75, (255, 60, 90))
+        c.ellipse(x, y + br, max(1, r * 0.35), r * 0.7, (30, 0, 10))
+        c.px(int(x - r * 0.4), int(y - r * 0.3 + br), (255, 220, 230))
+        halo(c, x, y + br, (255, 60, 110), int(r * 2.2), 70)
+    halo(c, 100, 104 + br, (180, 40, 200), 50, 40)
+    return c
+
+
 ENEMIES = {"larva": larva, "bat": bat, "brute": brute, "root": root, "spectre": spectre, "custodian": custodian,
-           "mother_root": mother_root, "wisp": wisp, "boar": boar}
+           "mother_root": mother_root, "wisp": wisp, "boar": boar, "nhalzur": nhalzur}
 
 
 def build_all(out):

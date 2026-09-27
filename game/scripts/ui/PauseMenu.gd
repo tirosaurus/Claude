@@ -7,6 +7,7 @@ var world: Node
 var _content: Control
 var _tabs: Array = []
 var _sub_open := false
+var _opened_frame := -1
 
 
 func _ready() -> void:
@@ -22,6 +23,7 @@ func open() -> void:
 		c.queue_free()
 	_tabs.clear()
 	visible = true
+	_opened_frame = Engine.get_process_frames()
 	get_tree().paused = true
 	Audio.sfx("select", -8.0)
 	var dim := ColorRect.new()
@@ -63,6 +65,9 @@ func close() -> void:
 
 func _process(_d: float) -> void:
 	if not visible or _sub_open:
+		return
+	# la misma pulsación que abre el menú no debe cerrarlo
+	if Engine.get_process_frames() <= _opened_frame + 1:
 		return
 	if Input.is_action_just_pressed("pause") or Input.is_action_just_pressed("cancel"):
 		close()

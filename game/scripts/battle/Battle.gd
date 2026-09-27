@@ -1145,6 +1145,16 @@ func _enemy_act(e) -> void:
 			if ratio < 0.5 and not e.flags.get("taunt", false):
 				e.flags["taunt"] = true
 				await show_top("Kaelen: «¿Por qué siempre tú? ¡¿Por qué nunca yo?!»", 1.4)
+		"nhalzur":
+			if ratio < 0.5 and not e.flags.get("phase2", false):
+				e.flags["phase2"] = true
+				e.max_stats["atk"] = int(e.max_stats["atk"]) + 4
+				e.max_stats["mag"] = int(e.max_stats["mag"]) + 4
+				_shake(10.0)
+				_screen_flash(Color(0.6, 0, 0.2, 0.5), 0.6)
+				Audio.sfx("growl", 0.0, 0.5)
+				await show_top("Nhal'Zur: «MIL AÑOS DE HAMBRE. VAEL NO ESTÁ AQUÍ PARA SALVARTE.»", 1.8)
+				skill_id = "e_velo"
 		"mother_root":
 			if ratio < 0.5 and not e.flags.get("phase2", false):
 				e.flags["phase2"] = true
