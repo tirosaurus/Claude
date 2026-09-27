@@ -35,14 +35,20 @@ func _ready() -> void:
 	_gold.size = Vector2(130, 20)
 	_gold.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	panel.add_child(_gold)
+	var scroll := ScrollContainer.new()
+	scroll.position = Vector2(24, 62)
+	scroll.size = Vector2(440, 226)
+	scroll.follow_focus = true
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	panel.add_child(scroll)
 	var box := VBoxContainer.new()
-	box.position = Vector2(24, 62)
-	box.size = Vector2(432, 190)
+	box.custom_minimum_size = Vector2(426, 0)
 	box.add_theme_constant_override("separation", 2)
-	panel.add_child(box)
+	scroll.add_child(box)
 	for id in _stock:
 		var b := UIKit.button("", 13)
-		b.custom_minimum_size = Vector2(432, 22)
+		b.custom_minimum_size = Vector2(426, 22)
+		b.clip_text = true
 		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		var it: Dictionary = DB.item(id)
 		if it.has("icon"):
@@ -83,6 +89,12 @@ func _refresh() -> void:
 			b.disabled = true
 		else:
 			var have := "" if DB.UPGRADES.has(id) else "   · tienes %d" % GameState.item_count(id)
+			if DB.EQUIP.has(id):
+				var users: Array = []
+				for m in GameState.party:
+					if DB.equip_allowed(GameState.equip_rule(m), id):
+						users.append(GameState.member_name(m))
+				have += "   · " + (", ".join(users) if not users.is_empty() else "nadie puede usarlo")
 			b.text = "%s   —   %d coronas%s" % [it["name"], int(it["price"]), have]
 			b.disabled = false
 

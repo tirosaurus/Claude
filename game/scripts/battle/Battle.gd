@@ -107,7 +107,7 @@ func _build_scene() -> void:
 		b.mp = int(GameState.members[id]["mp"])
 		b.home = PARTY_POS[i]
 		b.position = b.home
-		b.atb = randf_range(20, 60) + b.max_stats["spd"]
+		b.atb = randf_range(20, 60) + b.max_stats["spd"] + (GameState.perk("atb_start") if id == "player" else 0.0)
 		_shadow(b, 18, 5, Vector2(0, 30))
 		var s := Sprite2D.new()
 		s.texture = Appearance.member_battle_sheet(id)
@@ -136,8 +136,10 @@ func _spawn_enemy(key: String, pos: Vector2) -> Node2D:
 	b.id = key + str(enemies.size())
 	b.data = d
 	b.display_name = str(d["name"])
-	b.max_stats = {"hp": d["hp"], "mp": 99, "atk": d["atk"], "def": d["def"], "mag": d["mag"], "res": d["res"], "spd": d["spd"]}
-	b.hp = int(d["hp"])
+	var dm: Array = GameState.diff_mults()
+	b.max_stats = {"hp": int(d["hp"] * dm[0]), "mp": 99, "atk": d["atk"] * dm[1], "def": d["def"], "mag": d["mag"] * dm[1],
+		"res": d["res"], "spd": d["spd"]}
+	b.hp = b.max_hp()
 	b.home = pos
 	b.position = pos
 	b.atb = randf_range(0, 40)
@@ -146,9 +148,9 @@ func _spawn_enemy(key: String, pos: Vector2) -> Node2D:
 	var fr: int = int(d["frames"])
 	b.frames = fr
 	if fr == 0:
-		s.hframes = 3
+		s.hframes = 8
 		s.vframes = 4
-		s.frame = 6
+		s.frame = 16
 	elif fr == -1:
 		s.hframes = 9
 		s.frame = 0
@@ -488,8 +490,15 @@ func _finish_actor_turn() -> void:
 func _tick_statuses(b) -> bool:
 	var skip := false
 	b.turns += 1
-	if not b.is_enemy and b.id == "player" and GameState.race() == "elf":
-		b.mp = mini(b.max_mp(), b.mp + 2)
+	# Los PM se recuperan poco a poco cada turno (los elfos, algo más).
+	if not b.is_enemy and b.alive() and b.max_mp() > 0:
+		var regen := maxi(1, int(round(b.max_mp() * 0.05)))
+		if b.id == "player":
+			regen += int(GameState.perk("mp_regen"))
+		if b.id == "player" and GameState.race() == "elf":
+			regen += 2
+		if b.mp < b.max_mp():
+			b.mp = mini(b.max_mp(), b.mp + regen)
 	if b.statuses.has("poison"):
 		var d := maxi(1, int(b.max_hp() * 0.07))
 		b.hp = maxi(0, b.hp - d)
@@ -852,8 +861,8 @@ func _do_skill(user, id: String, targets: Array) -> void:
 				if t.alive():
 					_spell_fx(t, "heal")
 					var amt := int(user.stat("mag") * float(sk["power"]) + float(sk.get("base", 0)))
-					if not user.is_enemy and user.id == "player" and str(GameState.player_data["branch"]) == "healer":
-						amt = int(amt * 1.2)
+					if not user.is_enemy and user.id == "player":
+						amt = int(amt * (1.0 + GameState.perk("heal_pow")))
 					_heal(t, amt)
 					if sk.get("cure", false):
 						_cure(t)
@@ -1013,13 +1022,16 @@ func _hit(user, target, sk: Dictionary, el: String) -> void:
 		if not user.is_enemy and user.id == "player":
 			if GameState.race() == "human":
 				cc += 0.1
-			if str(GameState.player_data["branch"]) == "dps":
-				cc += 0.08
+			cc += GameState.perk("crit")
 		if randf() < cc:
 			crit = true
 			dmg *= 1.7
 	if not target.is_enemy and target.id == "player" and GameState.race() == "dwarf" and kind == "phys":
 		dmg *= 0.9
+	if not user.is_enemy and user.id == "player":
+		dmg *= 1.0 + GameState.perk("dmg_phys" if kind == "phys" else "dmg_mag")
+	if not target.is_enemy and target.id == "player":
+		dmg *= maxf(0.5, 1.0 - GameState.perk("dmg_red"))
 	if target.statuses.has("wall"):
 		dmg *= 0.5
 	dmg *= randf_range(0.9, 1.1)
@@ -1031,6 +1043,8 @@ func _hit(user, target, sk: Dictionary, el: String) -> void:
 	_damage(target, amount, crit, mult > 1.0)
 	if kind == "drain":
 		_heal(user, int(amount * 0.5))
+	elif kind == "phys" and not user.is_enemy and user.id == "player" and GameState.perk("lifesteal") > 0:
+		_heal(user, maxi(1, int(amount * GameState.perk("lifesteal"))))
 	if sk.has("inflict") and target.alive():
 		await _try_inflict(target, str(sk["inflict"]), float(sk.get("chance", 0.5)))
 	await _wait(0.22)
@@ -1561,8 +1575,8 @@ func _victory() -> void:
 	var gold_total := 0
 	var drops: Array = []
 	for e in enemies:
-		xp_total += int(e.data.get("xp", 0))
-		gold_total += int(e.data.get("gold", 0))
+		xp_total += int(e.data.get("xp", 0) * GameState.diff_mults()[2])
+		gold_total += int(e.data.get("gold", 0) * GameState.diff_mults()[2])
 		for dpair in e.data.get("drops", []):
 			if randf() < float(dpair[1]):
 				drops.append(dpair[0])
@@ -1585,7 +1599,7 @@ func _victory() -> void:
 	panel.add_child(title)
 	var txt := "Experiencia: +%d\nCoronas: +%d" % [xp_total, gold_total]
 	for d in drops:
-		txt += "\nObtienes: %s" % DB.ITEMS[d]["name"]
+		txt += "\nObtienes: %s" % DB.item(d)["name"]
 	var info := UIKit.label("", 15)
 	info.position = Vector2(24, 44)
 	info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -1608,22 +1622,25 @@ func _victory() -> void:
 		_refresh_ui()
 		await _wait(2.0)
 	panel.queue_free()
-	if GameState.needs_branch_choice():
+	if GameState.needs_branch_choice() or GameState.needs_class_choice():
 		var opts: Array = []
-		for bid in ["melee", "ranged", "dps", "healer", "tank"]:
+		for bid in ["melee", "ranged", "support"]:
 			var bd: Dictionary = DB.BRANCHES[bid]
-			opts.append({"id": bid, "name": bd["name"], "desc": bd["desc"], "icon": bd["icon"]})
-		var idx: int = await choose_panel("Elige tu camino", "Marca cómo luchas. Al nivel 5 se abrirá en clases.", opts)
-		GameState.choose_branch(opts[idx]["id"])
-		Audio.sfx("levelup", -4.0)
-	if GameState.needs_class_choice():
+			var names: Array = []
+			for cid in bd["classes"]:
+				names.append(DB.CLASSES[cid]["name"])
+			opts.append({"id": bid, "name": bd["name"], "desc": "%s\nClases: %s" % [bd["desc"], ", ".join(names)], "icon": bd["icon"]})
+		var idx: int = await choose_panel("Elige tu senda", "Cómo vas a luchar. Luego elegirás tu clase.", opts)
+		var branch: String = opts[idx]["id"]
 		var opts2: Array = []
-		for cid in DB.BRANCHES[GameState.player_data["branch"]]["classes"]:
+		for cid in DB.BRANCHES[branch]["classes"]:
 			var cd: Dictionary = DB.CLASSES[cid]
-			opts2.append({"id": cid, "name": cd["name"], "desc": cd["desc"], "icon": DB.BRANCHES[GameState.player_data["branch"]]["icon"]})
-		var idx2: int = await choose_panel("Elige tu clase", "Tu rama se especializa. Aprenderás nuevas técnicas.", opts2)
+			opts2.append({"id": cid, "name": cd["name"], "desc": cd["desc"], "icon": cd["icon"]})
+		var idx2: int = await choose_panel("Elige tu clase", "Cada clase tiene su árbol de talentos.", opts2)
 		GameState.choose_class(opts2[idx2]["id"])
 		Audio.sfx("levelup", -4.0)
+	if GameState.skill_points() > 0:
+		await show_top("Tienes %d punto(s) de talento. Ábrelos en el menú (Esc) > Talentos." % GameState.skill_points(), 1.8)
 	var after := str(enc.get("id", ""))
 	if after != "":
 		GameState.set_flag("won_" + after)

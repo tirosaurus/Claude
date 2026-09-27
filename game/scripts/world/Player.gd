@@ -31,14 +31,23 @@ func setup(w: Node, pos: Vector2, face: int = 0) -> void:
 	add_child(shape)
 	sprite = Sprite2D.new()
 	sprite.texture = Appearance.sheet()
-	sprite.hframes = 3
+	sprite.hframes = 8
 	sprite.vframes = 4
 	sprite.centered = false
 	sprite.offset = Vector2(-10, -29)
 	add_child(sprite)
-	for i in 80:
-		trail.append(position)
-	_update_frame(0)
+	reset_trail()
+	_update_frame(-1)
+
+
+## Rellena el rastro en línea recta detrás del jugador (para que los compañeros
+## aparezcan escalonados detrás y no amontonados en el mismo punto).
+func reset_trail() -> void:
+	trail.clear()
+	var back: Vector2 = [Vector2(0, -1), Vector2(1, 0), Vector2(-1, 0), Vector2(0, 1)][clampi(facing, 0, 3)]
+	for i in range(80, 0, -1):
+		trail.append(position + back * i * 1.5)
+	trail.append(position)
 
 
 func _physics_process(delta: float) -> void:
@@ -62,16 +71,15 @@ func _physics_process(delta: float) -> void:
 			world.on_player_moved(moved)
 			_anim_t += delta * (11.0 if running else 7.5)
 			_record_trail()
-		var f := int(_anim_t) % 4
-		_update_frame([1, 0, 2, 0][f])
-		var step_now := int(_anim_t / 2.0)
+		_update_frame(2 + int(_anim_t * 1.5) % 6)
+		var step_now := int(_anim_t * 1.5 / 3.0)
 		if step_now != _step_count and moved > 0.05:
 			_step_count = step_now
 			Audio.sfx("step", -20.0, randf_range(0.9, 1.1))
 	else:
 		velocity = Vector2.ZERO
 		_anim_t = 0.0
-		_update_frame(0)
+		_update_frame(-1)
 	var fresh_press: bool = Engine.get_process_frames() - Dialogue.last_close_frame > 8
 	if can_move and fresh_press and Input.is_action_just_pressed("interact"):
 		world.try_interact(self)
@@ -91,16 +99,16 @@ func walk_to(target: Vector2, speed: float = 60.0) -> void:
 		position += step
 		_record_trail()
 		_anim_t += get_physics_process_delta_time() * 7.5
-		_update_frame([1, 0, 2, 0][int(_anim_t) % 4])
+		_update_frame(2 + int(_anim_t * 1.5) % 6)
 		await get_tree().physics_frame
 	position = target
-	_update_frame(0)
+	_update_frame(-1)
 	locked = false
 
 
 func face(dir: int) -> void:
 	facing = dir
-	_update_frame(0)
+	_update_frame(-1)
 
 
 func probe_point() -> Vector2:
@@ -114,5 +122,8 @@ func _record_trail() -> void:
 			trail.pop_front()
 
 
+## f = columna de la hoja (2..7 caminar); -1 = reposo con respiración.
 func _update_frame(f: int) -> void:
-	sprite.frame = facing * 3 + f
+	if f < 0:
+		f = int(Time.get_ticks_msec() / 700.0) % 2
+	sprite.frame = facing * 8 + f

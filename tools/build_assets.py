@@ -49,6 +49,7 @@ if __name__ == "__main__":
     ui.build_all(OUT)
     ui.build_v2(OUT)
     ui.build_v3(OUT)
+    ui.equip_icons(OUT)
     audio.build_all(OUT)
     audio.build_v2(OUT)
     sfx2.build_all(OUT)

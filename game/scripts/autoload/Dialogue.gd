@@ -186,7 +186,9 @@ static func fmt(s: String) -> String:
 	var f := GameState.is_female()
 	return s.replace("{name}", GameState.player_name()).replace("{o}", "a" if f else "o") \
 		.replace("{os}", "as" if f else "os").replace("{hijo}", "hija" if f else "hijo") \
-		.replace("{el}", "ella" if f else "él").replace("{e}", "a" if f else "e")
+		.replace("{el}", "ella" if f else "él").replace("{e}", "a" if f else "e") \
+		.replace("{raza}", {"human": "humana" if f else "humano", "elf": "elfa" if f else "elfo",
+			"dwarf": "enana" if f else "enano"}.get(GameState.race(), "humano"))
 
 
 func _show_line(line, wait_input: bool) -> void:
@@ -208,7 +210,10 @@ func _show_line(line, wait_input: bool) -> void:
 		if who in ["player", "kaelen", "yara", "aelis", "brom"]:
 			_portrait.texture = Appearance.member_portrait(who)
 		else:
-			_portrait.texture = load("res://assets/portraits/%s.png" % info["portrait"])
+			var pname: String = str(info["portrait"])
+			if pname == "mother" and GameState.race() != "human":
+				pname = "mother_" + GameState.race()
+			_portrait.texture = load("res://assets/portraits/%s.png" % pname)
 		_name_label.text = GameState.player_name() if who == "player" else str(info["name"])
 		_pitch = float(info["pitch"])
 		_name_plate.position = Vector2(132, 244)

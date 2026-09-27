@@ -46,12 +46,96 @@ func choose(options: Array, prompt = null) -> int:
 	return await Dialogue.choose(options, prompt)
 
 
+# ------------------------------------------------------------ Cinemáticas
+## Mueve la cámara a un punto y espera.
+func pan_to(pos: Vector2, wait_s: float = 1.2) -> void:
+	world.camera_focus = pos
+	await wait(wait_s)
+
+
+func release_camera(wait_s: float = 0.6) -> void:
+	world.camera_focus = null
+	await wait(wait_s)
+
+
+func shake(amount: float = 4.0, t: float = 0.4) -> void:
+	var tw := create_tween()
+	var n := int(t / 0.04)
+	for k in n:
+		tw.tween_property(world.camera, "offset", Vector2(randf_range(-amount, amount), randf_range(-amount, amount)), 0.04)
+	tw.tween_property(world.camera, "offset", Vector2.ZERO, 0.05)
+
+
+## Sprite animado de monstruo para escenas (larvas, bruto, etc.).
+func monster(path: String, frames: int, pos: Vector2, scale_f: float = 1.0, flip: bool = false) -> Sprite2D:
+	var s := Sprite2D.new()
+	s.texture = load(path)
+	s.hframes = frames
+	s.centered = false
+	var fw: float = s.texture.get_width() / float(frames)
+	s.offset = Vector2(-fw / 2.0, -s.texture.get_height())
+	s.scale = Vector2(scale_f, scale_f)
+	s.flip_h = flip
+	s.position = pos
+	world.entities.add_child(s)
+	_animate(s, frames)
+	return s
+
+
+func _animate(s: Sprite2D, frames: int) -> void:
+	var k := 0
+	while is_instance_valid(s) and s.is_inside_tree():
+		s.frame = k % frames
+		k += 1
+		await get_tree().create_timer(0.22).timeout
+
+
+func move_node(n: Node2D, to: Vector2, t: float) -> void:
+	var tw := create_tween()
+	tw.tween_property(n, "position", to, t)
+	await tw.finished
+
+
+## Un aldeano cae (herido) tumbado en el suelo.
+func knock_down(n: Node2D) -> void:
+	var spr: Sprite2D = n.sprite if "sprite" in n else n
+	var tw := create_tween().set_parallel(true)
+	tw.tween_property(spr, "rotation_degrees", 90.0, 0.25)
+	tw.tween_property(spr, "modulate", Color(0.8, 0.6, 0.6), 0.25)
+	Audio.sfx("hit", -6.0)
+	if "busy" in n:
+		n.busy = true
+
+
+func dust(pos: Vector2, col: Color = Color(0.7, 0.65, 0.6)) -> void:
+	var p := CPUParticles2D.new()
+	p.position = pos
+	p.amount = 30
+	p.one_shot = true
+	p.explosiveness = 0.9
+	p.lifetime = 0.9
+	p.emission_shape = CPUParticles2D.EMISSION_SHAPE_SPHERE
+	p.emission_sphere_radius = 10
+	p.direction = Vector2.UP
+	p.spread = 80
+	p.gravity = Vector2(0, 40)
+	p.initial_velocity_min = 20
+	p.initial_velocity_max = 60
+	p.scale_amount_min = 1.5
+	p.scale_amount_max = 3.0
+	p.color = col
+	world.entities.add_child(p)
+	p.emitting = true
+	get_tree().create_timer(1.6).timeout.connect(p.queue_free)
+
+
 func begin() -> void:
 	world.cutscene = true
 
 
 func end() -> void:
 	world.cutscene = false
+	world.camera_focus = null
 
 
 func wait(sec: float) -> void:
@@ -144,7 +228,7 @@ func give_items(items: Dictionary) -> String:
 			parts.append("%d coronas" % int(items[k]))
 		else:
 			GameState.add_item(k, int(items[k]))
-			parts.append("%s ×%d" % [DB.ITEMS[k]["name"], int(items[k])])
+			parts.append("%s ×%d" % [DB.item(k)["name"], int(items[k])])
 	return ", ".join(parts)
 
 
@@ -181,7 +265,25 @@ func is_interactable(id: String) -> bool:
 	return not (id.ends_with("_zone"))
 
 
+## Rastro de interacciones para secretos (orden exacto de cosas examinadas).
+func _track_secret(id: String) -> void:
+	var seq: Array = GameState.get_meta("ov_seq", [])
+	seq.append(GameState.current_map + ":" + id)
+	while seq.size() > 6:
+		seq.pop_front()
+	GameState.set_meta("ov_seq", seq)
+	var tail4: Array = seq.slice(maxi(0, seq.size() - 4))
+	var tail3: Array = seq.slice(maxi(0, seq.size() - 3))
+	if not flag("ov1") and not flag("council_done") and tail4 == ["bedroom:bed", "bedroom:wardrobe", "bedroom:bed", "bedroom:chest"]:
+		setf("ov1")
+		Audio.sfx("magic", -24.0, 0.5)
+	elif flag("ov2") and not flag("ov3") and not flag("yara_joined") and tail3 == ["village:well", "village:well", "village:well"]:
+		setf("ov3")
+		Audio.sfx("magic", -24.0, 0.5)
+
+
 func on_interact(id: String) -> void:
+	_track_secret(id)
 	if id.begins_with("chest_"):
 		await open_chest(id)
 		return

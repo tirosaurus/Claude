@@ -42,15 +42,57 @@ func _first_attack() -> void:
 	world.show_banner("Tortosa en llamas")
 	await wait(0.6)
 	await say(["Tortosa arde.",
-		"El tejado de los Ferrer es una antorcha. Hay gritos por todas partes, y entre el humo se mueven cosas.",
-		"Cosas que se arrastran, que brillan con una luz violeta enfermiza."])
-	var l1 := Sprite2D.new()
-	l1.texture = load("res://assets/enemies/larva.png")
-	l1.hframes = 2
-	l1.position = world.player.position + Vector2(40, 30)
-	world.entities.add_child(l1)
+		"El tejado de los Ferrer es una antorcha. Hay gritos por todas partes, y entre el humo se mueven cosas."])
+	var vtex := load("res://assets/chars/villager_m.png")
+	var ftex := load("res://assets/chars/villager_f.png")
+	var ttex := load("res://assets/chars/thrall.png")
+	# 1) Un vecino huye por la calle; un siervo lo alcanza
+	await pan_to(Vector2(520, 330), 1.1)
+	var v1 = world.spawn_npc("vill1", Vector2(690, 336), 1, 0, vtex)
+	var t1 = world.spawn_npc("th1", Vector2(740, 330), 1, 0, ttex)
+	v1.walk_to(Vector2(470, 336), 78)
+	await wait(0.3)
+	await say(["«¡Socorro! ¡Que alguien me ayude!»"])
+	await t1.walk_to(Vector2(492, 334), 96)
+	Audio.sfx("growl", -4.0, 1.3)
+	t1.face(1)
+	await wait(0.15)
+	knock_down(v1)
+	shake(3.0, 0.3)
+	await wait(0.6)
+	await say(["El siervo se inclina sobre él. Tiene la cara gris, los ojos violetas... y lleva la ropa del molinero."])
+	# 2) Larvas saliendo de la casa en llamas
+	await pan_to(Vector2(190, 390), 1.2)
+	var l1 := monster("res://assets/enemies/larva.png", 2, Vector2(150, 372), 0.9)
+	var l2 := monster("res://assets/enemies/larva.png", 2, Vector2(180, 366), 0.9)
+	var v2 = world.spawn_npc("vill2", Vector2(250, 400), 1, 0, ftex)
+	move_node(l1, Vector2(215, 400), 1.4)
+	await move_node(l2, Vector2(238, 394), 1.4)
+	v2.walk_to(Vector2(330, 440), 80)
+	await say(["Del fuego salen larvas del tamaño de un perro, chillando. Una vecina huye con un niño en brazos."])
+	# 3) Siervos golpeando los escombros de la Catedral
+	await pan_to(Vector2(368, 250), 1.3)
+	var t2 = world.spawn_npc("th2", Vector2(346, 236), 3, 0, ttex)
+	var t3 = world.spawn_npc("th3", Vector2(392, 238), 3, 0, ttex)
+	for k in 3:
+		await t2.hop()
+		dust(Vector2(360, 224))
+		Audio.sfx("hit", -6.0, 0.6)
+		shake(2.0, 0.2)
+		await t3.hop()
+		dust(Vector2(380, 224))
+		Audio.sfx("hit", -6.0, 0.7)
+		await wait(0.2)
+	await say(["Frente a la Catedral Vieja, más siervos golpean los escombros con las manos desnudas.", "Quieren entrar."])
+	# 4) De vuelta al jugador
+	await release_camera(0.8)
+	for id in ["vill1", "vill2", "th1", "th2", "th3"]:
+		world.remove_npc(id)
+	l2.queue_free()
+	l1.position = world.player.position + Vector2(46, 26)
 	Audio.sfx("growl", -4.0, 1.4)
-	await say([P("¡¿Qué demonios son esas cosas?!"), "Una larva del tamaño de un perro se lanza hacia ti, chillando."])
+	await say([P("¡¿Qué demonios son esas cosas?!"), "Una larva se lanza hacia ti, chillando."])
+	await move_node(l1, world.player.position + Vector2(14, 6), 0.25)
 	await battle("night1", ["larva"], "village_night", "night")
 
 
@@ -163,21 +205,24 @@ func _after_choice() -> void:
 func _brute_arrives() -> void:
 	Audio.stop_music(0.6)
 	await wait(0.3)
-	world.camera.position = Vector2(368, 200)
+	await pan_to(Vector2(420, 230), 1.0)
 	Audio.sfx("growl", 0.0, 0.6)
+	shake(3.0, 0.5)
 	await say(["La tierra tiembla.", "Algo enorme sale de entre el humo y se dirige a la Catedral."])
-	_brute = Sprite2D.new()
-	_brute.texture = load("res://assets/enemies/brute.png")
-	_brute.hframes = 2
-	_brute.scale = Vector2(0.8, 0.8)
-	_brute.position = Vector2(470, 250)
-	world.entities.add_child(_brute)
-	var tw := create_tween()
-	tw.tween_property(_brute, "position", Vector2(400, 222), 1.4)
-	await tw.finished
-	Audio.sfx("hit", 0.0, 0.5)
+	_brute = monster("res://assets/enemies/brute.png", 2, Vector2(560, 262), 0.75)
+	for k in 4:
+		await move_node(_brute, _brute.position + Vector2(-34, -8), 0.35)
+		shake(2.5, 0.2)
+		Audio.sfx("hit", -8.0, 0.5)
+	for k in 2:
+		await move_node(_brute, _brute.position + Vector2(-6, -4), 0.12)
+		dust(Vector2(372, 222), Color(0.6, 0.55, 0.5))
+		shake(5.0, 0.3)
+		Audio.sfx("crit", -4.0, 0.6)
+		await move_node(_brute, _brute.position + Vector2(6, 4), 0.2)
 	await say(["El bruto golpea los escombros de la Catedral con los puños. Una vez. Dos. Las piedras empiezan a ceder.",
 		K("¡Quiere entrar! ¡Busca la Semilla!"), Y("¡Hay que pararlo!")])
+	await release_camera(0.3)
 	await walk_party_to(Vector2(380, 262), 90)
 	await battle("brute", ["brute", "larva"], "village_night", "boss", true)
 
@@ -189,7 +234,24 @@ func _after_brute() -> void:
 	world.remove_prop("rubble")
 	await wait(0.4)
 	await say(["El bruto se desploma sobre los escombros... y con él, la entrada de la Catedral se viene abajo.",
-		"Donde antes había piedra, ahora hay un agujero negro. Los siervos supervivientes se arrastran hacia dentro.",
+		"Donde antes había piedra, ahora hay un agujero negro."])
+	var ttex := load("res://assets/chars/thrall.png")
+	var starts := [Vector2(250, 330), Vector2(500, 320), Vector2(300, 400), Vector2(460, 390)]
+	var ths: Array = []
+	for k in starts.size():
+		var t = world.spawn_npc("thin%d" % k, starts[k], 3, 0, ttex)
+		ths.append(t)
+		t.walk_to(Vector2(368 + (k - 1.5) * 6, 214), 55 + k * 6)
+	await pan_to(Vector2(368, 250), 0.8)
+	await wait(2.2)
+	for t in ths:
+		var tw := create_tween()
+		tw.tween_property(t, "modulate:a", 0.0, 0.4)
+	await wait(0.5)
+	for k in starts.size():
+		world.remove_npc("thin%d" % k)
+	await release_camera(0.4)
+	await say(["Los siervos supervivientes se arrastran hacia dentro, uno tras otro, como hormigas hacia la miel.",
 		K("Se están metiendo en la Catedral."), Y("Van a por la Semilla. Si la encuentran...")])
 	if flag("bartolo_alive"):
 		await say([N("bartolo", "Escuchadme. Bajo el altar hay tres runas: Fe, Memoria y Sacrificio."),

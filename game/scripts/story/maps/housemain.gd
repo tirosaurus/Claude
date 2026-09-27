@@ -73,6 +73,9 @@ func on_map_ready(_m: String) -> void:
 	await say([M("Hoy hace muy buen día, de esos que ya casi no quedan.")])
 	var i2 := await choose(["Como un tronco, madre.", "He tenido un sueño muy raro...", "¿Eso es pan recién hecho?"],
 		M("¿Has descansado bien, cariño?"))
+	if i2 == 2 and flag("ov1") and not flag("ov2"):
+		setf("ov2")
+		Audio.sfx("magic", -24.0, 0.5)
 	match i2:
 		0:
 			await say([M("Eso es que tienes la conciencia tranquila. Disfrútalo mientras dure.")])

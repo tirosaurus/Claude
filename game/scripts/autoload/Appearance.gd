@@ -47,10 +47,13 @@ func _recolor(img: Image, gray_map: Dictionary, outfit: Color, use_outfit: bool)
 				img.set_pixel(x, y, Color(ol.r, ol.g, ol.b, c.a))
 
 
-func _compose(prefix: String, app: Dictionary) -> ImageTexture:
+func _compose(prefix: String, app: Dictionary, gear: Dictionary = {}) -> ImageTexture:
 	var race: String = str(app.get("race", "human"))
 	var sex: String = str(app.get("sex", "m"))
 	var style: String = GameState.HAIR_STYLES[int(app.get("hair_style", 0))][0]
+	var look0: Dictionary = gear if not gear.is_empty() else GameState.gear_look("player")
+	if str(look0.get("head", "")) in ["helm", "helm_gold", "cap", "hood"] and style in ["spiky", "bun"]:
+		style = "short"
 	var skin: Color = GameState.SKIN_TONES[int(app.get("skin", 1))][1]
 	var hair: Color = GameState.HAIR_COLORS[int(app.get("hair_color", 0))][1]
 	var outfit: Color = GameState.OUTFITS[int(app.get("outfit", 0))][1]
@@ -58,13 +61,9 @@ func _compose(prefix: String, app: Dictionary) -> ImageTexture:
 	var base: Image = load(body_path).get_image()
 	base.convert(Image.FORMAT_RGBA8)
 	_recolor(base, _skin_map(skin), outfit, true)
+	var look: Dictionary = gear if not gear.is_empty() else GameState.gear_look("player")
 	if prefix == "b":
-		var wpath := "res://assets/creator/weapon_%s_%s.png" % [race, weapon_type()]
-		if ResourceLoader.exists(wpath):
-			var w: Image = load(wpath).get_image()
-			w.convert(Image.FORMAT_RGBA8)
-			w.blend_rect(base, Rect2i(0, 0, base.get_width(), base.get_height()), Vector2i.ZERO)
-			base = w
+		base = _with_weapon(base, race, look)
 	var hair_img: Image = load("res://assets/creator/%shair_%s_%s_%s.png" % [prefix, race, sex, style]).get_image()
 	hair_img.convert(Image.FORMAT_RGBA8)
 	_recolor(hair_img, _hair_map(hair), outfit, false)
@@ -74,11 +73,47 @@ func _compose(prefix: String, app: Dictionary) -> ImageTexture:
 		beard.convert(Image.FORMAT_RGBA8)
 		_recolor(beard, _hair_map(hair), outfit, false)
 		base.blend_rect(beard, Rect2i(0, 0, beard.get_width(), beard.get_height()), Vector2i.ZERO)
+	if prefix != "p":
+		_overlay_gear(base, prefix, race, sex, look)
 	return ImageTexture.create_from_image(base)
 
 
+## Capa de arma (detrás del cuerpo) según tipo, calidad y orbe.
+func _with_weapon(body: Image, race: String, look: Dictionary) -> Image:
+	var kind: String = str(look.get("weapon_kind", ""))
+	if kind == "":
+		return body
+	var tier: int = clampi(int(look.get("weapon_tier", 1)), 1, 3)
+	var orb: String = str(look.get("orb", ""))
+	var wpath := "res://assets/creator/weapon_%s_%s_%d%s.png" % [race, kind, tier, ("_" + orb) if orb != "" and kind == "staff" else ""]
+	if not ResourceLoader.exists(wpath):
+		return body
+	var w: Image = load(wpath).get_image().duplicate()
+	w.convert(Image.FORMAT_RGBA8)
+	w.blend_rect(body, Rect2i(0, 0, body.get_width(), body.get_height()), Vector2i.ZERO)
+	return w
+
+
+## Armadura, casco y escudo visibles.
+func _overlay_gear(img: Image, prefix: String, race: String, sex: String, look: Dictionary) -> void:
+	var layers: Array = []
+	if str(look.get("body", "")) != "":
+		layers.append("%seqbody_%s_%s_%s" % [prefix, look["body"], race, sex])
+	if str(look.get("head", "")) != "":
+		layers.append("%seqhead_%s_%s_%s" % [prefix, look["head"], race, sex])
+	if prefix == "b" and str(look.get("shield", "")) != "":
+		layers.append("beqshield_%s_%s_%s" % [look["shield"], race, sex])
+	for l in layers:
+		var path := "res://assets/creator/%s.png" % l
+		if ResourceLoader.exists(path):
+			var o: Image = load(path).get_image()
+			o.convert(Image.FORMAT_RGBA8)
+			if o.get_size() == img.get_size():
+				img.blend_rect(o, Rect2i(Vector2i.ZERO, o.get_size()), Vector2i.ZERO)
+
+
 func _key(prefix: String, app: Dictionary) -> String:
-	return prefix + JSON.stringify(app)
+	return prefix + JSON.stringify(app) + JSON.stringify(GameState.gear_look("player"))
 
 
 func sheet(app = null) -> Texture2D:
@@ -98,22 +133,15 @@ func portrait(app = null) -> Texture2D:
 
 
 func weapon_type() -> String:
-	var b: String = str(GameState.player_data.get("branch", "")) if GameState.player_data else ""
-	match b:
-		"ranged":
-			return "bow"
-		"dps":
-			return "daggers"
-		"healer":
-			return "staff"
-		"tank":
-			return "axe"
+	var c: String = str(GameState.player_data.get("class", "")) if GameState.player_data else ""
+	if c != "" and DB.CLASSES.has(c):
+		return str(DB.CLASSES[c]["weapon"])
 	return "sword"
 
 
 func battle_sheet(app = null) -> Texture2D:
 	var a: Dictionary = app if app != null else GameState.appearance
-	var k := _key("b" + weapon_type(), a)
+	var k := _key("b", a)
 	if not _cache.has(k):
 		_cache[k] = _compose("b", a)
 	return _cache[k]
@@ -123,22 +151,47 @@ func battle_sheet(app = null) -> Texture2D:
 func member_battle_sheet(id: String) -> Texture2D:
 	if id == "player":
 		return battle_sheet()
-	if id == "yara" and GameState.yara_is_witch():
-		return load("res://assets/battle/yara_dark.png")
-	if id == "kaelen" and GameState.has_flag("kaelen_dark"):
-		return load("res://assets/battle/kaelen_dark.png")
-	return load("res://assets/battle/%s.png" % id)
+	var look := GameState.gear_look(id)
+	var k := "mb_" + _member_base_name(id) + JSON.stringify(look)
+	if not _cache.has(k):
+		var path := "res://assets/battle/%s_nw.png" % _member_base_name(id)
+		if not ResourceLoader.exists(path):
+			return load("res://assets/battle/%s.png" % _member_base_name(id))
+		var img: Image = load(path).get_image().duplicate()
+		img.convert(Image.FORMAT_RGBA8)
+		var rs: Array = MEMBER_BODY.get(id, ["human", "m"])
+		if id == "yara" and GameState.yara_is_witch() and str(look.get("orb", "")) == "":
+			look["orb"] = "dark"
+		img = _with_weapon(img, rs[0], look)
+		_overlay_gear(img, "b", rs[0], rs[1], look)
+		_cache[k] = ImageTexture.create_from_image(img)
+	return _cache[k]
 
 
 ## Textura de hoja de sprites para cualquier miembro del grupo.
+const MEMBER_BODY := {"kaelen": ["human", "m"], "yara": ["human", "f"], "aelis": ["elf", "f"], "brom": ["dwarf", "m"]}
+
+
+func _member_base_name(id: String) -> String:
+	if id == "yara" and GameState.yara_is_witch():
+		return "yara_dark"
+	if id == "kaelen" and GameState.has_flag("kaelen_dark"):
+		return "kaelen_dark"
+	return id
+
+
 func member_sheet(id: String) -> Texture2D:
 	if id == "player":
 		return sheet()
-	if id == "yara" and GameState.yara_is_witch():
-		return load("res://assets/chars/yara_dark.png")
-	if id == "kaelen" and GameState.has_flag("kaelen_dark"):
-		return load("res://assets/chars/kaelen_dark.png")
-	return load("res://assets/chars/%s.png" % id)
+	var look := GameState.gear_look(id)
+	var k := "m_" + _member_base_name(id) + JSON.stringify(look)
+	if not _cache.has(k):
+		var img: Image = load("res://assets/chars/%s.png" % _member_base_name(id)).get_image().duplicate()
+		img.convert(Image.FORMAT_RGBA8)
+		var rs: Array = MEMBER_BODY.get(id, ["human", "m"])
+		_overlay_gear(img, "", rs[0], rs[1], look)
+		_cache[k] = ImageTexture.create_from_image(img)
+	return _cache[k]
 
 
 func member_portrait(id: String) -> Texture2D:

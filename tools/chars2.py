@@ -1077,6 +1077,203 @@ DRESS["up"] = DRESS["down"]
 
 
 # =====================================================================================
+# EQUIPO VISIBLE
+# =====================================================================================
+ARMOR_PAL = {
+    "leather": {"mid": (126, 84, 52), "dark": (88, 56, 36), "light": (162, 112, 70), "trim": (60, 38, 26), "pat": "stitch"},
+    "chain": {"mid": (150, 152, 164), "dark": (104, 106, 120), "light": (196, 198, 208), "trim": (84, 60, 44), "pat": "check"},
+    "plate": {"mid": (178, 184, 198), "dark": (116, 122, 140), "light": (232, 236, 246), "trim": (214, 172, 70), "pat": "bands"},
+    "mithril": {"mid": (170, 200, 222), "dark": (104, 136, 170), "light": (236, 248, 255), "trim": (240, 210, 110), "pat": "bands"},
+    "robe": {"mid": (72, 70, 140), "dark": (46, 44, 96), "light": (108, 106, 180), "trim": (214, 172, 70), "pat": "robe"},
+    "robe_sage": {"mid": (224, 220, 206), "dark": (170, 164, 146), "light": (250, 248, 238), "trim": (80, 120, 190), "pat": "robe"},
+    "robe_dark": {"mid": (62, 38, 74), "dark": (38, 22, 48), "light": (96, 64, 112), "trim": (170, 60, 190), "pat": "robe"},
+}
+MARKERS_TOP = {M_TOP: "mid", M_TOP_D: "dark", (255, 120, 255): "light"}
+
+
+def apply_armor(c, look, pal, legs_from_y=None):
+    ap = ARMOR_PAL[look]
+    cloth = {pal["C"]: "light", pal["c"]: "mid", pal["L"]: "trim", pal["G"]: "trim"}
+    legs = {pal["P"]: "mid", pal["p"]: "dark"} if ap["pat"] == "robe" else {}
+    for y in range(c.h):
+        for x in range(c.w):
+            p = c.get(x, y)
+            if p[3] == 0:
+                continue
+            rgb = p[:3]
+            role = MARKERS_TOP.get(rgb) or cloth.get(rgb)
+            if role is None and legs and legs_from_y is not None and y >= legs_from_y:
+                role = legs.get(rgb)
+            if role is None:
+                continue
+            col = ap[role]
+            if role == "mid":
+                if ap["pat"] == "check" and (x + y) % 2 == 0:
+                    col = ap["dark"]
+                elif ap["pat"] == "bands" and y % 3 == 0:
+                    col = ap["light"]
+                elif ap["pat"] == "stitch" and (x * 3 + y) % 7 == 0:
+                    col = ap["trim"]
+            c.px(x, y, col)
+
+
+HELM_PAL = {
+    "cap": {"M": (162, 112, 70), "m": (126, 84, 52), "k": (80, 52, 34)},
+    "helm": {"M": (206, 210, 222), "m": (150, 154, 168), "k": (96, 100, 116)},
+    "helm_gold": {"M": (236, 240, 248), "m": (178, 184, 198), "k": (214, 172, 70)},
+    "hood": {"M": (86, 70, 96), "m": (58, 46, 68), "k": (36, 28, 44)},
+    "circlet": {"M": (236, 236, 246), "m": (184, 186, 200), "k": (90, 170, 230)},
+    "circlet_moon": {"M": (250, 240, 200), "m": (214, 180, 90), "k": (200, 220, 255)},
+}
+HELMS = {}
+HELMS[("cap", "down")] = (P("""
+....mmmmmm....
+..mmMMMmmmmm..
+.mMMmmmmmmmmm.
+.mmmmmmmmmmmm.
+kkkkkkkkkkkkkk
+"""), -1, -2)
+HELMS[("cap", "side")] = (P("""
+...mmmmmm....
+.mmMMMmmmmm..
+mMMmmmmmmmmm.
+mmmmmmmmmmmmm
+kkkkkkkkkkkkkk
+"""), -1, -2)
+HELMS[("cap", "up")] = (P("""
+....mmmmmm....
+..mmMMMmmmmm..
+.mMMmmmmmmmmm.
+.mmmmmmmmmmmm.
+mmmmmmmmmmmmmm
+kkkkkkkkkkkkkk
+"""), -1, -2)
+HELMS[("helm", "down")] = (P("""
+.....mmmm.....
+...mMMMmmmm...
+..mMMmmmmmmm..
+.mMmmmmmmmmmm.
+.mmmmmmmmmmmm.
+mmmmmmmmmmmmmm
+kkkkkkkkkkkkkk
+mk..........km
+mk..........km
+m............m
+"""), -1, -3)
+HELMS[("helm", "side")] = (P("""
+....mmmm.....
+..mMMMmmmm...
+.mMMmmmmmmm..
+mMmmmmmmmmmm.
+mmmmmmmmmmmmm
+mmmmmmmmmmmmm
+kkkkkkkkkkkkk
+mmmmmmk..km..
+mmmmmk...km..
+mmmmk........
+"""), -1, -3)
+HELMS[("helm", "up")] = (P("""
+.....mmmm.....
+...mMMMmmmm...
+..mMMmmmmmmm..
+.mMmmmmmmmmmm.
+.mmmmmmmmmmmm.
+mmmmmmmmmmmmmm
+kkkkkkkkkkkkkk
+mmmmmmmmmmmmmm
+mmmmmmmmmmmmmm
+.mmmmmmmmmmmm.
+"""), -1, -3)
+for d in ("down", "side", "up"):
+    HELMS[("helm_gold", d)] = HELMS[("helm", d)]
+HELMS[("hood", "down")] = (P("""
+.....MMMM.....
+...MMmmmmMM...
+..MmmmmmmmmM..
+.MmmmmmmmmmmM.
+.mmmkkkkkkmmm.
+mmmk......kmmm
+mmk........kmm
+mmk........kmm
+mmk........kmm
+mmk........kmm
+mmm........mmm
+mmmm......mmmm
+kmmmm....mmmmk
+kkmmm....mmmkk
+"""), -1, -2)
+HELMS[("hood", "side")] = (P("""
+..MMMMMM.....
+.MmmmmmmMM...
+MmmmmmmmmmM..
+mmmmmmmmmmmm.
+mmmmmmmmkkkk.
+mmmmmmmk.....
+mmmmmmmk.....
+mmmmmmmk.....
+mmmmmmmk.....
+mmmmmmmk.....
+mmmmmmmm.....
+mmmmmmmmm....
+kmmmmmmmm....
+kkmmmmmmm....
+"""), -1, -2)
+HELMS[("hood", "up")] = (P("""
+.....MMMM.....
+...MMmmmmMM...
+..MmmmmmmmmM..
+.MmmmmmmmmmmM.
+.mmmmmmmmmmmm.
+mmmmmmmmmmmmmm
+mmmmmmmmmmmmmm
+mmmmmmmmmmmmmm
+mmmmmmmmmmmmmm
+mmmmmmmmmmmmmm
+mmmmmmmmmmmmmm
+mmmmmmmmmmmmmm
+kmmmmmmmmmmmmk
+kkmmmmmmmmmmkk
+"""), -1, -2)
+HELMS[("circlet", "down")] = (P("""
+mMMMMMkMMMMMMm
+"""), -1, 3)
+HELMS[("circlet", "side")] = (P("""
+mMMMMMMMMMkM.
+"""), -1, 3)
+HELMS[("circlet", "up")] = (P("""
+mmmmmmmmmmmmmm
+"""), -1, 3)
+for d in ("down", "side", "up"):
+    HELMS[("circlet_moon", d)] = HELMS[("circlet", d)]
+
+
+def apply_helm(c, look, direction, hx, hy):
+    key = (look, direction)
+    if key not in HELMS:
+        return
+    tpl, fx, fy = HELMS[key]
+    stamp(c, tpl, hx + fx, hy + fy, HELM_PAL[look])
+
+
+SHIELD_PAL = {"wood": ((140, 96, 58), (98, 66, 40), (214, 172, 70)),
+              "iron": ((170, 174, 188), (110, 114, 130), (214, 172, 70)),
+              "aegis": ((90, 150, 110), (56, 104, 76), (236, 220, 140))}
+
+
+def apply_shield(c, look, x, y):
+    mid, dark, trim = SHIELD_PAL[look]
+    for yy in range(-4, 5):
+        half = 3 if abs(yy) < 3 else 2
+        for xx in range(-half, half + 1):
+            col = dark if xx == -half or xx == half or yy in (-4, 4) else mid
+            c.px(x + xx, y + yy, col)
+    c.px(x, y - 1, trim)
+    c.px(x, y, trim)
+    c.px(x - 1, y, trim)
+    c.px(x + 1, y, trim)
+
+
+# =====================================================================================
 # Ensamblado
 # =====================================================================================
 def layout(spec):
@@ -1107,23 +1304,31 @@ def draw_map_frame(spec, direction, frame):
     sex = spec.get("sex", "m")
     style = spec.get("style", "short")
     hx, hy = 4, lay["head_y"]
-    bob = 1 if frame in (1, 2) and direction != "side" else (1 if frame == 1 else 0)
-    bob = 0 if frame == 0 else 1
+    # frame: 0-1 reposo (respiración), 2-7 ciclo de caminar de 6 fases
+    if frame < 2:
+        leg_i, bob, swing, hbob = 0, frame, 0, frame
+    else:
+        ph = frame - 2
+        leg_i = [1, 1, 0, 2, 2, 0][ph]
+        bob = [0, 1, 0, 0, 1, 0][ph]
+        swing = [1, 1, 0, -1, -1, 0][ph]
+        hbob = [0, 1, 0, 0, 1, 0][(ph - 1) % 6]     # el pelo va un paso por detrás
+    fr3 = leg_i
     hy += 0
 
     hdef = HAIR.get((style, direction))
     # pelo trasero
     if hdef and hdef["back"] and direction == "down":
         tpl, bx, by = hdef["back"]
-        stamp(c, tpl, hx + bx, hy + by + bob, pal)
+        stamp(c, tpl, hx + bx, hy + by + hbob, pal)
 
     # piernas / vestido
     ly = lay["legs_y"]
     if spec.get("dress"):
-        tpl = DRESS[direction][frame]
+        tpl = DRESS[direction][fr3]
         stamp(c, tpl, 3, ly, pal)
     else:
-        stamp(c, LEGS[(lay["legs"], direction)][frame], 3, ly, pal)
+        stamp(c, LEGS[(lay["legs"], direction)][fr3], 3, ly, pal)
 
     # torso
     ty = lay["torso_y"] + bob
@@ -1132,7 +1337,6 @@ def draw_map_frame(spec, direction, frame):
     stamp(c, torso, 3 if not build.startswith("d") else 2, ty, pal)
     tw = len(torso[0])
     # brazos
-    swing = [0, 1, -1][frame]
     if direction in ("down", "up"):
         # encontrar extremos del torso
         rowmask = torso[2]
@@ -1161,7 +1365,7 @@ def draw_map_frame(spec, direction, frame):
         if direction == "down":
             c.rect(11, ty + 1, 2, 4, cold)
         elif direction == "side":
-            c.rect(6, ty + 1, 2, 3 + (frame % 2), cold)
+            c.rect(6, ty + 1, 2, 3 + (fr3 % 2), cold)
         else:
             c.rect(9, ty + 1, 2, 5, cold)
     if "sash" in spec:
@@ -1207,19 +1411,24 @@ def draw_map_frame(spec, direction, frame):
     # pelo delantero
     if hdef:
         tpl, fx, fy = hdef["front"]
-        stamp(c, tpl, hx + fx, hy + fy + bob, pal)
+        stamp(c, tpl, hx + fx, hy + fy + hbob, pal)
         if hdef["back"] and direction == "side":
             tpl, bx, by = hdef["back"]
-    if style == "hood" and direction == "down":
-        pass
+    if spec.get("eq_body"):
+        apply_armor(c, spec["eq_body"], pal, legs_from_y=ly)
+    if spec.get("eq_head"):
+        apply_helm(c, spec["eq_head"], direction, hx, hy + hbob)
     c.outline(OUT)
     return c
 
 
+MAP_COLS = 8
+
+
 def build_map_sheet(spec):
-    sheet = Canvas(FW * 3, FH * 4)
+    sheet = Canvas(FW * MAP_COLS, FH * 4)
     for r, d in enumerate(["down", "left", "right", "up"]):
-        for f in range(3):
+        for f in range(MAP_COLS):
             if d == "left":
                 fr = draw_map_frame(spec, "side", f).flip_h()
             elif d == "right":
@@ -1450,20 +1659,43 @@ def draw_battle_frame(spec, pose, weapon=None, orb=(120, 230, 150), weapon_only=
     if pose == "cast":
         # segunda mano adelantada
         _arm(fig, pal, sh_x - 1, sh_y + 2, sh_x + 6, ty + 4)
+    if spec.get("eq_body"):
+        apply_armor(fig, spec["eq_body"], pal, legs_from_y=ly)
+    if spec.get("eq_head"):
+        apply_helm(fig, spec["eq_head"], "side", hx, hy)
+    if spec.get("eq_shield"):
+        apply_shield(fig, spec["eq_shield"], OX + 13 + lean, ty + 4)
     fig.outline(OUT)
     c.paste(fig, 0, 0)
     return c
 
 
 def _ko_frame(frame):
+    """Tumbado: rotación fija (sin recortar) para que todas las capas encajen."""
     im = frame.im.rotate(90, expand=False)
-    bbox = im.getbbox()
     out = Canvas(BW, BH)
-    if bbox:
-        piece = im.crop(bbox)
-        out.im.alpha_composite(piece, ((BW - piece.width) // 2, BH - piece.height - 1))
-        out.p = out.im.load()
+    out.im.alpha_composite(im, (0, 5)) if False else out.im.paste(im.crop((0, 0, BW, BH - 5)), (0, 5))
+    out.p = out.im.load()
     return out
+
+
+WEAPON_TIERS = {
+    2: {STEEL: (214, 222, 234), STEEL_D: (140, 148, 168), STEEL_L: (255, 255, 255), WOOD: (96, 60, 40), WOOD_D: (214, 172, 70)},
+    3: {STEEL: (140, 200, 240), STEEL_D: (70, 120, 190), STEEL_L: (220, 250, 255), WOOD: (60, 40, 70), WOOD_D: (240, 210, 110),
+        GOLDW: (250, 230, 140)},
+}
+
+
+def tint_weapon(canvas, tier):
+    if tier not in WEAPON_TIERS:
+        return canvas
+    m = WEAPON_TIERS[tier]
+    for y in range(canvas.h):
+        for x in range(canvas.w):
+            p = canvas.p[x, y]
+            if p[3] and p[:3] in m:
+                canvas.p[x, y] = m[p[:3]] + (p[3],)
+    return canvas
 
 
 def build_battle_sheet(spec, weapon=None, orb=(120, 230, 150), weapon_only=False, no_weapon=False):
@@ -1548,6 +1780,7 @@ def build_all(out_dir, old_specs, hair_styles, races, sexes):
         w, orb = WEAPONS.get(name, (None, None))
         if name in WEAPONS:
             build_battle_sheet(spec, w, orb or (120, 230, 150)).save(f"{out_dir}/battle/{name}.png")
+            build_battle_sheet(spec, no_weapon=True).save(f"{out_dir}/battle/{name}_nw.png")
     d = f"{out_dir}/creator"
     for race in races:
         for sex in sexes:
@@ -1563,8 +1796,36 @@ def build_all(out_dir, old_specs, hair_styles, races, sexes):
             bs = layer_spec2(race, sex, style="__none", beard=True)
             diff_layer(build_map_sheet(bs), base).save(f"{d}/beard_{race}_{sex}.png")
             diff_layer(build_battle_sheet(bs, no_weapon=True), bbase).save(f"{d}/bbeard_{race}_{sex}.png")
-    # armas del jugador (capas detrás del cuerpo) — independientes de raza salvo altura
+    # armas (capas detrás del cuerpo) por raza, tipo y calidad
+    orbs = {"": (120, 230, 150), "dark": (190, 90, 230), "light": (255, 240, 150)}
     for race in races:
-        for w, orb in PLAYER_WEAPONS.items():
-            build_battle_sheet(layer_spec2(race, "m"), w, orb or (120, 230, 150), weapon_only=True) \
-                .save(f"{d}/weapon_{race}_{w}.png")
+        for w in PLAYER_WEAPONS:
+            for tier in (1, 2, 3):
+                for oname, ocol in (orbs.items() if w == "staff" else [("", None)]):
+                    sheet = build_battle_sheet(layer_spec2(race, "m"), w, ocol or (120, 230, 150), weapon_only=True)
+                    tint_weapon(sheet, tier)
+                    suffix = f"_{oname}" if oname else ""
+                    sheet.save(f"{d}/weapon_{race}_{w}_{tier}{suffix}.png")
+            if w != "staff":
+                import shutil
+                shutil.copy(f"{d}/weapon_{race}_{w}_1.png", f"{d}/weapon_{race}_{w}.png")
+            else:
+                import shutil
+                shutil.copy(f"{d}/weapon_{race}_{w}_1.png", f"{d}/weapon_{race}_{w}.png")
+    # equipo visible: armaduras, cascos y escudos
+    for race in races:
+        for sex in sexes:
+            bs = layer_spec2(race, sex, style="__none")
+            base_m = build_map_sheet(bs)
+            base_b = build_battle_sheet(bs, no_weapon=True)
+            for look in ARMOR_PAL:
+                sp = dict(bs, eq_body=look)
+                diff_layer(build_map_sheet(sp), base_m).save(f"{d}/eqbody_{look}_{race}_{sex}.png")
+                diff_layer(build_battle_sheet(sp, no_weapon=True), base_b).save(f"{d}/beqbody_{look}_{race}_{sex}.png")
+            for look in HELM_PAL:
+                sp = dict(bs, eq_head=look)
+                diff_layer(build_map_sheet(sp), base_m).save(f"{d}/eqhead_{look}_{race}_{sex}.png")
+                diff_layer(build_battle_sheet(sp, no_weapon=True), base_b).save(f"{d}/beqhead_{look}_{race}_{sex}.png")
+            for look in SHIELD_PAL:
+                sp = dict(bs, eq_shield=look)
+                diff_layer(build_battle_sheet(sp, no_weapon=True), base_b).save(f"{d}/beqshield_{look}_{race}_{sex}.png")

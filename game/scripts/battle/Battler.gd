@@ -59,7 +59,7 @@ func set_idle_frame() -> void:
 		return
 	if is_enemy:
 		if frames == 0:
-			sprite.frame = 6
+			sprite.frame = 16
 		elif frames == -1:
 			sprite.frame = int(anim_t * 1.6) % 2
 		return

@@ -539,3 +539,111 @@ def build_v3(out):
         t.hline(y, y, 9 - 2 * y, (255, 230, 120))
     t.outline(OUT)
     t.save(f"{d}/turn_arrow.png")
+
+
+def equip_icons(out):
+    d = f"{out}/ui"
+    ST, STD, STL = (196, 206, 218), (120, 128, 146), (240, 244, 250)
+    WD, WDD, GD = (122, 84, 52), (84, 56, 36), (226, 184, 82)
+
+    def new():
+        return Canvas(16, 16)
+
+    c = new()
+    for i in range(10):
+        c.px(4 + i, 11 - i, ST)
+        c.px(5 + i, 11 - i, STD)
+    c.px(13, 2, STL)
+    for (x, y) in ((3, 10), (4, 11), (5, 12), (2, 9)):
+        c.px(x, y, GD)
+    c.px(3, 12, WDD)
+    c.px(2, 13, GD)
+    c.outline(OUT)
+    c.save(f"{d}/eq_sword.png")
+    c = new()
+    for i in range(11):
+        c.px(3 + i, 13 - i, WD if i % 3 else WDD)
+    c.rect(9, 2, 5, 5, ST)
+    c.vline(13, 2, 5, STL)
+    c.px(9, 6, STD)
+    c.outline(OUT)
+    c.save(f"{d}/eq_axe.png")
+    c = new()
+    for off in (0, 5):
+        for i in range(6):
+            c.px(3 + off + i // 2, 12 - i, ST if i < 5 else STL)
+        c.px(2 + off, 13, WDD)
+        c.px(3 + off, 13, GD)
+    c.outline(OUT)
+    c.save(f"{d}/eq_daggers.png")
+    c = new()
+    for i in range(12):
+        c.px(4 + i // 3, 14 - i, WD if i % 4 else WDD)
+    c.rect(7, 1, 3, 3, (130, 230, 160))
+    c.px(7, 1, (230, 255, 240))
+    c.outline(OUT)
+    c.save(f"{d}/eq_staff.png")
+    c = new()
+    for k in range(-6, 7):
+        c.px(9 - (k * k) // 8, 8 + k, WD)
+    for k in range(-5, 6):
+        c.px(10, 8 + k, (230, 230, 220))
+    c.outline(OUT)
+    c.save(f"{d}/eq_bow.png")
+    c = new()
+    for y in range(2, 14):
+        half = 5 if y < 10 else 5 - (y - 9)
+        for x in range(8 - half, 8 + half):
+            c.px(x, y, STD if x in (8 - half, 8 + half - 1) else ST)
+    c.vline(7, 3, 9, GD)
+    c.hline(4, 6, 8, GD)
+    c.outline(OUT)
+    c.save(f"{d}/eq_shield.png")
+    c = new()
+    c.ellipse(8, 8, 6, 6, ST)
+    c.rect(2, 8, 12, 6, (0, 0, 0), 0)
+    for y in range(8, 14):
+        for x in range(2, 14):
+            c.p[x, y] = (0, 0, 0, 0)
+    c.rect(2, 8, 12, 2, STD)
+    c.rect(2, 10, 2, 4, ST)
+    c.rect(12, 10, 2, 4, ST)
+    c.px(5, 4, STL)
+    c.outline(OUT)
+    c.save(f"{d}/eq_helm.png")
+    c = new()
+    c.ellipse(8, 8, 6, 7, (86, 70, 96))
+    c.ellipse(8, 10, 3, 4, (30, 22, 34))
+    c.outline(OUT)
+    c.save(f"{d}/eq_hood.png")
+    c = new()
+    c.hline(2, 9, 12, (236, 236, 246))
+    c.hline(3, 10, 10, (184, 186, 200))
+    c.rect(7, 7, 2, 2, (90, 170, 230))
+    c.outline(OUT)
+    c.save(f"{d}/eq_circlet.png")
+    c = new()
+    c.rect(4, 3, 8, 10, ST)
+    c.rect(2, 3, 3, 4, STD)
+    c.rect(11, 3, 3, 4, STD)
+    c.hline(4, 8, 8, STD)
+    c.px(6, 5, STL)
+    c.outline(OUT)
+    c.save(f"{d}/eq_armor.png")
+    c = new()
+    for y in range(2, 15):
+        half = 3 + (y - 2) // 3
+        c.hline(8 - half, y, half * 2, (72, 70, 140))
+    c.hline(4, 6, 8, GD)
+    c.outline(OUT)
+    c.save(f"{d}/eq_robe.png")
+    c = new()
+    c.ellipse(8, 9, 5, 5, GD)
+    c.ellipse(8, 9, 3, 3, (0, 0, 0), 0)
+    for y in range(6, 13):
+        for x in range(5, 12):
+            if (x + 0.5 - 8) ** 2 + (y + 0.5 - 9) ** 2 < 6:
+                c.p[x, y] = (0, 0, 0, 0)
+    c.rect(7, 2, 3, 3, (220, 60, 90))
+    c.outline(OUT)
+    c.save(f"{d}/eq_ring.png")

@@ -121,7 +121,7 @@ func _talk_ilvanis() -> void:
 				B("¡Os debo la vida dos veces! Si algún día pisáis Khazgurim, preguntad por Brom. ¡Cerveza gratis de por vida!")])
 			world.remove_npc("brom")
 		else:
-			await say([N("ilvanis", "La ley de la Savia no se dobla por unas palabras bonitas, humano."),
+			await say([N("ilvanis", "La ley de la Savia no se dobla por unas palabras bonitas, {raza}."),
 				N("ilvanis", "Quizá, cuando el Corazón sane, lo reconsidere.")])
 	else:
 		await say([N("ilvanis", "Descansad. Mañana será el día más largo de vuestras vidas.")])
@@ -142,7 +142,7 @@ func _night() -> void:
 	if has("yara"):
 		await _yara_night()
 	if has("aelis"):
-		await say([A("No duermes, humano. Yo tampoco. El Corazón llama a todos los que llevamos savia en la sangre."),
+		await say([A("No duermes, {raza}. Yo tampoco. El Corazón llama a todos los que llevamos savia en la sangre."),
 			A("Mañana, dispara primero y pregunta después.")])
 		GameState.change_approval("aelis", 3)
 	elif has("brom"):

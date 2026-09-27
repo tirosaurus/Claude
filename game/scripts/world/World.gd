@@ -314,8 +314,11 @@ func _on_trigger_body(b: Node, id: String, area: Area2D = null) -> void:
 			return
 	if cutscene:
 		return
-	if area != null and not area.overlaps_body(player):
-		return
+	if area != null:
+		await get_tree().physics_frame
+		await get_tree().physics_frame
+		if not is_inside_tree() or not area.overlaps_body(player):
+			return
 	story.on_trigger.call_deferred(id)
 
 
@@ -438,6 +441,8 @@ func _show_banner(text: String, force: bool = false) -> void:
 func spawn_npc(id: String, pos: Vector2, face: int = 0, mode: int = 0, tex: Texture2D = null) -> Node2D:
 	if npcs.has(id):
 		npcs[id].queue_free()
+	if id == "mother" and tex == null and GameState.race() != "human":
+		tex = load("res://assets/chars/mother_%s.png" % GameState.race())
 	var n := NPCScript.new()
 	entities.add_child(n)
 	n.setup(id, pos, face, mode, tex)
@@ -445,13 +450,21 @@ func spawn_npc(id: String, pos: Vector2, face: int = 0, mode: int = 0, tex: Text
 	return n
 
 
+const FOLLOW_GAPS := [14, 18, 30, 34]
+const FOLLOW_SIDES := [7.0, -7.0, 4.0, -4.0]
+
+
 func spawn_follower(id: String) -> Node2D:
-	var idx_in_party := GameState.party_followers().find(id)
-	var gap := 16 * (idx_in_party + 1)
-	var idx: int = max(0, player.trail.size() - 1 - gap)
-	var n := spawn_npc(id, player.trail[idx], player.facing, NPCScript.Mode.FOLLOW, Appearance.member_sheet(id))
+	var idx_in_party: int = maxi(0, GameState.party_followers().find(id))
+	var t: Array = player.trail
+	if t.size() > 2 and t[0].distance_to(t[t.size() - 1]) < 1.0:
+		player.reset_trail()
+	var gap: int = FOLLOW_GAPS[idx_in_party % 4]
+	var n := spawn_npc(id, player.position, player.facing, NPCScript.Mode.FOLLOW, Appearance.member_sheet(id))
 	n.follow_target = player
 	n.follow_gap = gap
+	n.follow_side = FOLLOW_SIDES[idx_in_party % 4]
+	n.position = n.follow_point()
 	return n
 
 
@@ -460,9 +473,10 @@ func make_follower(id: String) -> void:
 		spawn_follower(id)
 		return
 	var n = npcs[id]
-	var idx_in_party := GameState.party_followers().find(id)
+	var idx_in_party: int = maxi(0, GameState.party_followers().find(id))
 	n.follow_target = player
-	n.follow_gap = 16 * (max(0, idx_in_party) + 1)
+	n.follow_gap = FOLLOW_GAPS[idx_in_party % 4]
+	n.follow_side = FOLLOW_SIDES[idx_in_party % 4]
 	n.set_mode(NPCScript.Mode.FOLLOW)
 
 
@@ -559,12 +573,13 @@ func _process(delta: float) -> void:
 			else:
 				_hint.position = target.position + Vector2(0, -36)
 			_hint.position.y += sin(_t * 5.0) * 1.5
-	if Input.is_action_just_pressed("pause") and not Dialogue.active and not cutscene and not Transition.busy:
+	if Input.is_action_just_pressed("pause") and not Dialogue.active and not Transition.busy:
 		_pause.open()
 
 
 func _update_camera(delta: float) -> void:
-	camera.position = camera.position.lerp(_camera_target(), clampf(delta * 8.0, 0, 1))
+	var speed := 2.2 if camera_focus != null else 8.0
+	camera.position = camera.position.lerp(_camera_target(), clampf(delta * speed, 0, 1))
 
 
 func _snap_camera() -> void:
@@ -572,8 +587,11 @@ func _snap_camera() -> void:
 	camera.reset_smoothing()
 
 
+var camera_focus = null     # Vector2 para cinemáticas; null = sigue al jugador
+
+
 func _camera_target() -> Vector2:
-	var p := player.position + Vector2(0, -8)
+	var p: Vector2 = (camera_focus if camera_focus != null else player.position) + Vector2(0, -8)
 	var half := VIEW / 2.0
 	var t := Vector2.ZERO
 	t.x = map_size.x / 2.0 if map_size.x <= VIEW.x else clampf(p.x, half.x, map_size.x - half.x)

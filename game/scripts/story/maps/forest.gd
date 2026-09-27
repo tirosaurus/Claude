@@ -84,6 +84,99 @@ func _meet_yara() -> void:
 		Y("Exacto. Ni un pájaro. Ni un grillo. El bosque nunca está tan callado."), "Yara se une al grupo."])
 	setf("yara_joined")
 	join("yara")
+	if str(GameState.player_data.get("class", "")) == "":
+		await _class_tutorial()
+	end()
+
+
+## Yara explica cómo se lucha y eliges senda, clase y arma antes del lobo.
+func _class_tutorial() -> void:
+	await say([Y("Esperad. Si de verdad hay algo raro en el bosque, no quiero que vayamos a lo loco."),
+		K("¿Otra de tus charlas de «seguridad ante todo»?"),
+		Y("Sí. Y esta vez me vais a escuchar. {name}, ¿cómo sueles pelear tú? Y no me digas «a palos».")])
+	var sendas := ["melee", "ranged", "support"]
+	var i := await choose(["Cuerpo a cuerpo: en primera línea, con acero.",
+		"A distancia: con arco, hechizos o pactos oscuros.",
+		"Apoyo: curando y protegiendo a los demás."], Y("¿Qué se te da mejor?"))
+	var branch: String = sendas[i]
+	var classes: Array = DB.BRANCHES[branch]["classes"]
+	var opts: Array = []
+	for cid in classes:
+		opts.append("%s: %s" % [DB.CLASSES[cid]["name"], DB.CLASSES[cid]["desc"]])
+	var intro := {
+		"melee": Y("Primera línea, entonces. ¿Pero de qué tipo? ¿Fuerza bruta, sigilo o fe?"),
+		"ranged": Y("Desde lejos. ¿Magia pura, pactos con la sombra o un buen arco?"),
+		"support": Y("Alguien que cuide del grupo. ¿Con luz, con el bosque o con tu propio cuerpo como escudo?"),
+	}
+	var j := await choose(opts, intro[branch])
+	var cid: String = classes[j]
+	GameState.choose_class(cid)
+	var w: String = str(DB.CLASSES[cid]["weapon"])
+	var gift := {
+		"sword": K("Toma, la espada de práctica de mi padre. Está mellada, pero corta."),
+		"axe": K("Mi padre dejó esta hacha en la leñera. Pesa como un demonio. Te irá bien."),
+		"daggers": K("Un par de cuchillos de caza. No preguntes de dónde los he sacado."),
+		"staff": Y("El bastón de roble de mi abuela. Dicen que canaliza bien la magia... o eso decía ella."),
+		"bow": K("Mi arco de cazar conejos. Si fallas, que sea contra otro."),
+	}
+	Audio.sfx("chest", -6.0)
+	await say([gift.get(w, K("Toma, algo es algo.")),
+		"(Clase: %s. %s)" % [DB.CLASSES[cid]["name"], DB.CLASSES[cid]["desc"]],
+		Y("Escuchad, que esto es importante:"),
+		Y("En un combate, cada uno actúa cuando se llena su barra de tiempo. Atacar no gasta nada; las habilidades, maná."),
+		Y("El maná se recupera poco a poco en cada turno. No lo malgastéis al principio."),
+		Y("Si curo, puedo elegir a quién. Y si alguien cae, una pluma de fénix lo levanta."),
+		Y("Cuando crezcáis en fuerza aprenderéis técnicas nuevas: pensad bien en cuáles os especializáis."),
+		"(Menú Esc: Talentos para gastar puntos al subir de nivel, y Equipo para cambiar armas y armaduras de todo el grupo.)",
+		K("Vale, vale, profesora. ¿Podemos ir ya a buscar al ciervo?")])
+
+
+func on_interact(id: String) -> void:
+	if id == "shrine" and flag("ov3") and not flag("ov_done") and not flag("won_wolf") \
+			and str(GameState.player_data.get("class", "")) != "":
+		await _overlord()
+		return
+	await super.on_interact(id)
+
+
+## Camino secreto: el arma del Soberano.
+func _overlord() -> void:
+	begin()
+	setf("ov_done")
+	Audio.stop_music(1.0)
+	await say(["Apoyas la mano en la piedra santa.", "Las runas no parpadean. Se apagan del todo.",
+		"Y entonces, todas a la vez, arden en rojo."])
+	await world.set_tint(Color(0.55, 0.2, 0.25), 1.2)
+	Audio.sfx("dark", -2.0, 0.6)
+	world.camera.position = world.player.position
+	var glow := CPUParticles2D.new()
+	glow.position = world.player.position + Vector2(0, -10)
+	glow.amount = 60
+	glow.lifetime = 1.6
+	glow.emission_shape = CPUParticles2D.EMISSION_SHAPE_SPHERE
+	glow.emission_sphere_radius = 30
+	glow.gravity = Vector2(0, -30)
+	glow.color = Color(1, 0.2, 0.25)
+	glow.scale_amount_min = 1.5
+	glow.scale_amount_max = 3
+	world.add_child(glow)
+	await say(["El bosque desaparece. Estás en un claro que no existe, bajo un cielo sin estrellas.",
+		"Delante de ti flota un arma negra y roja, girando despacio, como si te hubiera estado esperando.",
+		"«Por fin. Alguien que sabe mirar donde nadie mira.»",
+		"«Mil años he dormido bajo esta piedra. Mil años esperando a quien recordara el orden de las cosas pequeñas.»",
+		"«Tómame. Y que tiemblen los que se creen dioses.»"])
+	var kind: String = str(DB.CLASSES[GameState.player_data["class"]]["weapon"])
+	var eid := "overlord_" + kind
+	GameState.add_item(eid)
+	GameState.equip("player", "weapon", eid)
+	Audio.sfx("levelup", 0.0, 0.7)
+	await say(["Obtienes: %s." % DB.EQUIP[eid]["name"], "(Se ha equipado. Tu ataque es ahora... absurdo.)"])
+	glow.queue_free()
+	await world.set_tint(world._map_modulate(), 1.0)
+	if has("kaelen"):
+		await say([K("¿{name}? ¿Qué acaba de pasar? Te has quedado mirando la piedra un minuto entero."),
+			Y("Y... ¿de dónde has sacado eso?"), P("...Mejor no preguntéis.")])
+	Audio.play_music("forest", 1.0)
 	end()
 
 

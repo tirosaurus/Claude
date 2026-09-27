@@ -242,6 +242,7 @@ def forest_deep():
             x = a[0] + (b[0] - a[0]) * i / steps
             y = a[1] + (b[1] - a[1]) * i / steps
             m.fill(int(x), int(y), int(x) + 1, int(y) + 1, "p")
+    m.fill(36, 4, 38, 16, "p")
     for (cx, cy, rx, ry) in ((24, 14, 6, 4), (40, 14, 4, 3)):
         for y in range(Ht):
             for x in range(Wt):
@@ -288,6 +289,10 @@ def forest_deep():
                 m.prop(kind, x, y)
     m.prop("campfire", 360, 216, "campfire", light={"r": 90, "color": [1, 0.7, 0.35], "e": 1.0, "flicker": True, "oy": -8})
     m.prop("chest", 420, 190, "chest_deep1")
+    # boca de la Cueva de los Susurros (al norte del sendero)
+    m.decals.append(cave_mouth_decal(36 * T + 8, 4 * T + 8))
+    m.marker("from_cave", 36 * T + 8, 7 * T)
+    m.exit([36 * T - 4, 4 * T, 24, 12], "cave", "from_deep")
     m.marker("from_forest", 18, 258)
     m.marker("from_camp", W2(Wt) - 20, 226)
     m.marker("brom", 640, 226)
@@ -296,6 +301,69 @@ def forest_deep():
     m.exit([Wt * T - 8, 196, 8, 48], "elf_camp", "from_deep", requires="brom_event_done",
            blocked="Algo se mueve entre los árboles justo delante...")
     m.trigger("brom_zone", [580, 150, 16, 150])
+    return m
+
+
+def cave_mouth_decal(x, y):
+    def f(c):
+        for (dx, dy, r) in ((-14, 4, 7), (14, 4, 7), (-10, -6, 6), (10, -6, 6), (0, -10, 7)):
+            c.ellipse(x + dx, y + dy, r, r * 0.8, (70, 66, 80))
+            c.ellipse(x + dx - 1, y + dy - 1, r * 0.6, r * 0.5, (104, 100, 116))
+        c.ellipse(x, y + 2, 10, 9, (10, 8, 16))
+        c.rect(x - 10, y + 2, 20, 8, (10, 8, 16))
+        c.ellipse(x, y + 1, 6, 5, (4, 2, 8))
+    return f
+
+
+# ------------------------------------------------------------ Cueva de los Susurros (mazmorra opcional)
+def cave():
+    w, h = 34, 32
+    g = grid(w, h, " ")
+    rooms = [(14, 24, 20, 30), (16, 13, 18, 24), (2, 14, 13, 22), (13, 17, 16, 19), (18, 16, 22, 18), (22, 11, 32, 21),
+             (16, 8, 18, 13), (9, 1, 25, 9)]
+    for (x0, y0, x1, y1) in rooms:
+        for y in range(y0, y1 + 1):
+            for x in range(x0, x1 + 1):
+                if 0 < x < w - 1 and 0 < y < h - 1:
+                    g[y][x] = "."
+    for y in range(h):
+        for x in range(w):
+            if g[y][x] == ".":
+                continue
+            near = any(0 <= y + dy < h and 0 <= x + dx < w and g[y + dy][x + dx] == "." for dx in (-1, 0, 1)
+                       for dy in (-1, 0, 1, 2, 3))
+            if near:
+                g[y][x] = "#"
+    for x in range(w):
+        for y in range(1, h - 2):
+            if g[y - 1][x] == "#" and g[y][x] == "." and g[y + 1][x] == ".":
+                g[y][x] = "W"
+                g[y + 1][x] = "W"
+    for x in range(15, 20):
+        g[h - 1][x] = "."
+    m = Map("cave", to_rows(g), True, "Cueva de los Susurros", "deep", modulate=[0.46, 0.5, 0.66])
+    m.style = "crypt"
+    m.battle_bg = "crypt"
+    m.encounters = {"rate": 26, "table": [["spectre", "wisp"], ["boar", "boar"], ["thrall", "spectre"],
+                                          ["wisp", "wisp", "bat"], ["root", "boar"], ["spectre", "spectre", "wisp"]]}
+    rng = random.Random(44)
+    for (x, y) in ((60, 250), (190, 330), (400, 200), (480, 300), (200, 60), (330, 60), (270, 440), (500, 190),
+                   (170, 120), (40, 330)):
+        m.prop("crystal", x, y, light={"r": 60, "color": [0.55, 0.85, 1], "e": 0.8, "flicker": True, "oy": -14})
+    for (x, y) in ((100, 300), (440, 240), (240, 400), (300, 140), (150, 40), (370, 110)):
+        m.prop("mushroom", x, y, light={"r": 36, "color": [0.5, 1, 0.9], "e": 0.6, "flicker": True, "oy": -6})
+    for (x, y) in ((80, 270), (460, 320), (230, 470), (380, 30)):
+        m.prop("bones", x, y, col=False)
+    m.prop("chest", 44, 240, "chest_cave1")
+    m.prop("chest", 500, 200, "chest_cave2")
+    m.prop("chest", 500, 320, "chest_cave3")
+    m.prop("chest", 200, 44, "chest_cave4")
+    m.prop("chest", 350, 44, "chest_cave5")
+    m.prop("statue_broken", 276, 40)
+    m.marker("from_deep", 280, 490)
+    m.marker("guardian", 280, 120)
+    m.exit([15 * T, h * T - 8, 5 * T, 8], "forest_deep", "from_cave")
+    m.trigger("guardian_zone", [16 * T, 12 * T, 3 * T, 8])
     return m
 
 
@@ -329,6 +397,7 @@ def elf_camp():
         m.prop("lantern", x, y, light={"r": 60, "color": [1, 0.9, 0.6], "e": 0.8, "flicker": True, "oy": -28})
     m.prop("dummy", 470, 150)
     m.prop("dummy", 500, 150)
+    m.prop("chest", 540, 150, "chest_elf1")
     rng = random.Random(3)
     for i in range(46):
         x = rng.randint(0, Wt * T)
@@ -401,4 +470,4 @@ def heart():
     return m
 
 
-MAPS = (village_night, village_dawn, cathedral, crypt, forest_deep, elf_camp, heart)
+MAPS = (cave, village_night, village_dawn, cathedral, crypt, forest_deep, elf_camp, heart)

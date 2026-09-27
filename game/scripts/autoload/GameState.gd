@@ -31,6 +31,7 @@ var members := {}
 var companions := {}
 var party: Array = []
 var inventory := {}
+var equipment := {}   # {miembro: {slot: id_equipo}}
 var weapon_tier := 0
 var armor_tier := 0
 var quest_flags := {}
@@ -61,13 +62,16 @@ func default_appearance() -> Dictionary:
 func new_game(player_name: String, app: Dictionary) -> void:
 	for m in get_meta_list():
 		remove_meta(m)
-	player_data = {"name": player_name, "race": app.get("race", "human"), "sex": app.get("sex", "m"), "branch": "", "class": ""}
+	player_data = {"name": player_name, "race": app.get("race", "human"), "sex": app.get("sex", "m"), "branch": "", "class": "", "tree": {},
+		"difficulty": int(app.get("difficulty", 1))}
 	appearance = app.duplicate()
+	appearance.erase("difficulty")
 	level = 1
 	xp = 0
 	gold = 30
 	weapon_tier = 0
 	armor_tier = 0
+	equipment = {"player": {}}
 	inventory = {"pocion": 2}
 	quest_flags = {}
 	companions = {
@@ -127,6 +131,10 @@ func join_party(id: String) -> void:
 	companions[id]["joined"] = true
 	if not party.has(id):
 		party.append(id)
+	if not equipment.has(id):
+		equipment[id] = {}
+		for eid in DB.MEMBER_START_GEAR.get(id, []):
+			equipment[id][DB.EQUIP[eid]["slot"]] = eid
 	var st := stats(id)
 	members[id] = {"hp": st["hp"], "mp": st["mp"]}
 
@@ -159,8 +167,6 @@ func member_role(id: String) -> String:
 	if id == "player":
 		if str(player_data["class"]) != "":
 			return str(DB.CLASSES[player_data["class"]]["name"])
-		if str(player_data["branch"]) != "":
-			return str(DB.BRANCHES[player_data["branch"]]["name"])
 		return "Aventurer" + g("o", "a")
 	if id == "yara" and yara_is_witch():
 		return "Bruja"
@@ -187,40 +193,96 @@ func stats(id: String) -> Dictionary:
 		s[k] = int(base[k] + grow[k] * (level - 1))
 	if id == "player":
 		var b: String = str(player_data["branch"])
-		if b != "":
+		if b != "" and DB.BRANCHES.has(b):
 			for k in DB.BRANCHES[b]["bonus"]:
 				s[k] += int(DB.BRANCHES[b]["bonus"][k])
 		var c: String = str(player_data["class"])
-		if c != "":
+		if c != "" and DB.CLASSES.has(c):
 			for k in DB.CLASSES[c]["bonus"]:
 				s[k] += int(DB.CLASSES[c]["bonus"][k])
-	var wt: int = [0, 4, 9][weapon_tier]
-	var at: int = [0, 4, 9][armor_tier]
-	s["atk"] += wt
-	s["mag"] += wt
-	s["def"] += at
-	s["res"] += at
+			var tree: Dictionary = talents()
+			for n in DB.CLASSES[c]["tree"]:
+				var r: int = int(tree.get(n["id"], 0))
+				if r > 0 and n.has("stats"):
+					for k in n["stats"]:
+						s[k] += int(n["stats"][k]) * r
+	for slot in equipment.get(id, {}):
+		var eid: String = equipment[id][slot]
+		if DB.EQUIP.has(eid):
+			var est: Dictionary = DB.EQUIP[eid]["stats"]
+			for k in est:
+				s[k] += int(est[k])
+	for k in s:
+		s[k] = maxi(1, int(s[k]))
 	return s
+
+
+# ------------------------------------------------------------ Equipo
+func equip_rule(id: String) -> String:
+	if id == "player":
+		var c: String = str(player_data.get("class", ""))
+		return c if c != "" else "none"
+	return id
+
+
+func equipped(id: String, slot: String) -> String:
+	return str(equipment.get(id, {}).get(slot, ""))
+
+
+## Equipa (o quita con eid = "") y ajusta vida/PM actuales a los nuevos máximos.
+func equip(id: String, slot: String, eid: String) -> void:
+	if not equipment.has(id):
+		equipment[id] = {}
+	var before := stats(id)
+	var cur := equipped(id, slot)
+	if cur != "":
+		add_item(cur)
+		equipment[id].erase(slot)
+	if eid != "":
+		remove_item(eid)
+		equipment[id][slot] = eid
+	var after := stats(id)
+	if members.has(id):
+		var m: Dictionary = members[id]
+		m["hp"] = clampi(int(m["hp"]) + int(after["hp"]) - int(before["hp"]), 1 if int(m["hp"]) > 0 else 0, int(after["hp"]))
+		m["mp"] = clampi(int(m["mp"]) + int(after["mp"]) - int(before["mp"]), 0, int(after["mp"]))
+	Appearance.clear_cache()
+
+
+## Aspecto visible del equipo de un miembro: {weapon_kind, weapon_tier, orb, head, body, shield}
+func gear_look(id: String) -> Dictionary:
+	var out := {"weapon_kind": "", "weapon_tier": 1, "orb": "", "head": "", "body": "", "shield": ""}
+	var w := equipped(id, "weapon")
+	if w != "":
+		out["weapon_kind"] = DB.EQUIP[w]["kind"]
+		out["weapon_tier"] = int(DB.EQUIP[w]["tier"])
+		out["orb"] = str(DB.EQUIP[w].get("orb", ""))
+		if out["orb"] == "" and id == "player":
+			var c: String = str(player_data.get("class", ""))
+			if c != "" and DB.CLASSES.has(c):
+				out["orb"] = str(DB.CLASSES[c].get("orb", ""))
+	for slot in ["head", "body", "shield"]:
+		var e := equipped(id, slot)
+		if e != "":
+			out[slot] = str(DB.EQUIP[e]["look"])
+	return out
 
 
 func skills_of(id: String) -> Array:
 	var out: Array = []
 	if id == "player":
-		var b: String = str(player_data["branch"])
-		if b == "healer":
-			out.append("luz_sanadora")
-		else:
-			out.append("aux")
-			if b != "":
-				out.append(DB.BRANCHES[b]["skill"])
 		var c: String = str(player_data["class"])
-		if c != "":
-			var cs: Dictionary = DB.CLASSES[c]["skills"]
-			var lv := cs.keys()
-			lv.sort()
-			for l in lv:
-				if level >= int(l):
-					out.append(cs[l])
+		if c == "" or not DB.CLASSES.has(c):
+			out.append("aux")
+			return out
+		var starter: String = DB.CLASSES[c]["starter"]
+		out.append(starter)
+		if starter != "aux" and not c in ["cleric"]:
+			out.append("aux")
+		var tree: Dictionary = talents()
+		for n in DB.CLASSES[c]["tree"]:
+			if n.has("skill") and int(tree.get(n["id"], 0)) > 0 and not out.has(n["skill"]):
+				out.append(n["skill"])
 		return out
 	var table: Dictionary = DB.MEMBERS[id]["skills"]
 	if id == "yara" and yara_is_witch():
@@ -235,6 +297,73 @@ func skills_of(id: String) -> Array:
 	return out
 
 
+# ------------------------------------------------------------ Talentos
+func talents() -> Dictionary:
+	if not player_data.has("tree"):
+		player_data["tree"] = {}
+	return player_data["tree"]
+
+
+## Puntos de habilidad totales: 1 por nivel desde el 2, más uno extra en los niveles 5 y 8.
+func skill_points_total() -> int:
+	return maxi(0, level - 1) + (1 if level >= 5 else 0) + (1 if level >= 8 else 0)
+
+
+func skill_points_spent() -> int:
+	var n := 0
+	for k in talents():
+		n += int(talents()[k])
+	return n
+
+
+func skill_points() -> int:
+	if str(player_data.get("class", "")) == "":
+		return 0
+	return skill_points_total() - skill_points_spent()
+
+
+## "" si se puede aprender, o el motivo por el que no.
+func talent_block_reason(nid: String) -> String:
+	var c: String = str(player_data.get("class", ""))
+	var n: Dictionary = DB.tree_node(c, nid)
+	if n.is_empty():
+		return "?"
+	var r: int = int(talents().get(nid, 0))
+	if r >= int(n["max"]):
+		return "Rango máximo"
+	var need: int = [0, 0, 3, 6][int(n["tier"])]
+	if skill_points_spent() < need:
+		return "Requiere %d puntos gastados" % need
+	if skill_points() <= 0:
+		return "Sin puntos"
+	return ""
+
+
+func learn_talent(nid: String) -> bool:
+	if talent_block_reason(nid) != "":
+		return false
+	var before := stats("player")
+	talents()[nid] = int(talents().get(nid, 0)) + 1
+	var after := stats("player")
+	var m: Dictionary = members["player"]
+	m["hp"] = int(m["hp"]) + int(after["hp"]) - int(before["hp"])
+	m["mp"] = int(m["mp"]) + int(after["mp"]) - int(before["mp"])
+	return true
+
+
+## Suma de una ventaja pasiva del árbol (crit, heal_pow, mp_regen, dmg_phys, dmg_mag, dmg_red, lifesteal, atb_start).
+func perk(key: String) -> float:
+	var c: String = str(player_data.get("class", ""))
+	if c == "" or not DB.CLASSES.has(c):
+		return 0.0
+	var v := 0.0
+	var tree: Dictionary = talents()
+	for n in DB.CLASSES[c]["tree"]:
+		if n.has("perk") and n["perk"][0] == key:
+			v += float(n["perk"][1]) * int(tree.get(n["id"], 0))
+	return v
+
+
 ## Al subir de nivel: media vida y una cuarta parte del maná (el maná es un recurso a gestionar).
 func level_restore() -> void:
 	for id in members:
@@ -242,6 +371,15 @@ func level_restore() -> void:
 		var m: Dictionary = members[id]
 		m["hp"] = mini(int(st["hp"]), maxi(1, int(m["hp"])) + int(st["hp"] * 0.5))
 		m["mp"] = mini(int(st["mp"]), int(m["mp"]) + int(ceil(st["mp"] * 0.25)))
+
+
+func difficulty() -> int:
+	return int(player_data.get("difficulty", 1)) if player_data else 1
+
+
+## Multiplicadores de enemigos según dificultad: [vida, ataque/magia, experiencia/oro]
+func diff_mults() -> Array:
+	return [[0.7, 0.75, 1.25], [0.85, 0.87, 1.1], [1.15, 1.1, 1.0]][clampi(difficulty(), 0, 2)]
 
 
 func heal_all() -> void:
@@ -278,7 +416,7 @@ func needs_branch_choice() -> bool:
 
 
 func needs_class_choice() -> bool:
-	return level >= 5 and str(player_data["branch"]) != "" and str(player_data["class"]) == ""
+	return level >= 2 and str(player_data["branch"]) != "" and str(player_data["class"]) == ""
 
 
 func choose_branch(b: String) -> void:
@@ -288,17 +426,28 @@ func choose_branch(b: String) -> void:
 
 func choose_class(c: String) -> void:
 	player_data["class"] = c
+	player_data["branch"] = DB.class_branch(c)
+	talents()
+	# equipo inicial de la clase (lo que no pueda llevar vuelve a la bolsa)
+	for slot in equipment.get("player", {}).keys():
+		if not DB.equip_allowed(c, equipment["player"][slot]):
+			equip("player", slot, "")
+	for eid in DB.CLASS_STARTER_GEAR.get(c, []):
+		add_item(eid)
+		if equipped("player", DB.EQUIP[eid]["slot"]) == "":
+			equip("player", DB.EQUIP[eid]["slot"], eid)
+	Appearance.clear_cache()
 	heal_all()
 
 
 func branch_name() -> String:
 	var b: String = str(player_data.get("branch", ""))
-	return "Sin rama" if b == "" else str(DB.BRANCHES[b]["name"])
+	return "Sin senda" if b == "" or not DB.BRANCHES.has(b) else str(DB.BRANCHES[b]["name"])
 
 
 func class_name_str() -> String:
 	var c: String = str(player_data.get("class", ""))
-	return "Sin clase" if c == "" else str(DB.CLASSES[c]["name"])
+	return "Sin clase" if c == "" or not DB.CLASSES.has(c) else str(DB.CLASSES[c]["name"])
 
 
 # ------------------------------------------------------------ Inventario
@@ -401,7 +550,7 @@ func save_game(slot: int, pos: Vector2) -> bool:
 	var data := {
 		"version": 2, "player_data": player_data, "appearance": appearance, "level": level, "xp": xp, "gold": gold,
 		"members": members, "companions": companions, "party": party, "inventory": inventory,
-		"weapon_tier": weapon_tier, "armor_tier": armor_tier, "flags": quest_flags,
+		"weapon_tier": weapon_tier, "armor_tier": armor_tier, "flags": quest_flags, "equipment": equipment,
 		"map": current_map, "pos": [pos.x, pos.y], "play_time": play_time,
 		"saved_at": Time.get_datetime_string_from_system(false, true),
 		"meta": _meta_dict(),
@@ -454,6 +603,20 @@ func load_game(slot: int) -> bool:
 	for m in get_meta_list():
 		remove_meta(m)
 	player_data = d["player_data"]
+	# migración de partidas antiguas (ramas/clases de la v2)
+	var oc: String = str(player_data.get("class", ""))
+	var ob: String = str(player_data.get("branch", ""))
+	if oc != "" and not DB.CLASSES.has(oc):
+		player_data["class"] = DB.LEGACY_CLASSES.get(oc, "")
+	if ob != "" and not DB.BRANCHES.has(ob):
+		player_data["branch"] = DB.LEGACY_BRANCHES.get(ob, "")
+	if str(player_data["class"]) != "":
+		player_data["branch"] = DB.class_branch(str(player_data["class"]))
+	if not player_data.has("tree"):
+		player_data["tree"] = {}
+	var tr: Dictionary = player_data["tree"]
+	for k in tr.keys():
+		tr[k] = int(tr[k])
 	appearance = d["appearance"]
 	for k in ["hair_style", "hair_color", "skin", "outfit"]:
 		appearance[k] = int(appearance[k])
@@ -468,6 +631,24 @@ func load_game(slot: int) -> bool:
 		inventory[k] = int(d["inventory"][k])
 	weapon_tier = int(d["weapon_tier"])
 	armor_tier = int(d["armor_tier"])
+	equipment = d.get("equipment", {})
+	if not d.has("equipment"):
+		# partidas antiguas: equipo inicial para todos y el nivel de mejoras compradas como objetos
+		equipment = {"player": {}}
+		var c0: String = str(player_data.get("class", ""))
+		for eid in DB.CLASS_STARTER_GEAR.get(c0, []):
+			equipment["player"][DB.EQUIP[eid]["slot"]] = eid
+		for mid in party:
+			if mid != "player":
+				equipment[mid] = {}
+				for eid in DB.MEMBER_START_GEAR.get(mid, []):
+					equipment[mid][DB.EQUIP[eid]["slot"]] = eid
+		if weapon_tier >= 1:
+			for eid in ["espada_acero", "baston_cristal", "arco_largo", "hacha_guerra"]:
+				inventory[eid] = int(inventory.get(eid, 0)) + 1
+		if armor_tier >= 1:
+			for eid in ["cota_malla", "tunica_mago", "jubon_cuero"]:
+				inventory[eid] = int(inventory.get(eid, 0)) + 1
 	quest_flags = d["flags"]
 	current_map = str(d["map"])
 	current_spawn = ""

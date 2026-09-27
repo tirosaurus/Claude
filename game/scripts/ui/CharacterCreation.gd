@@ -2,9 +2,11 @@ extends Control
 ## Creador de personaje: nombre, sexo, raza, peinado, colores y barba.
 
 const RACE_ORDER := ["human", "elf", "dwarf"]
-const ROWS := ["name", "sex", "race", "hair_style", "hair_color", "skin", "outfit", "beard", "start"]
+const ROWS := ["name", "sex", "race", "hair_style", "hair_color", "skin", "outfit", "beard", "difficulty", "start"]
+const ROW_H := 25
+const DIFFS := ["Fácil", "Normal", "Difícil"]
 const LABELS := {"name": "Nombre", "sex": "Sexo", "race": "Raza", "hair_style": "Peinado", "hair_color": "Color de pelo",
-	"skin": "Piel", "outfit": "Ropa", "beard": "Barba", "start": ""}
+	"skin": "Piel", "outfit": "Ropa", "beard": "Barba", "difficulty": "Dificultad", "start": ""}
 
 var app := {}
 var _row := 0
@@ -43,7 +45,7 @@ func _ready() -> void:
 	holder.position = Vector2(50, 96)
 	frame.add_child(holder)
 	_preview = Sprite2D.new()
-	_preview.hframes = 3
+	_preview.hframes = 8
 	_preview.vframes = 4
 	_preview.scale = Vector2(4, 4)
 	holder.add_child(_preview)
@@ -88,9 +90,9 @@ func _ready() -> void:
 			var ra := UIKit.label(">", 15, Color(0.5, 0.35, 0.25))
 			ra.position = Vector2(566, y)
 			panel.add_child(ra)
-		y += 28
+		y += ROW_H
 	_start = UIKit.label("¡Comenzar la aventura!", 18, Color(0.45, 0.15, 0.1))
-	_start.position = Vector2(250, y + 10)
+	_start.position = Vector2(250, y + 2)
 	_start.size = Vector2(320, 26)
 	_start.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	panel.add_child(_start)
@@ -125,6 +127,8 @@ func _value_text(key: String) -> String:
 			return GameState.SKIN_TONES[app["skin"]][0]
 		"outfit":
 			return GameState.OUTFITS[app["outfit"]][0]
+		"difficulty":
+			return DIFFS[int(app.get("difficulty", 1))]
 		"beard":
 			if app["sex"] == "f":
 				return "—"
@@ -141,10 +145,14 @@ func _refresh() -> void:
 		if _row_labels.has(key):
 			_row_labels[key].add_theme_color_override("font_color", Color(0.6, 0.2, 0.1) if sel else UIKit.TEXT_DARK)
 	_start.add_theme_color_override("font_color", Color(0.75, 0.25, 0.1) if _row == ROWS.size() - 1 else Color(0.45, 0.3, 0.2))
-	var target_y := 46 + _row * 28 + 4 if _row < ROWS.size() - 1 else 46 + (ROWS.size() - 1) * 28 + 16
+	var target_y := 46 + _row * ROW_H + 4 if _row < ROWS.size() - 1 else 46 + (ROWS.size() - 1) * ROW_H + 8
 	_cursor.position = Vector2(232, target_y)
 	var r: Dictionary = DB.RACES[app["race"]]
 	_race_desc.text = "%s\n%s" % [r["desc"], r["trait"]]
+	if ROWS[_row] == "difficulty":
+		_race_desc.text = ["Fácil: enemigos más débiles y más experiencia. Para disfrutar de la historia.",
+			"Normal: equilibrado. Hay que usar habilidades y objetos con cabeza.",
+			"Difícil: enemigos más duros y agresivos. Para veteranos de los JRPG."][int(app.get("difficulty", 1))]
 	_preview.texture = Appearance.sheet(app)
 	_portrait.texture = Appearance.portrait(app)
 	if _row == 0:
@@ -181,6 +189,8 @@ func _change(key: String, d: int) -> void:
 		"beard":
 			if app["sex"] == "m":
 				app["beard"] = not app["beard"]
+		"difficulty":
+			app["difficulty"] = clampi(int(app.get("difficulty", 1)) + d, 0, 2)
 	Audio.sfx("select", -12.0)
 	_refresh()
 
@@ -189,7 +199,7 @@ func _process(delta: float) -> void:
 	_t += delta
 	_dir = int(_t / 1.6) % 4
 	var order := [0, 2, 3, 1]
-	_preview.frame = order[_dir] * 3 + [1, 0, 2, 0][int(_t * 6.0) % 4]
+	_preview.frame = order[_dir] * 8 + 2 + int(_t * 9.0) % 6
 	if Transition.busy:
 		return
 	var key: String = ROWS[_row]

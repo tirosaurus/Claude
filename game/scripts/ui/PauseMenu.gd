@@ -28,17 +28,17 @@ func open() -> void:
 	dim.color = Color(0, 0, 0, 0.55)
 	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(dim)
-	var side := UIKit.panel(Rect2(12, 14, 150, 258))
+	var side := UIKit.panel(Rect2(12, 10, 150, 266))
 	add_child(side)
 	var box := VBoxContainer.new()
 	box.position = Vector2(14, 14)
-	box.size = Vector2(122, 220)
+	box.size = Vector2(122, 240)
 	box.add_theme_constant_override("separation", 4)
 	side.add_child(box)
-	for pair in [["Grupo", _show_party], ["Objetos", _show_items], ["Guardar", _show_save], ["Opciones", _show_options], ["Continuar", close],
-			["Volver al título", _to_title]]:
-		var b := UIKit.button(pair[0], 15)
-		b.custom_minimum_size = Vector2(122, 36)
+	for pair in [["Grupo", _show_party], ["Objetos", _show_items], ["Equipo", _show_equip], ["Talentos", _show_talents],
+			["Guardar", _show_save], ["Opciones", _show_options], ["Continuar", close], ["Título", _to_title]]:
+		var b := UIKit.button(pair[0], 14)
+		b.custom_minimum_size = Vector2(122, 26)
 		b.pressed.connect(pair[1])
 		box.add_child(b)
 		_tabs.append(b)
@@ -208,7 +208,16 @@ func _apply_item(item_id: String, target: String) -> void:
 
 
 func _show_save() -> void:
-	if world and world.cutscene:
+	# En Difícil no se puede guardar en mitad de una escena o momento decisivo.
+	if world and world.cutscene and GameState.difficulty() >= 2:
+		Audio.sfx("cancel", -6.0)
+		_clear()
+		var panel := UIKit.panel(Rect2(170, 20, 458, 80))
+		_content.add_child(panel)
+		var l := UIKit.label("Modo Difícil: no puedes guardar en un momento decisivo.\nSí puedes usar objetos y cambiar el equipo.", 14)
+		l.position = Vector2(16, 14)
+		l.size = Vector2(426, 50)
+		panel.add_child(l)
 		return
 	_sub_open = true
 	var s := SaveUIScript.new()
@@ -220,14 +229,33 @@ func _show_save() -> void:
 			_tabs[2].grab_focus())
 
 
+func _sub(script_path: String, tab: int) -> void:
+	_clear()
+	_sub_open = true
+	var o = load(script_path).new()
+	_content.add_child(o)
+	o.closed.connect(func():
+		_sub_open = false
+		if _tabs.size() > tab:
+			_tabs[tab].grab_focus())
+
+
+func _show_talents() -> void:
+	_sub("res://scripts/ui/TalentUI.gd", 3)
+
+
+func _show_equip() -> void:
+	_sub("res://scripts/ui/EquipUI.gd", 2)
+
+
 func _show_options() -> void:
 	_sub_open = true
 	var o = load("res://scripts/ui/OptionsUI.gd").new()
 	add_child(o)
 	o.closed.connect(func():
 		_sub_open = false
-		if _tabs.size() > 3:
-			_tabs[3].grab_focus())
+		if _tabs.size() > 5:
+			_tabs[5].grab_focus())
 
 
 func _to_title() -> void:

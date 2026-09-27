@@ -31,9 +31,22 @@ func _brom() -> void:
 	begin()
 	var brom = world.spawn_npc("brom", world.marker("brom"), 1)
 	var th = world.spawn_npc("thrall", world.marker("brom") + Vector2(-30, 14), 2)
+	await pan_to(world.marker("brom"), 0.9)
+	var root := monster("res://assets/enemies/root.png", 2, world.marker("brom") + Vector2(34, 10), 0.8, true)
+	for k in 3:
+		await move_node(th, th.position + Vector2(18, -8), 0.14)
+		Audio.sfx("hit", -6.0)
+		shake(2.0, 0.2)
+		await brom.hop()
+		await move_node(th, th.position + Vector2(-18, 8), 0.2)
+		Audio.sfx("crit", -8.0, 1.2)
+		dust(th.position, Color(0.6, 0.3, 0.7))
 	await say([B("¡Atrás, bichos del demonio! ¡Atrás o os parto la cabeza!"),
 		"Un enano pelirrojo, atrapado de cintura para abajo entre raíces negras, reparte hachazos a un siervo morongul.",
+		"Detrás de él, una raíz reptante se enrosca buscando su cuello.",
 		K("¡Hay alguien ahí!"), Y("¡Van a matarlo!")])
+	await release_camera(0.3)
+	root.queue_free()
 	await walk_party_to(world.marker("brom") + Vector2(-60, 0), 80)
 	await say([B("¡¿Humanos?! ¡Pues no os quedéis mirando y echad una mano!")])
 	await battle("brom_fight", ["thrall", "root", "larva"], "deep", "battle")
