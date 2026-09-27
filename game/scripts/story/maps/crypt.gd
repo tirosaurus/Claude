@@ -102,9 +102,9 @@ func _seed_scene() -> void:
 	setf("night_over")
 	GameState.set_meta("tod", "dawn")
 	GameState.heal_all()
-	var i := await choose(["Volver a la superficie ahora.", "Explorar la cripta antes de salir."],
+	var leave := await choose(["Volver a la superficie ahora.", "Explorar la cripta antes de salir."],
 		K("La Semilla está a salvo. ¿Nos vamos?") if has("kaelen") else "La Semilla está a salvo. ¿Qué hacéis?")
-	if i == 1:
+	if leave == 1:
 		await say(["(Tómate tu tiempo: abre cofres y explora. Cuando quieras salir, sube por las escaleras del norte.)"])
 		end()
 		return
