@@ -1,0 +1,44 @@
+[gd_scene load_steps=6 format=3 uid="uid://b1w3xk8n2q7ha"]
+
+[ext_resource type="PackedScene" uid="uid://bqx3wp8k7f2mn" path="res://scenes/Player.tscn" id="1_wld01"]
+[ext_resource type="PackedScene" uid="uid://dqk8yv2mfj1xr" path="res://scenes/NPC.tscn" id="2_wld02"]
+[ext_resource type="PackedScene" uid="uid://c3n0mvxqf5g8a" path="res://scenes/DialogueBox.tscn" id="3_wld03"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_wld01"]
+size = Vector2(640, 32)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_wld02"]
+size = Vector2(32, 360)
+
+[node name="World" type="Node2D"]
+
+[node name="Ground" type="ColorRect" parent="."]
+offset_right = 640.0
+offset_bottom = 360.0
+color = Color(0.16, 0.2, 0.14, 1)
+
+[node name="Walls" type="StaticBody2D" parent="."]
+
+[node name="Top" type="CollisionShape2D" parent="Walls"]
+position = Vector2(320, 0)
+shape = SubResource("RectangleShape2D_wld01")
+
+[node name="Bottom" type="CollisionShape2D" parent="Walls"]
+position = Vector2(320, 360)
+shape = SubResource("RectangleShape2D_wld01")
+
+[node name="Left" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, 180)
+shape = SubResource("RectangleShape2D_wld02")
+
+[node name="Right" type="CollisionShape2D" parent="Walls"]
+position = Vector2(640, 180)
+shape = SubResource("RectangleShape2D_wld02")
+
+[node name="Player" parent="." instance=ExtResource("1_wld01")]
+position = Vector2(320, 260)
+
+[node name="Kaelen" parent="." instance=ExtResource("2_wld02")]
+position = Vector2(320, 120)
+
+[node name="DialogueBox" parent="." instance=ExtResource("3_wld03")]
