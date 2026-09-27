@@ -18,6 +18,7 @@ GameState="*res://scripts/autoload/GameState.gd"
 Audio="*res://scripts/autoload/Audio.gd"
 Transition="*res://scripts/autoload/Transition.gd"
 Dialogue="*res://scripts/autoload/Dialogue.gd"
+TouchControls="*res://scripts/autoload/TouchControls.gd"
 
 [display]
 

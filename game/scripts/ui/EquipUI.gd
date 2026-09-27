@@ -50,10 +50,17 @@ func _ready() -> void:
 	_list_box.size = Vector2(284, 220)
 	_list_box.add_theme_constant_override("separation", 3)
 	_panel.add_child(_list_box)
-	_desc = UIKit.label("", 12, Color(0.35, 0.25, 0.2))
-	_desc.position = Vector2(162, 262)
-	_desc.size = Vector2(284, 58)
+	var desc_bg := ColorRect.new()
+	desc_bg.color = Color(0.3, 0.2, 0.12, 0.12)
+	desc_bg.position = Vector2(160, 214)
+	desc_bg.size = Vector2(288, 104)
+	_panel.add_child(desc_bg)
+	_desc = UIKit.label("", 11, Color(0.35, 0.25, 0.2))
+	_desc.position = Vector2(164, 216)
+	_desc.size = Vector2(280, 100)
 	_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_desc.clip_text = true
+	_desc.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	_panel.add_child(_desc)
 	get_viewport().gui_release_focus()
 	_ignore = Engine.get_process_frames() + 2
@@ -172,19 +179,19 @@ func _show_items(slot: String) -> void:
 	var cands := _candidates(slot)
 	var first: Button = null
 	var remove := UIKit.button("(Quitar)", 13)
-	remove.custom_minimum_size = Vector2(284, 24)
+	remove.custom_minimum_size = Vector2(284, 22)
 	remove.focus_entered.connect(func():
 		_show_stats(_preview_stats(slot, ""))
 		_desc.text = "Deja el hueco vacío.")
 	remove.pressed.connect(func(): _do_equip(""))
 	_list_box.add_child(remove)
 	first = remove
-	for eid in cands.slice(0, 7):
+	for eid in cands.slice(0, 5):
 		var need: int = int(DB.EQUIP[eid].get("lvl", 1))
 		var lvl_txt := "" if GameState.level >= need else "  (Nv %d)" % need
 		var b := UIKit.button("%s ×%d%s" % [DB.EQUIP[eid]["name"], GameState.item_count(eid), lvl_txt], 13)
 		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		b.custom_minimum_size = Vector2(284, 24)
+		b.custom_minimum_size = Vector2(284, 22)
 		b.clip_text = true
 		_rarity_color(b, eid)
 		b.disabled = GameState.level < need
@@ -196,6 +203,8 @@ func _show_items(slot: String) -> void:
 		_list_box.add_child(b)
 		if first == remove:
 			first = b
+	if cands.size() > 5:
+		_desc.text = "(Se muestran las 5 mejores piezas de %d.)" % cands.size()
 	if cands.is_empty():
 		_desc.text = "No tienes nada que %s pueda llevar ahí. Busca en tiendas y cofres." % GameState.member_name(_member())
 	(func(): first.grab_focus()).call_deferred()

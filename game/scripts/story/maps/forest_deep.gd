@@ -1,10 +1,36 @@
 extends "res://scripts/story/StoryBase.gd"
 
 
+var _root: Sprite2D
+
+
+## Brom ya está peleando cuando llegas: se le ve (y se le oye) desde lejos.
+func _stage_brom() -> void:
+	var m: Vector2 = world.marker("brom")
+	var brom = world.spawn_npc("brom", m, 1)
+	var th = world.spawn_npc("thrall", m + Vector2(-30, 14), 2)
+	_root = monster("res://assets/enemies/root.png", 2, m + Vector2(34, 10), 0.8, true)
+	_brom_idle_fight(brom, th)
+
+
+func _brom_idle_fight(brom, th) -> void:
+	while is_instance_valid(th) and is_instance_valid(brom) and not flag("brom_seen"):
+		await wait(randf_range(0.6, 1.1))
+		if not is_instance_valid(th) or flag("brom_seen"):
+			return
+		await th.hop()
+		if is_instance_valid(brom):
+			await brom.hop()
+		if world.player.position.distance_to(brom.position) < 260:
+			Audio.sfx("hit", -18.0, randf_range(0.9, 1.2))
+
+
 func on_map_ready(_m: String) -> void:
 	if flag("won_brom_fight") and not flag("brom_event_done"):
 		await _elves_arrive()
 		return
+	if not flag("won_brom_fight"):
+		_stage_brom()
 	if not flag("deep_seen"):
 		setf("deep_seen")
 		begin()
@@ -29,10 +55,15 @@ func on_trigger(id: String) -> void:
 
 func _brom() -> void:
 	begin()
-	var brom = world.spawn_npc("brom", world.marker("brom"), 1)
-	var th = world.spawn_npc("thrall", world.marker("brom") + Vector2(-30, 14), 2)
+	setf("brom_seen")
+	var brom = npc("brom")
+	var th = npc("thrall")
+	if brom == null or th == null:
+		_stage_brom()
+		brom = npc("brom")
+		th = npc("thrall")
 	await pan_to(world.marker("brom"), 0.9)
-	var root := monster("res://assets/enemies/root.png", 2, world.marker("brom") + Vector2(34, 10), 0.8, true)
+	var root := _root
 	for k in 3:
 		await move_node(th, th.position + Vector2(18, -8), 0.14)
 		Audio.sfx("hit", -6.0)
@@ -46,7 +77,6 @@ func _brom() -> void:
 		"Detrás de él, una raíz reptante se enrosca buscando su cuello.",
 		K("¡Hay alguien ahí!"), Y("¡Van a matarlo!")])
 	await release_camera(0.3)
-	root.queue_free()
 	await walk_party_to(world.marker("brom") + Vector2(-60, 0), 80)
 	await say([B("¡¿Humanos?! ¡Pues no os quedéis mirando y echad una mano!")])
 	await battle("brom_fight", ["thrall", "root", "larva"], "deep", "battle")

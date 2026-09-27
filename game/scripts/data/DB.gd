@@ -35,8 +35,8 @@ const CLASSES := {
 		"weapon": "sword", "bonus": {"hp": 12, "atk": 4, "def": 2}, "starter": "tajo_doble",
 		"tree": [
 			{"id": "w_furia", "tier": 1, "max": 1, "skill": "furia", "name": "Furia"},
-			{"id": "w_fuerza", "tier": 1, "max": 3, "stats": {"atk": 3}, "name": "Fuerza", "desc": "+3 de ataque por rango."},
-			{"id": "w_piel", "tier": 1, "max": 3, "stats": {"hp": 10, "def": 2}, "name": "Piel curtida", "desc": "+10 vida y +2 defensa por rango."},
+			{"id": "w_fuerza", "tier": 1, "max": 3, "stats": {"atk": 2}, "name": "Fuerza", "desc": "+2 de ataque por rango."},
+			{"id": "w_piel", "tier": 1, "max": 3, "stats": {"hp": 6, "def": 1}, "name": "Piel curtida", "desc": "+6 vida y +1 defensa por rango."},
 			{"id": "w_carga", "tier": 2, "max": 1, "skill": "carga", "name": "Carga"},
 			{"id": "w_remolino", "tier": 2, "max": 1, "skill": "remolino", "name": "Remolino"},
 			{"id": "w_sed", "tier": 2, "max": 2, "perk": ["lifesteal", 0.06], "name": "Sed de sangre", "desc": "Tus golpes físicos te curan un 6% del daño por rango."},
@@ -48,7 +48,7 @@ const CLASSES := {
 		"weapon": "daggers", "bonus": {"atk": 4, "spd": 5}, "starter": "punalada",
 		"tree": [
 			{"id": "r_robar", "tier": 1, "max": 1, "skill": "robar", "name": "Robar"},
-			{"id": "r_agil", "tier": 1, "max": 3, "stats": {"spd": 2, "atk": 1}, "name": "Agilidad", "desc": "+2 velocidad y +1 ataque por rango."},
+			{"id": "r_agil", "tier": 1, "max": 3, "stats": {"spd": 1, "atk": 1}, "name": "Agilidad", "desc": "+1 velocidad y +1 ataque por rango."},
 			{"id": "r_prec", "tier": 1, "max": 3, "perk": ["crit", 0.05], "name": "Precisión", "desc": "+5% de crítico por rango."},
 			{"id": "r_sombras", "tier": 2, "max": 1, "skill": "sombras", "name": "Golpe en las sombras"},
 			{"id": "r_veneno", "tier": 2, "max": 1, "skill": "hoja_venenosa", "name": "Hoja venenosa"},
@@ -61,8 +61,8 @@ const CLASSES := {
 		"weapon": "sword", "bonus": {"hp": 12, "def": 2, "mag": 3}, "starter": "aux",
 		"tree": [
 			{"id": "p_juicio", "tier": 1, "max": 1, "skill": "juicio", "name": "Juicio"},
-			{"id": "p_fe", "tier": 1, "max": 3, "stats": {"mag": 2, "res": 2}, "name": "Fe", "desc": "+2 magia y +2 resistencia por rango."},
-			{"id": "p_armadura", "tier": 1, "max": 3, "stats": {"hp": 10, "def": 2}, "name": "Armadura de fe", "desc": "+10 vida y +2 defensa por rango."},
+			{"id": "p_fe", "tier": 1, "max": 3, "stats": {"mag": 1, "res": 1}, "name": "Fe", "desc": "+1 magia y +1 resistencia por rango."},
+			{"id": "p_armadura", "tier": 1, "max": 3, "stats": {"hp": 6, "def": 1}, "name": "Armadura de fe", "desc": "+6 vida y +1 defensa por rango."},
 			{"id": "p_escudo", "tier": 2, "max": 1, "skill": "escudo_sagrado", "name": "Escudo sagrado"},
 			{"id": "p_provocar", "tier": 2, "max": 1, "skill": "provocar", "name": "Provocar"},
 			{"id": "p_martillo", "tier": 2, "max": 1, "skill": "martillo_luz", "name": "Martillo de luz"},
@@ -74,7 +74,7 @@ const CLASSES := {
 		"weapon": "staff", "bonus": {"mag": 6, "mp": 10}, "starter": "fuego",
 		"tree": [
 			{"id": "m_hielo", "tier": 1, "max": 1, "skill": "hielo", "name": "Hielo"},
-			{"id": "m_int", "tier": 1, "max": 3, "stats": {"mag": 3}, "name": "Intelecto", "desc": "+3 de magia por rango."},
+			{"id": "m_int", "tier": 1, "max": 3, "stats": {"mag": 2}, "name": "Intelecto", "desc": "+2 de magia por rango."},
 			{"id": "m_medit", "tier": 1, "max": 3, "perk": ["mp_regen", 1.0], "name": "Meditación", "desc": "+1 PM recuperado por turno y rango."},
 			{"id": "m_rayo", "tier": 2, "max": 1, "skill": "rayo", "name": "Rayo"},
 			{"id": "m_llama", "tier": 2, "max": 1, "skill": "llamarada", "name": "Llamarada"},
@@ -87,8 +87,8 @@ const CLASSES := {
 		"weapon": "staff", "orb": "dark", "bonus": {"mag": 5, "mp": 8, "hp": 6}, "starter": "maldicion",
 		"tree": [
 			{"id": "k_drenar", "tier": 1, "max": 1, "skill": "drenar", "name": "Drenar"},
-			{"id": "k_sombra", "tier": 1, "max": 3, "stats": {"mag": 3}, "name": "Sombra interior", "desc": "+3 de magia por rango."},
-			{"id": "k_pacto", "tier": 1, "max": 3, "stats": {"hp": 8, "mp": 5}, "name": "Pacto de sangre", "desc": "+8 vida y +5 PM por rango."},
+			{"id": "k_sombra", "tier": 1, "max": 3, "stats": {"mag": 2}, "name": "Sombra interior", "desc": "+2 de magia por rango."},
+			{"id": "k_pacto", "tier": 1, "max": 3, "stats": {"hp": 5, "mp": 3}, "name": "Pacto de sangre", "desc": "+5 vida y +3 PM por rango."},
 			{"id": "k_espinas", "tier": 2, "max": 1, "skill": "espinas_negras", "name": "Espinas negras"},
 			{"id": "k_debil", "tier": 2, "max": 1, "skill": "debilitar", "name": "Debilitar"},
 			{"id": "k_almas", "tier": 2, "max": 2, "perk": ["dmg_mag", 0.1], "name": "Hambre de almas", "desc": "+10% de daño mágico por rango."},
@@ -100,7 +100,7 @@ const CLASSES := {
 		"weapon": "bow", "bonus": {"atk": 4, "spd": 4, "hp": 4}, "starter": "disparo_certero",
 		"tree": [
 			{"id": "h_veneno", "tier": 1, "max": 1, "skill": "flecha_veneno", "name": "Flecha venenosa"},
-			{"id": "h_punt", "tier": 1, "max": 3, "stats": {"atk": 2, "spd": 1}, "name": "Puntería", "desc": "+2 ataque y +1 velocidad por rango."},
+			{"id": "h_punt", "tier": 1, "max": 3, "stats": {"atk": 1, "spd": 1}, "name": "Puntería", "desc": "+1 ataque y +1 velocidad por rango."},
 			{"id": "h_ojo", "tier": 1, "max": 3, "perk": ["crit", 0.05], "name": "Ojo de halcón", "desc": "+5% de crítico por rango."},
 			{"id": "h_lluvia", "tier": 2, "max": 1, "skill": "lluvia_flechas", "name": "Lluvia de flechas"},
 			{"id": "h_trampa", "tier": 2, "max": 1, "skill": "trampa", "name": "Trampa"},
@@ -113,7 +113,7 @@ const CLASSES := {
 		"weapon": "staff", "orb": "light", "bonus": {"mag": 4, "mp": 10, "res": 3}, "starter": "luz_sanadora",
 		"tree": [
 			{"id": "c_purif", "tier": 1, "max": 1, "skill": "purificar", "name": "Purificar"},
-			{"id": "c_devo", "tier": 1, "max": 3, "stats": {"mag": 2, "mp": 5}, "name": "Devoción", "desc": "+2 magia y +5 PM por rango."},
+			{"id": "c_devo", "tier": 1, "max": 3, "stats": {"mag": 1, "mp": 3}, "name": "Devoción", "desc": "+1 magia y +3 PM por rango."},
 			{"id": "c_gracia", "tier": 1, "max": 3, "perk": ["heal_pow", 0.1], "name": "Gracia", "desc": "+10% a tus curaciones por rango."},
 			{"id": "c_grupo", "tier": 2, "max": 1, "skill": "cura_grupo", "name": "Curación en grupo"},
 			{"id": "c_destello", "tier": 2, "max": 1, "skill": "destello", "name": "Destello"},
@@ -126,7 +126,7 @@ const CLASSES := {
 		"weapon": "staff", "bonus": {"mag": 4, "mp": 8, "hp": 8}, "starter": "regeneracion",
 		"tree": [
 			{"id": "d_espinas", "tier": 1, "max": 1, "skill": "espinas", "name": "Espinas"},
-			{"id": "d_raices", "tier": 1, "max": 3, "stats": {"hp": 8, "res": 1, "mag": 1}, "name": "Raíces hondas", "desc": "+8 vida, +1 resistencia y +1 magia por rango."},
+			{"id": "d_raices", "tier": 1, "max": 3, "stats": {"hp": 5, "res": 1, "mag": 1}, "name": "Raíces hondas", "desc": "+5 vida, +1 resistencia y +1 magia por rango."},
 			{"id": "d_savia", "tier": 1, "max": 3, "perk": ["mp_regen", 1.0], "name": "Savia", "desc": "+1 PM recuperado por turno y rango."},
 			{"id": "d_bendicion", "tier": 2, "max": 1, "skill": "bendicion", "name": "Bendición del bosque"},
 			{"id": "d_enred", "tier": 2, "max": 1, "skill": "enredadera", "name": "Enredadera"},
@@ -139,8 +139,8 @@ const CLASSES := {
 		"weapon": "axe", "bonus": {"hp": 20, "def": 4, "res": 2}, "starter": "provocar",
 		"tree": [
 			{"id": "g_golpe", "tier": 1, "max": 1, "skill": "golpe_escudo", "name": "Golpe de escudo"},
-			{"id": "g_roca", "tier": 1, "max": 3, "stats": {"hp": 12, "def": 3}, "name": "Roca", "desc": "+12 vida y +3 defensa por rango."},
-			{"id": "g_resist", "tier": 1, "max": 3, "stats": {"res": 2, "atk": 2}, "name": "Veterano", "desc": "+2 resistencia y +2 ataque por rango."},
+			{"id": "g_roca", "tier": 1, "max": 3, "stats": {"hp": 8, "def": 2}, "name": "Roca", "desc": "+8 vida y +2 defensa por rango."},
+			{"id": "g_resist", "tier": 1, "max": 3, "stats": {"res": 1, "atk": 1}, "name": "Veterano", "desc": "+1 resistencia y +1 ataque por rango."},
 			{"id": "g_muro", "tier": 2, "max": 1, "skill": "muro", "name": "Muro"},
 			{"id": "g_guardia", "tier": 2, "max": 1, "skill": "guardia", "name": "Guardia férrea"},
 			{"id": "g_coraza", "tier": 2, "max": 2, "perk": ["dmg_red", 0.08], "name": "Coraza", "desc": "-8% de daño recibido por rango."},
@@ -531,7 +531,7 @@ const ENEMIES := {
 
 
 static func xp_to_next(level: int) -> int:
-	return 40 + level * level * 18
+	return 50 + level * level * 24
 
 
 static func skill(id: String) -> Dictionary:

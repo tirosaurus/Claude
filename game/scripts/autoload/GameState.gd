@@ -308,9 +308,9 @@ func talents() -> Dictionary:
 	return player_data["tree"]
 
 
-## Puntos de habilidad totales: 1 por nivel desde el 2, más uno extra en los niveles 5 y 8.
+## Puntos de habilidad totales: 1 por nivel a partir del 2 (el árbol no se completa en una partida).
 func skill_points_total() -> int:
-	return maxi(0, level - 1) + (1 if level >= 5 else 0) + (1 if level >= 8 else 0)
+	return maxi(0, level - 1)
 
 
 func skill_points_spent() -> int:

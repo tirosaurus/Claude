@@ -37,7 +37,7 @@ func _ready() -> void:
 	panel.add_child(_gold)
 	var scroll := ScrollContainer.new()
 	scroll.position = Vector2(24, 62)
-	scroll.size = Vector2(440, 226)
+	scroll.size = Vector2(440, 224)
 	scroll.follow_focus = true
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	panel.add_child(scroll)
@@ -61,10 +61,12 @@ func _ready() -> void:
 	close.custom_minimum_size = Vector2(160, 24)
 	close.pressed.connect(_close)
 	box.add_child(close)
-	_desc = UIKit.label("", 13)
-	_desc.position = Vector2(24, 296)
+	_desc = UIKit.label("", 11)
+	_desc.position = Vector2(24, 292)
 	_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_desc.size = Vector2(432, 30)
+	_desc.size = Vector2(432, 36)
+	_desc.clip_text = true
+	_desc.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	panel.add_child(_desc)
 	_refresh()
 	_buttons[0].grab_focus()
