@@ -348,3 +348,183 @@ def build_all(out):
                      ("levelup", sfx_levelup), ("growl", sfx_growl), ("battle_start", sfx_battle_start),
                      ("cancel", sfx_cancel), ("step", sfx_step)):
         write(f"{s}/{name}.wav", fn())
+
+
+# --- v2 -------------------------------------------------------------------------
+def organ(f, n):
+    return (osc("square", f, n, 0.5) * 0.35 + osc("tri", f * 2, n) * 0.35 + osc("tri", f * 0.5, n) * 0.3) * env(n, 0.05, 0.2, 0.85, 0.1)
+
+
+def harp(f, n):
+    return (osc("tri", f, n) * 0.8 + osc("sine", f * 3, n) * 0.2) * pluck_env(n, 4.0)
+
+
+def track_night():
+    bpm = 132
+    bs = rep("A1:.5 A2:.5", 8) + " " + rep("F1:.5 F2:.5", 4) + " " + rep("G1:.5 G2:.5", 4) + " " + \
+        rep("A1:.5 A2:.5", 8) + " " + rep("E1:.5 E2:.5", 8)
+    mel = ("A4:1 C5:1 E5:1 D5:.5 C5:.5 B4:2 G4:2 A4:1 C5:1 F5:1 E5:.5 D5:.5 E5:4 "
+           "A5:1 G5:1 F5:1 E5:1 D5:1 C5:1 B4:2 C5:1 B4:1 A4:1 G#4:1 A4:4")
+    dr = np.concatenate([drums("k..hk.s.k.hhs..h", bpm, 0.22)] * 8)
+    return mix_tracks(seq(mel, bpm, lead, 0.22, 32), seq(bs, bpm, bass, 0.34, 32), dr)
+
+
+def track_cathedral():
+    bpm = 60
+    ch = "D3:4 A2:4 Bb2:4 F2:4 G2:4 D3:4 A2:8"
+    ch2 = "F3:4 E3:4 D3:4 C3:4 Bb2:4 A2:4 C#3:8"
+    mel = "A4:2 G4:1 F4:1 E4:4 F4:2 G4:1 A4:1 D4:4 Bb4:2 A4:1 G4:1 A4:4 G4:2 F4:1 E4:1 D4:4 -:4"
+    return mix_tracks(seq(ch, bpm, organ, 0.25, 32), seq(ch2, bpm, organ, 0.18, 32),
+                      seq(mel, bpm, bell, 0.28, 32))
+
+
+def track_deep():
+    bpm = 72
+    bells = ("E5:1 -:1 G5:1 F#5:1 E5:2 B4:2 C5:1 -:1 E5:1 D5:1 B4:4 "
+             "A4:1 C5:1 E5:1 G5:1 F#5:2 D5:2 E5:4 -:4")
+    padl = "E3:4 C3:4 A2:4 B2:4 E3:4 C3:4 D3:4 B2:4"
+    return mix_tracks(seq(bells, bpm, bell, 0.28, 32), seq(padl, bpm, pad, 0.26, 32),
+                      seq("E2:8 C2:8 A1:8 B1:8", bpm, bass, 0.2, 32))
+
+
+def track_elves():
+    bpm = 88
+    arp = rep("F4:.5 A4:.5 C5:.5 E5:.5", 4) + " " + rep("D4:.5 F4:.5 A4:.5 C5:.5", 4) + " " + \
+        rep("Bb3:.5 D4:.5 F4:.5 A4:.5", 4) + " " + rep("C4:.5 E4:.5 G4:.5 Bb4:.5", 4)
+    mel = "A5:2 G5:1 F5:1 E5:2 C5:2 D5:3 E5:1 F5:4 G5:2 F5:1 E5:1 D5:2 Bb4:2 C5:6 -:2"
+    return mix_tracks(seq(arp, bpm, harp, 0.24, 32), seq(mel, bpm, soft_lead, 0.24, 32),
+                      seq("F2:8 D2:8 Bb1:8 C2:8", bpm, pad, 0.2, 32))
+
+
+def track_heart():
+    bpm = 80
+    bs = rep("C2:1 C2:.5 C#2:.5", 8) + " " + rep("Ab1:1 Ab1:.5 A1:.5", 4) + " " + rep("G1:1 G1:.5 Ab1:.5", 4)
+    padl = "C3:4 Eb3:4 Ab2:4 G2:4 C3:4 Eb3:4 F3:4 G2:4"
+    dr = np.concatenate([drums("k.......k..k....", bpm, 0.3)] * 8)
+    return mix_tracks(seq(bs, bpm, bass, 0.34, 32), seq(padl, bpm, pad, 0.26, 32), dr)
+
+
+def track_boss():
+    bpm = 160
+    mel = ("D5:.5 D5:.5 F5:.5 D5:.5 G5:.5 F5:.5 D5:.5 C5:.5 D5:1 A4:1 C5:1 D5:1 "
+           "F5:.5 F5:.5 G5:.5 F5:.5 A5:.5 G5:.5 F5:.5 E5:.5 F5:1 C5:1 E5:2 "
+           "D5:.5 D5:.5 F5:.5 D5:.5 G5:.5 F5:.5 D5:.5 C5:.5 Bb4:1 C5:1 D5:1 F5:1 "
+           "E5:.5 F5:.5 E5:.5 D5:.5 C#5:.5 D5:.5 E5:.5 C#5:.5 D5:2 A4:2")
+    bs = rep("D2:.5 D3:.5", 8) + " " + rep("F2:.5 F3:.5", 4) + " " + rep("C2:.5 C3:.5", 4) + " " + \
+        rep("Bb1:.5 Bb2:.5", 4) + " " + rep("C2:.5 C3:.5", 4) + " " + rep("D2:.5 D3:.5", 4) + " " + rep("A1:.5 A2:.5", 4)
+    dr = np.concatenate([drums("k.hsk.hsk.hsk.ss", bpm, 0.24)] * 8)
+    return mix_tracks(seq(mel, bpm, lead, 0.24, 32), seq(bs, bpm, bass, 0.34, 32), dr)
+
+
+def track_final():
+    bpm = 146
+    mel = ("C5:1 Eb5:1 G5:1 F5:.5 Eb5:.5 D5:2 Bb4:2 C5:1 Eb5:1 Ab5:1 G5:.5 F5:.5 G5:4 "
+           "C6:1 Bb5:1 Ab5:1 G5:1 F5:1 Eb5:1 D5:2 Eb5:1 D5:1 C5:1 B4:1 C5:4")
+    org = "C4:4 Bb3:4 Ab3:4 G3:4 C4:4 Bb3:4 F3:4 G3:4"
+    bs = rep("C2:.5 C3:.5", 8) + " " + rep("Ab1:.5 Ab2:.5", 8) + " " + rep("F1:.5 F2:.5", 8) + " " + rep("G1:.5 G2:.5", 8)
+    dr = np.concatenate([drums("k.hsk.hsk.hsk.hs", bpm, 0.24)] * 8)
+    return mix_tracks(seq(mel, bpm, lead, 0.22, 32), seq(org, bpm, organ, 0.14, 32), seq(bs, bpm, bass, 0.3, 32), dr)
+
+
+def track_sad():
+    bpm = 58
+    mel = "E5:2 D5:1 C5:1 B4:3 A4:1 C5:2 B4:1 A4:1 G#4:4 A4:2 B4:1 C5:1 D5:3 C5:1 B4:2 A4:2 A4:4"
+    arp = rep("A3:.5 E4:.5 A4:.5 E4:.5", 2) + " " + rep("F3:.5 C4:.5 F4:.5 C4:.5", 2) + " " + \
+        rep("E3:.5 B3:.5 E4:.5 B3:.5", 4) + " " + rep("D3:.5 A3:.5 D4:.5 A3:.5", 2) + " " + \
+        rep("E3:.5 B3:.5 E4:.5 B3:.5", 2) + " " + rep("A3:.5 E4:.5 A4:.5 E4:.5", 4)
+    return mix_tracks(seq(mel, bpm, soft_lead, 0.28, 24), seq(arp, bpm, harp, 0.2, 24))
+
+
+def track_ending_good():
+    bpm = 96
+    mel = ("G5:1 A5:1 B5:2 D6:2 B5:1 A5:1 G5:2 E5:2 C5:1 D5:1 E5:2 G5:2 A5:4 "
+           "G5:1 A5:1 B5:2 D6:2 E6:1 D6:1 B5:2 G5:2 A5:1 B5:1 C6:2 B5:1 A5:1 G5:4")
+    arp = rep("G4:.5 B4:.5 D5:.5 B4:.5", 4) + " " + rep("C4:.5 E4:.5 G4:.5 E4:.5", 2) + " " + \
+        rep("D4:.5 F#4:.5 A4:.5 F#4:.5", 2) + " " + rep("G4:.5 B4:.5 D5:.5 B4:.5", 4) + " " + \
+        rep("C4:.5 E4:.5 G4:.5 E4:.5", 2) + " " + rep("D4:.5 F#4:.5 A4:.5 F#4:.5", 2)
+    return mix_tracks(seq(mel, bpm, soft_lead, 0.26, 32), seq(arp, bpm, harp, 0.22, 32),
+                      seq("G2:8 C3:4 D3:4 G2:8 C3:4 D3:4", bpm, pad, 0.22, 32))
+
+
+def track_ending_bad():
+    bpm = 54
+    mel = "D5:3 C5:1 Bb4:2 A4:2 G4:4 F4:2 E4:2 D4:4 Bb4:3 A4:1 G4:2 F4:2 E4:4 D4:4"
+    return mix_tracks(seq(mel, bpm, bell, 0.28, 32), seq("D3:8 Bb2:8 G2:8 A2:8", bpm, organ, 0.2, 32),
+                      seq("D2:16 A1:16", bpm, pad, 0.2, 32))
+
+
+def sfx_magic():
+    n = int(0.45 * SR)
+    t = np.arange(n) / SR
+    sweep = np.sin(2 * np.pi * np.cumsum(600 + 900 * np.sin(t * 18)) / SR) * 0.3
+    sparkle = osc("sine", 1800, n) * (np.random.default_rng(4).uniform(0, 1, n) > 0.97) * 0.3
+    return (sweep + sparkle) * env(n, 0.02, 0.1, 0.7, 0.2)
+
+
+def sfx_fire():
+    n = int(0.5 * SR)
+    t = np.arange(n) / SR
+    noise = np.random.default_rng(6).uniform(-1, 1, n)
+    k = 8
+    noise = np.convolve(noise, np.ones(k) / k, mode="same")
+    return noise * env(n, 0.01, 0.2, 0.6, 0.2) * 0.9
+
+
+def sfx_ice():
+    out = []
+    for f in (1760, 2093, 2637, 3136):
+        m = int(0.05 * SR)
+        out.append(osc("sine", f, m) * pluck_env(m, 20) * 0.3)
+    return np.concatenate(out + [bell(2637, int(0.3 * SR)) * 0.2])
+
+
+def sfx_bolt():
+    n = int(0.35 * SR)
+    t = np.arange(n) / SR
+    noise = np.random.default_rng(8).uniform(-1, 1, n) * np.exp(-t * 10)
+    buzz = np.sign(np.sin(2 * np.pi * 70 * t)) * np.exp(-t * 6) * 0.3
+    return (noise * 0.6 + buzz) * 0.8
+
+
+def sfx_dark():
+    n = int(0.6 * SR)
+    t = np.arange(n) / SR
+    tone = np.sin(2 * np.pi * np.cumsum(220 - 150 * t) / SR) * 0.4 + osc("square", 55, n, 0.5) * 0.15
+    return tone * env(n, 0.05, 0.2, 0.7, 0.3)
+
+
+def sfx_buy():
+    return np.concatenate([osc("square", 1320, 900, 0.25) * 0.25, osc("square", 1760, 2400, 0.25) * pluck_env(2400, 8) * 0.25])
+
+
+def sfx_save():
+    out = []
+    for f in (784, 988, 1175, 1568):
+        m = int(0.09 * SR)
+        out.append(harp(f, m) * 0.4)
+    return np.concatenate(out + [harp(1568, int(0.5 * SR)) * 0.3])
+
+
+def sfx_chest():
+    return np.concatenate([sfx_door()[: int(0.12 * SR)] * 0.6, sfx_levelup()[: int(0.4 * SR)]])
+
+
+def sfx_flee():
+    out = []
+    for i in range(6):
+        out.append(sfx_step() * 2)
+        out.append(np.zeros(int(0.03 * SR)))
+    return np.concatenate(out)
+
+
+def build_v2(out):
+    m = f"{out}/music"
+    for name, fn in (("night", track_night), ("cathedral", track_cathedral), ("deep", track_deep),
+                     ("elves", track_elves), ("heart", track_heart), ("boss", track_boss), ("final", track_final),
+                     ("sad", track_sad), ("ending_good", track_ending_good), ("ending_bad", track_ending_bad)):
+        write(f"{m}/{name}.wav", fn())
+    s = f"{out}/sfx"
+    for name, fn in (("magic", sfx_magic), ("fire", sfx_fire), ("ice", sfx_ice), ("bolt", sfx_bolt),
+                     ("dark", sfx_dark), ("buy", sfx_buy), ("save", sfx_save), ("chest", sfx_chest),
+                     ("flee", sfx_flee)):
+        write(f"{s}/{name}.wav", fn())

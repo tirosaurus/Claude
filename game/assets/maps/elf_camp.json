@@ -1,0 +1,515 @@
+{
+ "id": "elf_camp",
+ "display": "Claro de la Savia",
+ "music": "elves",
+ "interior": false,
+ "size": [
+  576,
+  416
+ ],
+ "ground": "res://assets/maps/elf_camp.png",
+ "solids": [
+  [
+   96,
+   240,
+   32,
+   16
+  ],
+  [
+   64,
+   256,
+   96,
+   16
+  ],
+  [
+   48,
+   272,
+   112,
+   16
+  ],
+  [
+   48,
+   288,
+   112,
+   16
+  ],
+  [
+   64,
+   304,
+   96,
+   16
+  ],
+  [
+   96,
+   320,
+   32,
+   16
+  ]
+ ],
+ "props": [
+  {
+   "sprite": "sacred_tree",
+   "x": 290,
+   "y": 150,
+   "id": "sacred_tree",
+   "col": [
+    -22,
+    -16,
+    44,
+    14
+   ]
+  },
+  {
+   "sprite": "tent_green",
+   "x": 110,
+   "y": 110,
+   "id": "tent1",
+   "col": [
+    -20,
+    -18,
+    40,
+    18
+   ]
+  },
+  {
+   "sprite": "tent_blue",
+   "x": 180,
+   "y": 90,
+   "id": "tent2",
+   "col": [
+    -20,
+    -18,
+    40,
+    18
+   ]
+  },
+  {
+   "sprite": "tent_red",
+   "x": 470,
+   "y": 300,
+   "id": "tent3",
+   "col": [
+    -20,
+    -18,
+    40,
+    18
+   ]
+  },
+  {
+   "sprite": "tent_green",
+   "x": 520,
+   "y": 250,
+   "col": [
+    -20,
+    -18,
+    40,
+    18
+   ]
+  },
+  {
+   "sprite": "stall",
+   "x": 420,
+   "y": 340,
+   "id": "elf_shop",
+   "col": [
+    -19,
+    -10,
+    38,
+    10
+   ]
+  },
+  {
+   "sprite": "campfire",
+   "x": 290,
+   "y": 250,
+   "id": "campfire",
+   "col": [
+    -9,
+    -8,
+    18,
+    8
+   ],
+   "frames": 3,
+   "light": {
+    "r": 100,
+    "color": [
+     1,
+     0.7,
+     0.35
+    ],
+    "e": 1.0,
+    "flicker": true,
+    "oy": -8
+   }
+  },
+  {
+   "sprite": "lantern",
+   "x": 250,
+   "y": 200,
+   "col": [
+    -2,
+    -3,
+    4,
+    3
+   ],
+   "frames": 2,
+   "light": {
+    "r": 60,
+    "color": [
+     1,
+     0.9,
+     0.6
+    ],
+    "e": 0.8,
+    "flicker": true,
+    "oy": -28
+   }
+  },
+  {
+   "sprite": "lantern",
+   "x": 330,
+   "y": 200,
+   "col": [
+    -2,
+    -3,
+    4,
+    3
+   ],
+   "frames": 2,
+   "light": {
+    "r": 60,
+    "color": [
+     1,
+     0.9,
+     0.6
+    ],
+    "e": 0.8,
+    "flicker": true,
+    "oy": -28
+   }
+  },
+  {
+   "sprite": "lantern",
+   "x": 230,
+   "y": 300,
+   "col": [
+    -2,
+    -3,
+    4,
+    3
+   ],
+   "frames": 2,
+   "light": {
+    "r": 60,
+    "color": [
+     1,
+     0.9,
+     0.6
+    ],
+    "e": 0.8,
+    "flicker": true,
+    "oy": -28
+   }
+  },
+  {
+   "sprite": "lantern",
+   "x": 350,
+   "y": 300,
+   "col": [
+    -2,
+    -3,
+    4,
+    3
+   ],
+   "frames": 2,
+   "light": {
+    "r": 60,
+    "color": [
+     1,
+     0.9,
+     0.6
+    ],
+    "e": 0.8,
+    "flicker": true,
+    "oy": -28
+   }
+  },
+  {
+   "sprite": "lantern",
+   "x": 150,
+   "y": 180,
+   "col": [
+    -2,
+    -3,
+    4,
+    3
+   ],
+   "frames": 2,
+   "light": {
+    "r": 60,
+    "color": [
+     1,
+     0.9,
+     0.6
+    ],
+    "e": 0.8,
+    "flicker": true,
+    "oy": -28
+   }
+  },
+  {
+   "sprite": "lantern",
+   "x": 420,
+   "y": 180,
+   "col": [
+    -2,
+    -3,
+    4,
+    3
+   ],
+   "frames": 2,
+   "light": {
+    "r": 60,
+    "color": [
+     1,
+     0.9,
+     0.6
+    ],
+    "e": 0.8,
+    "flicker": true,
+    "oy": -28
+   }
+  },
+  {
+   "sprite": "dummy",
+   "x": 470,
+   "y": 150,
+   "col": [
+    -4,
+    -4,
+    8,
+    4
+   ]
+  },
+  {
+   "sprite": "dummy",
+   "x": 500,
+   "y": 150,
+   "col": [
+    -4,
+    -4,
+    8,
+    4
+   ]
+  },
+  {
+   "sprite": "oak2",
+   "x": 557,
+   "y": 66,
+   "col": [
+    -5,
+    -6,
+    10,
+    6
+   ]
+  },
+  {
+   "sprite": "oak2",
+   "x": 13,
+   "y": 240,
+   "col": [
+    -5,
+    -6,
+    10,
+    6
+   ]
+  },
+  {
+   "sprite": "pine",
+   "x": 564,
+   "y": 119,
+   "col": [
+    -4,
+    -5,
+    8,
+    5
+   ]
+  },
+  {
+   "sprite": "pine2",
+   "x": 562,
+   "y": 243,
+   "col": [
+    -4,
+    -5,
+    8,
+    5
+   ]
+  },
+  {
+   "sprite": "oak",
+   "x": 15,
+   "y": 343,
+   "col": [
+    -5,
+    -6,
+    10,
+    6
+   ]
+  },
+  {
+   "sprite": "oak",
+   "x": 163,
+   "y": 388,
+   "col": [
+    -5,
+    -6,
+    10,
+    6
+   ]
+  },
+  {
+   "sprite": "oak",
+   "x": 308,
+   "y": 399,
+   "col": [
+    -5,
+    -6,
+    10,
+    6
+   ]
+  },
+  {
+   "sprite": "oak2",
+   "x": 446,
+   "y": 398,
+   "col": [
+    -5,
+    -6,
+    10,
+    6
+   ]
+  },
+  {
+   "sprite": "pine",
+   "x": 29,
+   "y": 143,
+   "col": [
+    -4,
+    -5,
+    8,
+    5
+   ]
+  },
+  {
+   "sprite": "oak",
+   "x": 352,
+   "y": 409,
+   "col": [
+    -5,
+    -6,
+    10,
+    6
+   ]
+  },
+  {
+   "sprite": "pine2",
+   "x": 20,
+   "y": 150,
+   "col": [
+    -4,
+    -5,
+    8,
+    5
+   ]
+  },
+  {
+   "sprite": "oak2",
+   "x": 241,
+   "y": 18,
+   "col": [
+    -5,
+    -6,
+    10,
+    6
+   ]
+  },
+  {
+   "sprite": "oak",
+   "x": 7,
+   "y": 39,
+   "col": [
+    -5,
+    -6,
+    10,
+    6
+   ]
+  }
+ ],
+ "markers": {
+  "from_deep": [
+   20,
+   200
+  ],
+  "from_heart": [
+   280,
+   30
+  ],
+  "ilvanis": [
+   290,
+   176
+  ],
+  "aelis": [
+   200,
+   220
+  ],
+  "brom": [
+   360,
+   260
+  ],
+  "shop": [
+   420,
+   364
+  ],
+  "lake": [
+   150,
+   300
+  ],
+  "fire": [
+   290,
+   276
+  ]
+ },
+ "exits": [
+  {
+   "rect": [
+    0,
+    188,
+    8,
+    36
+   ],
+   "to": "forest_deep",
+   "spawn": "from_camp"
+  },
+  {
+   "rect": [
+    270,
+    0,
+    36,
+    8
+   ],
+   "to": "heart",
+   "spawn": "from_camp",
+   "requires": "ready_for_heart",
+   "blocked": "Ilvanis quiere hablar contigo antes de que os adentréis en el Corazón."
+  }
+ ],
+ "triggers": [],
+ "lights": [],
+ "modulate": [
+  0.9,
+  0.95,
+  1.0
+ ],
+ "battle_bg": "forest"
+}

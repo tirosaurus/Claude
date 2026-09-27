@@ -335,7 +335,7 @@ def house(roof=(ROOF_D, ROOF_M, ROOF_L), w=64, wall_h=30, roof_h=44, seed=1, sig
     return c
 
 
-def cathedral():
+def cathedral(open_door=False):
     W, H = 192, 184
     c = Canvas(W, H)
     rng = random.Random(21)
@@ -419,7 +419,7 @@ def cathedral():
     for i in range(6):
         c.ellipse(96, 118, 22 + i % 2, 16 + i % 2, STONE_L) if False else None
     # escombros tapando la puerta
-    for i in range(60):
+    for i in range(0 if open_door else 60):
         rx = px0 + rng.randint(-6, pw + 6)
         ry = H - rng.randint(2, 30)
         rr = rng.randint(2, 5)
@@ -828,7 +828,7 @@ def build_all(out):
         "house_red": house(seed=1), "house_blue": house((ROOF_B_D, ROOF_B_M, ROOF_B_L), seed=2),
         "house_brown": house(((92, 64, 44), (128, 92, 60), (160, 122, 80)), w=56, seed=3),
         "house_smithy": house(((70, 70, 80), (96, 96, 108), (130, 130, 140)), w=72, seed=4, sign=STONE_D),
-        "cathedral": cathedral(),
+        "cathedral": cathedral(), "cathedral_open": cathedral(True),
         "oak": oak(1), "oak2": oak(2), "pine": pine(3), "pine2": pine(4),
         "dark_tree": dark_tree(5), "dark_tree2": dark_tree(6),
         "bush": bush(1), "bush_berries": bush(2, True), "rock": rock(), "rock_big": rock(True), "stump": stump(),

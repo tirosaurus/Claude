@@ -1,10 +1,14 @@
 extends Control
 
+const SaveUIScript := preload("res://scripts/ui/SaveUI.gd")
+
 var _logo: Label
 var _t := 0.0
+var _first: Button
 
 
 func _ready() -> void:
+	get_tree().paused = false
 	var bg := TextureRect.new()
 	bg.texture = load("res://assets/bg/title.png")
 	bg.size = Vector2(640, 360)
@@ -32,31 +36,46 @@ func _ready() -> void:
 	add_child(flies)
 
 	_logo = UIKit.label("VAELMOOR", 56, Color(0.98, 0.86, 0.55), 10)
-	_logo.position = Vector2(0, 46)
+	_logo.position = Vector2(0, 40)
 	_logo.size = Vector2(640, 70)
 	_logo.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	add_child(_logo)
 	var sub := UIKit.label("Crónicas del Velo Roto", 18, Color(0.85, 0.8, 0.95), 5)
-	sub.position = Vector2(0, 112)
+	sub.position = Vector2(0, 106)
 	sub.size = Vector2(640, 24)
 	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	add_child(sub)
 
 	var box := VBoxContainer.new()
-	box.position = Vector2(240, 214)
-	box.size = Vector2(160, 80)
-	box.add_theme_constant_override("separation", 8)
+	box.position = Vector2(230, 180)
+	box.size = Vector2(180, 150)
+	box.add_theme_constant_override("separation", 6)
 	add_child(box)
-	var start := UIKit.button("Nueva partida", 18)
+	var last := GameState.any_save()
+	if last >= 0:
+		var cont := UIKit.button("Continuar", 17)
+		cont.pressed.connect(func():
+			if GameState.load_game(last):
+				Audio.sfx("confirm", -6.0)
+				Transition.go_to_scene("res://scenes/World.tscn", 0.6))
+		box.add_child(cont)
+		_first = cont
+	var start := UIKit.button("Nueva partida", 17)
 	start.pressed.connect(_on_start)
 	box.add_child(start)
-	var quit := UIKit.button("Salir", 18)
+	if _first == null:
+		_first = start
+	var load_b := UIKit.button("Cargar partida", 17)
+	load_b.disabled = last < 0
+	load_b.pressed.connect(_on_load)
+	box.add_child(load_b)
+	var quit := UIKit.button("Salir", 17)
 	quit.pressed.connect(func(): get_tree().quit())
 	box.add_child(quit)
-	start.grab_focus()
+	_first.grab_focus()
 
-	var hint := UIKit.label("Demo · WASD/flechas para moverse · E para interactuar · Mayús para correr", 12, Color(0.8, 0.78, 0.9), 3)
-	hint.position = Vector2(0, 336)
+	var hint := UIKit.label("WASD/flechas: mover · E: interactuar · Mayús: correr · Esc: menú y guardar", 12, Color(0.8, 0.78, 0.9), 3)
+	hint.position = Vector2(0, 338)
 	hint.size = Vector2(640, 20)
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	add_child(hint)
@@ -65,9 +84,18 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_t += delta
-	_logo.position.y = 46 + sin(_t * 1.4) * 3.0
+	_logo.position.y = 40 + sin(_t * 1.4) * 3.0
 
 
 func _on_start() -> void:
 	Audio.sfx("confirm", -6.0)
 	Transition.go_to_scene("res://scenes/CharacterCreation.tscn")
+
+
+func _on_load() -> void:
+	var s := SaveUIScript.new()
+	s.setup("load")
+	add_child(s)
+	s.closed.connect(func(_r):
+		if is_instance_valid(_first):
+			_first.grab_focus())

@@ -22,13 +22,13 @@ var _wander_wait := 1.0
 var _last_pos := Vector2.ZERO
 
 
-func setup(id: String, pos: Vector2, face: int = 0, m: int = Mode.IDLE) -> void:
+func setup(id: String, pos: Vector2, face: int = 0, m: int = Mode.IDLE, tex: Texture2D = null) -> void:
 	char_id = id
 	position = pos
 	home = pos
 	facing = face
 	sprite = Sprite2D.new()
-	sprite.texture = load("res://assets/chars/%s.png" % id)
+	sprite.texture = tex if tex != null else load("res://assets/chars/%s.png" % id)
 	sprite.hframes = 3
 	sprite.vframes = 4
 	sprite.centered = false
@@ -50,8 +50,8 @@ func setup(id: String, pos: Vector2, face: int = 0, m: int = Mode.IDLE) -> void:
 func set_mode(m: int) -> void:
 	mode = m
 	if body:
-		body.process_mode = Node.PROCESS_MODE_DISABLED if m == Mode.FOLLOW else Node.PROCESS_MODE_INHERIT
-		body.collision_layer = 0 if m == Mode.FOLLOW else 1
+		body.set_deferred("process_mode", Node.PROCESS_MODE_DISABLED if m == Mode.FOLLOW else Node.PROCESS_MODE_INHERIT)
+		body.set_deferred("collision_layer", 0 if m == Mode.FOLLOW else 1)
 
 
 func _physics_process(delta: float) -> void:

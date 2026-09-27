@@ -14,6 +14,12 @@ const CHARACTERS := {
 	"roc": {"name": "Maese Roc", "portrait": "roc", "pitch": 0.65},
 	"nil": {"name": "Nil", "portrait": "nil", "pitch": 1.45},
 	"remei": {"name": "Tía Remei", "portrait": "remei", "pitch": 1.05},
+	"aelis": {"name": "Aelis", "portrait": "aelis", "pitch": 1.3},
+	"brom": {"name": "Brom", "portrait": "brom", "pitch": 0.6},
+	"ilvanis": {"name": "Anciana Ilvanis", "portrait": "ilvanis", "pitch": 0.95},
+	"elf_guard": {"name": "Guardia élfico", "portrait": "elf_guard", "pitch": 1.0},
+	"emissary": {"name": "El Emisario", "portrait": "emissary", "pitch": 0.5},
+	"thrall": {"name": "Siervo", "portrait": "thrall", "pitch": 0.45},
 }
 
 const TEXT_COLOR := Color(0.24, 0.15, 0.11)
@@ -173,7 +179,14 @@ func choose(options: Array, prompt = null) -> int:
 
 
 func _fmt(s: String) -> String:
-	return s.replace("{name}", GameState.player_name())
+	return fmt(s)
+
+
+static func fmt(s: String) -> String:
+	var f := GameState.is_female()
+	return s.replace("{name}", GameState.player_name()).replace("{o}", "a" if f else "o") \
+		.replace("{os}", "as" if f else "os").replace("{hijo}", "hija" if f else "hijo") \
+		.replace("{el}", "ella" if f else "él").replace("{e}", "a" if f else "e")
 
 
 func _show_line(line, wait_input: bool) -> void:
@@ -192,7 +205,10 @@ func _show_line(line, wait_input: bool) -> void:
 	_name_plate.visible = who != ""
 	if has_portrait:
 		var info: Dictionary = CHARACTERS[who]
-		_portrait.texture = load("res://assets/portraits/%s.png" % info["portrait"])
+		if who in ["player", "kaelen", "yara", "aelis", "brom"]:
+			_portrait.texture = Appearance.member_portrait(who)
+		else:
+			_portrait.texture = load("res://assets/portraits/%s.png" % info["portrait"])
 		_name_label.text = GameState.player_name() if who == "player" else str(info["name"])
 		_pitch = float(info["pitch"])
 		_name_plate.position = Vector2(132, 244)

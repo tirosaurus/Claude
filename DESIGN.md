@@ -239,15 +239,17 @@ no el arte.
 
 ---
 
-## 5. Estado actual y próximos pasos
-- [x] Documento de diseño, mundo, facciones, trío protagonista.
-- [x] Demo jugable pulida: título, creación de personaje, intro, habitación, casa,
-      pueblo de Tortosa con la Catedral Vieja, Bosque Santo, combate de grupo contra
-      el lobo corrupto, elección de rama y final con resumen de vínculos.
-- [x] Pixel art, mapas, música y efectos generados por `tools/build_assets.py`.
-- [x] Decisiones que ya mueven la rivalidad de Kaelen, la aprobación de Yara y su corrupción.
-- [ ] Aspecto distinto por raza y reacciones del mundo a la raza elegida.
-- [ ] Habilidades propias de cada rama en combate; más enemigos (primeros Moronguls).
-- [ ] Interior de la Catedral Vieja.
-- [ ] Guardado/carga de partida.
-- [ ] Capítulo 1: la corrupción llega a Tortosa.
+## 5. Estado actual (v2)
+- [x] Creador de personaje: Humano/Elfo/Enano con cuerpo propio, sexo, peinado, colores de pelo, piel y ropa, barba.
+- [x] Combate ATB estilo Final Fantasy: grupo controlable, habilidades, objetos, objetivos, elementos, estados,
+      jefes con fases, huida, combate automático.
+- [x] Ramas (nivel 2) y 10 clases (nivel 5) con habilidades hasta el nivel 9; rasgo por raza.
+- [x] Compañeros: Kaelen (amistad/rivalidad, puede traicionarte y convertirse en jefe), Yara (curandera o bruja,
+      romance), Aelis o Brom (excluyentes según tu decisión).
+- [x] Historia en 4 actos con decisiones que cambian quién vive y quién muere, y 7 finales con epílogo.
+- [x] Guardado en 3 ranuras, tiendas, oro, cofres, mejoras de equipo, encuentros aleatorios.
+
+## 6. Ideas para el futuro
+- Capítulo 2: el viaje al sur, la Torre Negra y las Tierras Quebradas.
+- Más razas (Bestial, Sangre-Oscura, Renacido) y reacciones del mundo a cada una.
+- Equipo individual por personaje y más clases avanzadas.

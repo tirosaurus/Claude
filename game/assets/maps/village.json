@@ -1434,5 +1434,6 @@
   }
  ],
  "triggers": [],
- "lights": []
+ "lights": [],
+ "battle_bg": "forest"
 }

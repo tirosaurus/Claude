@@ -30,7 +30,7 @@ func setup(w: Node, pos: Vector2, face: int = 0) -> void:
 	shape.position = Vector2(0, -3)
 	add_child(shape)
 	sprite = Sprite2D.new()
-	sprite.texture = load("res://assets/chars/player.png")
+	sprite.texture = Appearance.sheet()
 	sprite.hframes = 3
 	sprite.vframes = 4
 	sprite.centered = false
@@ -59,6 +59,7 @@ func _physics_process(delta: float) -> void:
 		move_and_slide()
 		var moved := position.distance_to(before)
 		if moved > 0.05:
+			world.on_player_moved(moved)
 			_anim_t += delta * (11.0 if running else 7.5)
 			_record_trail()
 		var f := int(_anim_t) % 4

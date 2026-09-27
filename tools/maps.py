@@ -55,6 +55,9 @@ class Map:
         self.lights = []
         self.decals = []  # funciones f(canvas) pintadas tras el suelo
         self.extra_solids = []
+        self.style = "wood"
+        self.encounters = None
+        self.battle_bg = "forest"
 
     def t(self, x, y):
         x = min(max(x, 0), self.w - 1)
@@ -234,6 +237,99 @@ def wall_top_px(x, y):
     return col
 
 
+def _stone_pal(style):
+    if style == "crypt":
+        return (46, 48, 62), (70, 72, 88), (96, 98, 116)
+    return (78, 76, 88), (110, 108, 120), (140, 138, 150)
+
+
+def stone_floor_px(x, y, style="stone"):
+    d, m_, l = _stone_pal(style)
+    row = y // 16
+    off = 8 if row % 2 else 0
+    cx = (x + off) // 16
+    lx, ly = (x + off) % 16, y % 16
+    if lx == 0 or ly == 0:
+        return darken(d, 0.25)
+    k = hash2(cx, row, 101)
+    col = mix(d, l, 0.3 + k * 0.5)
+    if lx == 1 or ly == 1:
+        col = lighten(col, 0.08)
+    if lx == 15 or ly == 15:
+        col = darken(col, 0.1)
+    h = hash2(x, y, 102)
+    if h > 0.95:
+        col = darken(col, 0.12)
+    if fbm(x, y, 16, 103) > 0.7:
+        col = mix(col, (70, 96, 70) if style != "crypt" else (60, 80, 110), 0.3)
+    if hash2(cx, row, 104) > 0.85 and abs(lx - ly) < 1:
+        col = darken(col, 0.3)
+    return col
+
+
+def stone_face_px(x, y, local_y, face_h, style="stone"):
+    d, m_, l = _stone_pal(style)
+    if local_y < 3:
+        return darken(d, 0.3) if local_y < 2 else d
+    bh, bw = 6, 12
+    yy = local_y - 3
+    sx = x + (bw // 2 if (yy // bh) % 2 else 0)
+    if yy % bh == bh - 1 or sx % bw == 0:
+        return darken(d, 0.2)
+    k = hash2(sx // bw, yy // bh + y // 64, 105)
+    col = mix(m_, l, k * 0.6)
+    if local_y > face_h - 6:
+        col = darken(col, 0.2)
+    if fbm(x, y, 10, 106) > 0.7:
+        col = mix(col, (70, 96, 70) if style != "crypt" else (70, 90, 130), 0.35)
+    return col
+
+
+def stone_top_px(x, y, style):
+    base = (34, 32, 42) if style != "crypt" else (22, 22, 32)
+    return lighten(base, 0.08) if hash2(x, y, 107) > 0.9 else base
+
+
+def corrupt_px(x, y):
+    n = fbm(x, y, 20, 110)
+    col = mix((34, 20, 40), (70, 40, 78), n)
+    v = abs(fbm(x, y, 14, 111) - 0.5)
+    if v < 0.025:
+        col = (120, 60, 140)
+    h = hash2(x, y, 112)
+    if h > 0.992:
+        col = (220, 130, 255)
+    elif h < 0.03:
+        col = (26, 14, 30)
+    return col
+
+
+def rootwall_px(x, y):
+    n = fbm(x * 0.6, y * 1.8, 10, 113)
+    col = mix((30, 20, 28), (78, 54, 64), n)
+    if abs(fbm(x, y * 0.3, 8, 114) - 0.5) < 0.03:
+        col = (110, 70, 90)
+    if hash2(x, y, 115) > 0.995:
+        col = (200, 110, 240)
+    return col
+
+
+def water_px(x, y):
+    n = fbm(x, y, 18, 116)
+    col = mix((50, 90, 140), (90, 150, 190), n)
+    if (y + int(4 * math.sin(x * 0.2))) % 9 == 0 and hash2(x, y, 117) > 0.4:
+        col = (170, 210, 235)
+    return col
+
+
+def sap_px(x, y):
+    n = fbm(x, y, 12, 118)
+    col = mix((16, 8, 20), (50, 24, 60), n)
+    if hash2(x, y, 119) > 0.985:
+        col = (170, 90, 200)
+    return col
+
+
 # ------------------------------------------------------------ Render
 def render_ground(m):
     W, H = m.w * T, m.h * T
@@ -244,10 +340,10 @@ def render_ground(m):
             ch = m.grid[ty][tx]
             if m.interior:
                 if ch == "#":
-                    col = wall_top_px(x, y)
+                    col = wall_top_px(x, y) if m.style == "wood" else stone_top_px(x, y, m.style)
                     # borde inferior del muro superior
                     if m.t(tx, ty + 1) == "W" and y % T >= T - 2:
-                        col = (44, 30, 28)
+                        col = (44, 30, 28) if m.style == "wood" else (26, 24, 32)
                 elif ch == "W":
                     top = ty
                     while m.t(tx, top - 1) == "W":
@@ -255,9 +351,21 @@ def render_ground(m):
                     bot = ty
                     while m.t(tx, bot + 1) == "W":
                         bot += 1
-                    col = wall_face_px(x, y, y - top * T, (bot - top + 1) * T)
-                elif ch in ".d":
-                    col = wood_floor_px(x, y)
+                    if m.style == "wood":
+                        col = wall_face_px(x, y, y - top * T, (bot - top + 1) * T)
+                    else:
+                        col = stone_face_px(x, y, y - top * T, (bot - top + 1) * T, m.style)
+                elif ch in ".dr":
+                    if m.style == "wood":
+                        col = wood_floor_px(x, y)
+                    else:
+                        col = stone_floor_px(x, y, m.style)
+                    if ch == "r":
+                        l_edge = m.t(tx - 1, ty) != "r" and x % T < 3
+                        r_edge = m.t(tx + 1, ty) != "r" and x % T > T - 4
+                        col = GOLD_D if (l_edge or r_edge) else mix(CLOTH_R_D, CLOTH_R, 0.5 + 0.5 * (hash2(x, y, 5) > 0.9))
+                        if (l_edge and x % T == 1) or (r_edge and x % T == T - 2):
+                            col = GOLD
                     # oclusión ambiental junto a muros
                     ly = y % T
                     if m.t(tx, ty - 1) in "W#" and ly < 5:
@@ -286,6 +394,16 @@ def render_ground(m):
                 col = forest_px(x, y)
             elif ch == "l":
                 col = clearing_px(x, y)
+            elif ch == "v":
+                col = corrupt_px(x, y)
+            elif ch == "x":
+                col = rootwall_px(x, y)
+            elif ch == "w":
+                col = water_px(x, y)
+            elif ch == "z":
+                col = sap_px(x, y)
+            elif ch == "s":
+                col = stone_floor_px(x, y, "stone")
             else:
                 col = grass_px(x, y)
             c.p[x, y] = col + (255,)
@@ -311,14 +429,13 @@ def bake_shadows(m, c):
 
 def solids_from_grid(m):
     rects = []
-    if not m.interior:
-        return rects
+    solid = "#W " if m.interior else "xwz"
     for ty in range(m.h):
         tx = 0
         while tx < m.w:
-            if m.grid[ty][tx] in "#W ":
+            if m.grid[ty][tx] in solid:
                 start = tx
-                while tx < m.w and m.grid[ty][tx] in "#W ":
+                while tx < m.w and m.grid[ty][tx] in solid:
                     tx += 1
                 rects.append([start * T, ty * T, (tx - start) * T, T])
             else:
@@ -340,6 +457,9 @@ def save_map(m):
     }
     if m.modulate:
         data["modulate"] = m.modulate
+    if m.encounters:
+        data["encounters"] = m.encounters
+    data["battle_bg"] = m.battle_bg
     with open(f"{OUT_DIR}/maps/{m.id}.json", "w") as f:
         json.dump(data, f, ensure_ascii=False, indent=1)
 
@@ -676,7 +796,7 @@ def forest():
     W, H = 50, 32
     m = Map("forest", ["f" * W] * H, False, "Bosque Santo", "forest", modulate=[0.82, 0.9, 0.84])
     # sendero serpenteante
-    pts = [(0, 15), (6, 15), (10, 13), (15, 14), (20, 16), (26, 15), (31, 13), (36, 14), (41, 15), (45, 15)]
+    pts = [(0, 15), (6, 15), (10, 13), (15, 14), (20, 16), (26, 15), (31, 13), (36, 14), (41, 15), (45, 15), (49, 15)]
     for (a, b) in zip(pts, pts[1:]):
         steps = max(abs(b[0] - a[0]), abs(b[1] - a[1])) * 2
         for i in range(steps + 1):
@@ -741,7 +861,10 @@ def forest():
     m.marker("yara", 282, 268)
     m.marker("wolf", 700, 240)
     m.marker("party_vs_wolf", 612, 250)
-    m.exit([0, 224, 8, 56], "village", "from_forest")
+    m.exit([0, 224, 8, 56], "village_any", "from_forest")
+    m.exit([W * T - 8, 224, 8, 56], "forest_deep", "from_forest", requires="act3_started",
+           blocked="La espesura se cierra más allá. Ahora no tienes motivos para adentrarte.")
+    m.marker("from_deep", W * T - 24, 256)
     m.trigger("meet_yara", [220, 170, 20, 170])
     m.trigger("wolf_zone", [590, 150, 16, 200])
     return m
@@ -752,5 +875,6 @@ def build_all(out):
     OUT_DIR = out
     import os
     os.makedirs(f"{out}/maps", exist_ok=True)
-    for fn in (bedroom, housemain, village, forest):
+    import maps2
+    for fn in (bedroom, housemain, village, forest) + maps2.MAPS:
         save_map(fn())
