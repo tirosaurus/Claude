@@ -47,6 +47,10 @@ ramificada y varios finales.
   Susurros** (mazmorra opcional); dificultad Fácil/Normal/Difícil; PM que se recuperan por turno; caminar
   con 6 fases; madre de tu raza; el ataque nocturno animado; y el menú (Esc) disponible siempre.
 
+- **Aleixolo, el Glotón:** jefe repostero de la Torre Negra que convierte a la gente en chocolate y se la come.
+  Su punto débil (un currículum) está en el pozo abandonado del Bosque Santo, al que solo llegas si salvas a
+  Marta al amanecer. Si Yara es tu pareja y no llevas el currículum... se la come y te vuelves oscuro.
+
 ## Sprites personalizados / IA
 Cualquier PNG en `game/assets/custom/` sustituye al sprite generado con el mismo nombre (personajes,
 poses de combate, enemigos, retratos y protagonista). `tools/import_sprite.py` convierte imágenes de IA

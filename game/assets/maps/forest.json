@@ -3333,6 +3333,18 @@
     "flicker": true,
     "oy": -20
    }
+  },
+  {
+   "sprite": "well",
+   "x": 700,
+   "y": 200,
+   "id": "old_well",
+   "col": [
+    -14,
+    -14,
+    28,
+    14
+   ]
   }
  ],
  "markers": {

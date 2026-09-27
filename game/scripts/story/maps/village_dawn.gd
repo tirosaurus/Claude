@@ -95,6 +95,7 @@ func _aftermath() -> void:
 	if j != 1:
 		GameState.add_item("flor_luna_item", 1)
 		await say([M("Llevaos esto, al menos. (Flor de luna ×1)")])
+	await _marta()
 	GameState.add_item("pocion", 2)
 	await say(["Los vecinos os dan lo poco que tienen: dos pociones y muchos abrazos.",
 		"(El camino al bosque profundo sigue desde el este del Bosque Santo. Puedes comprar en la herrería de Roc.)"])
@@ -102,6 +103,46 @@ func _aftermath() -> void:
 	setf("act3_started")
 	GameState.set_meta("tod", "day")
 	end()
+
+
+## El momento clave: salvar (o no) a Marta de la casa que se derrumba.
+func _marta() -> void:
+	Audio.sfx("hit", 0.0, 0.5)
+	shake(5.0, 0.6)
+	await say(["Un crujido enorme. La casa del sur, la de los Pujol, se viene abajo entre chispas.",
+		"«¡Marta! ¡Mi Marta sigue dentro!», grita una vecina."])
+	await pan_to(Vector2(400, 470), 1.0)
+	dust(Vector2(400, 450), Color(0.5, 0.45, 0.4))
+	await say([K("{name}, no. Esa casa se está cayendo. Si entras, no sales. Y la Semilla no puede esperar."),
+		Y("¡Hay alguien ahí dentro, Kaelen!")])
+	var i := await choose(["¡Voy a por ella!", "Kaelen tiene razón. La Semilla es lo primero."], "Las llamas crecen.")
+	await release_camera(0.3)
+	if i == 0:
+		setf("marta_saved")
+		GameState.change_approval("yara", 5)
+		GameState.change_kaelen_rivalry(3)
+		await Transition.fade_out(0.5)
+		Audio.sfx("hit", -4.0, 0.7)
+		await wait(0.6)
+		var m = world.spawn_npc("marta", world.player.position + Vector2(18, 4), 1, 0, Appearance.tex("res://assets/chars/villager_f.png"))
+		await Transition.fade_in(0.5)
+		Transition.busy = false
+		await say(["Sales tosiendo, con la ropa humeante, cargando a una mujer joven. Detrás de ti, el techo se desploma.",
+			{"who": "Marta", "text": "Gracias... gracias. Creía que... que era el final."},
+			{"who": "Marta", "text": "Escuchad. Anoche, antes del ataque, vino al pueblo un hombre muy gordo con gorro de cocinero."},
+			{"who": "Marta", "text": "Compró todo el chocolate de la tienda. TODO. Y con un cucharón enorme convirtió en chocolate al perro del molinero... y se lo comió."},
+			{"who": "Marta", "text": "Luego fue al pozo viejo del Bosque Santo, el del claro del este, y tiró unos papeles dentro. Llorando."},
+			{"who": "Marta", "text": "Decía: «¡Que nadie los lea jamás!». Si es lo que le da miedo... quizá os sirva."},
+			K("...Vale. Ha merecido la pena. Pero la próxima vez que entres en una casa en llamas, avísame."),
+			"(Nuevo lugar: el pozo abandonado del claro del este, en el Bosque Santo.)"])
+		world.remove_npc("marta")
+	else:
+		setf("marta_lost")
+		GameState.change_approval("yara", -6)
+		GameState.change_approval("kaelen", 2)
+		await say(["Das la espalda a la casa. El techo se desploma con un rugido.",
+			"Nadie ve salir a Marta. Solo, entre las ruinas, una forma marrón y brillante... como una estatua de chocolate.",
+			Y("¿Eso es... chocolate? ¿Qué clase de monstruo hace algo así?"), K("No lo sé. Y no quiero saberlo.")])
 
 
 func on_npc(id: String) -> void:

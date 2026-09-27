@@ -853,6 +853,7 @@ def forest():
             m.prop(rng.choice(["bush", "bush", "bush_berries", "rock", "stump", "rock_big"]), x, y)
     # santuario
     m.prop("shrine", 322, 206, "shrine", light={"r": 90, "color": [0.55, 0.85, 1.0], "e": 0.8, "flicker": True, "oy": -20})
+    m.prop("well", 700, 200, "old_well")
     m.decals += [sunbeam_decal(300, 240, 70, 40), sunbeam_decal(680, 240, 40, 26),
                  moonflower_decal([(280, 262), (292, 270), (270, 276), (300, 284), (262, 262), (286, 290),
                                    (356, 250), (348, 262), (340, 280), (250, 240), (364, 276)]),

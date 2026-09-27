@@ -284,6 +284,10 @@ const SKILLS := {
 	"e_hambre": {"name": "Hambre", "target": "enemies", "kind": "mag", "power": 0.9, "el": "dark", "heal_party": 0.4},
 	"e_garra": {"name": "Garra del Abismo", "target": "enemy", "kind": "phys", "power": 1.8},
 	"e_mirada": {"name": "Mirada vacía", "target": "enemy", "kind": "status", "inflict": "stun", "chance": 0.55},
+	"e_rayo_choco": {"name": "Rayo de cacao", "target": "enemy", "kind": "status", "inflict": "choco", "chance": 0.7},
+	"e_comer": {"name": "¡A comer!", "target": "enemy", "kind": "eat", "power": 1.2},
+	"e_panzazo": {"name": "Panzazo", "target": "enemies", "kind": "phys", "power": 0.95},
+	"e_bombon": {"name": "Bombón explosivo", "target": "enemy", "kind": "mag", "power": 1.3, "el": "fire"},
 	"e_invocar": {"name": "Brotes", "target": "self", "kind": "summon"},
 	"e_regenerar": {"name": "Regenerar", "target": "self", "kind": "buff", "status": ["regen"], "turns": 4},
 }
@@ -297,6 +301,7 @@ const STATUS := {
 	"taunt": {"name": "Provocación", "icon": "st_taunt"},
 	"weak": {"name": "Debilidad", "icon": "st_weak"},
 	"wall": {"name": "Muro", "icon": "st_protect"},
+	"choco": {"name": "Chocolate", "icon": "st_choco"},
 }
 
 const ITEMS := {
@@ -307,6 +312,8 @@ const ITEMS := {
 	"antidoto": {"name": "Antídoto", "desc": "Cura el veneno.", "icon": "it_antidote", "price": 15, "target": "ally", "cure": true},
 	"pluma": {"name": "Pluma de fénix", "desc": "Revive con el 40% de vida.", "icon": "it_feather", "price": 180, "target": "ally_dead", "revive": 0.4},
 	"flor_luna_item": {"name": "Flor de luna", "desc": "Cura 50 a todo el grupo y limpia el veneno.", "icon": "it_flower", "price": 90, "target": "allies", "heal": 50, "cure": true},
+	"curriculum": {"name": "Currículum de Aleixolo", "desc": "Un currículum viejo y manchado de chocolate. Úsalo contra Aleixolo.",
+		"icon": "it_scroll", "price": 0, "target": "enemy", "special": "aleixolo", "key": true},
 	"bomba": {"name": "Bomba de fuego", "desc": "70 de daño de fuego a todos los enemigos.", "icon": "it_bomb", "price": 60, "target": "enemies", "damage": 70, "el": "fire"},
 }
 
@@ -515,6 +522,9 @@ const ENEMIES := {
 		"xp": 40, "gold": 18, "weak": ["fire", "bolt"], "resist": ["phys"], "ai": [["e_feroz", 3], ["e_mordisco", 3]], "drops": [["pan", 0.4], ["pocion", 0.2]]},
 	"nhalzur": {"name": "Nhal'Zur, el Hambre bajo el Mundo", "sprite": "enemies/nhalzur", "frames": 2, "scale": 1.15, "hp": 800000, "atk": 25, "def": 20, "mag": 23, "res": 20, "spd": 13,
 		"xp": 0, "gold": 0, "weak": ["light"], "resist": ["dark", "nature", "ice"], "ai": [["e_velo", 3], ["e_hambre", 2], ["e_garra", 3], ["e_mirada", 1]], "boss": true},
+	"aleixolo": {"name": "Aleixolo, el Glotón", "sprite": "enemies/aleixolo", "frames": 2, "scale": 1.5, "hp": 2400, "atk": 23, "def": 12, "mag": 21, "res": 10, "spd": 10,
+		"xp": 600, "gold": 400, "weak": ["fire"], "resist": ["dark"], "ai": [["e_rayo_choco", 3], ["e_comer", 3], ["e_panzazo", 2], ["e_bombon", 2]],
+		"boss": true, "drops": [["pocion_mayor", 1.0]]},
 	"mother_root": {"name": "Madre Raíz", "sprite": "enemies/mother_root", "frames": 2, "scale": 1.25, "hp": 1500, "atk": 22, "def": 11, "mag": 20, "res": 13, "spd": 9,
 		"xp": 0, "gold": 0, "weak": ["fire", "light"], "resist": ["dark", "nature"], "ai": [["e_raices", 3], ["e_latido", 2], ["e_escupir", 2]], "boss": true},
 }

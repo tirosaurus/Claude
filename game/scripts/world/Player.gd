@@ -35,6 +35,8 @@ func setup(w: Node, pos: Vector2, face: int = 0) -> void:
 	sprite.vframes = 4
 	sprite.centered = false
 	sprite.offset = Vector2(-10, -29)
+	if GameState.has_flag("player_dark"):
+		sprite.modulate = Color(0.78, 0.62, 0.9)
 	add_child(sprite)
 	reset_trail()
 	_update_frame(-1)

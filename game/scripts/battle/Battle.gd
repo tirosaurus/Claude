@@ -94,6 +94,10 @@ func _build_scene() -> void:
 	for i in list.size():
 		_spawn_enemy(str(list[i]), slots[i] if list.size() > 1 else (Vector2(170, 160) if enc.get("boss", false) else slots[0]))
 
+	if enc.get("weaken_aleixolo", false):
+		for e in enemies:
+			if e.key == "aleixolo":
+				_weaken_aleixolo(e)
 	var i := 0
 	for id in GameState.party:
 		if i >= 4:
@@ -515,6 +519,9 @@ func _tick_statuses(b) -> bool:
 	if b.statuses.has("stun"):
 		skip = true
 		await show_top("%s está aturdido." % b.display_name, 0.7)
+	elif b.statuses.has("choco"):
+		skip = true
+		await show_top("%s es una estatua de chocolate y no puede moverse." % b.display_name, 0.8)
 	for s in b.statuses.keys():
 		b.statuses[s] = int(b.statuses[s]) - 1
 		if b.statuses[s] <= 0:
@@ -890,6 +897,8 @@ func _do_skill(user, id: String, targets: Array) -> void:
 				await _steal(t)
 			elif kind == "summon":
 				await _summon(user)
+			elif kind == "eat":
+				await _eat(user, t)
 			await _wait(0.08)
 	for st in sk.get("self_status", []):
 		user.statuses[st] = 3
@@ -909,6 +918,21 @@ func _do_item(user, id: String, targets: Array) -> void:
 	GameState.remove_item(id)
 	await show_top(str(it["name"]), 0.45)
 	_cast_pose(user)
+	if str(it.get("special", "")) == "aleixolo":
+		var t0 = targets[0]
+		if t0.is_enemy and t0.key == "aleixolo" and not t0.flags.get("weakened", false):
+			await show_top("Le enseñas el currículum a Aleixolo.", 1.0)
+			await show_top("«Experiencia: tres meses de ayudante de repostería. Motivo del despido: comerse el género.»", 1.8)
+			await show_top("Aleixolo se echa a llorar. «¡Nadie me quiso contratar! ¡Nadie!»", 1.4)
+			_weaken_aleixolo(t0)
+			_float(t0, "¡Débil!", Color(1, 0.7, 0.3), true)
+			_shake(4.0)
+		else:
+			GameState.add_item(id)
+			await show_top("No parece interesarle lo más mínimo.", 0.9)
+		user.set_idle_frame()
+		_refresh_ui()
+		return
 	for t in targets:
 		if it.has("revive"):
 			if not t.alive():
@@ -957,6 +981,37 @@ func _steal(t) -> void:
 		Audio.sfx("buy", -6.0)
 	else:
 		await show_top("Fallas el robo.", 0.7)
+
+
+## Aleixolo se come a quien ha convertido en chocolate: mucho daño, se cura y se hace más fuerte.
+func _eat(user, t) -> void:
+	if not t.alive():
+		return
+	if t.statuses.has("choco"):
+		var dmg := int(t.max_hp() * 0.55) + randi_range(0, 8)
+		Audio.sfx("crit", -2.0, 0.7)
+		_float(t, "¡ÑAM!", Color(0.85, 0.55, 0.3), true, -24)
+		t.statuses.erase("choco")
+		_damage(t, dmg, true, false)
+		var heal := int(user.max_hp() * 0.12)
+		user.hp = mini(user.max_hp(), user.hp + heal)
+		user.max_stats["atk"] = float(user.max_stats["atk"]) + 3
+		user.max_stats["mag"] = float(user.max_stats["mag"]) + 2
+		_float(user, "+%d" % heal, Color(0.55, 1, 0.55))
+		var tw := create_tween()
+		tw.tween_property(user.sprite, "scale", user.sprite.scale * 1.06, 0.3).set_trans(Tween.TRANS_BACK)
+		await show_top("%s se hace más fuerte... y más gordo." % user.display_name, 0.9)
+	else:
+		await _hit(user, t, {"kind": "phys", "power": 1.1}, "")
+	_refresh_ui()
+
+
+func _weaken_aleixolo(e) -> void:
+	e.flags["weakened"] = true
+	for k in ["atk", "mag", "def", "res"]:
+		e.max_stats[k] = float(e.max_stats[k]) * 0.6
+	e.statuses["stun"] = 2
+	e.sprite.self_modulate = Color(0.8, 0.85, 1.0)
 
 
 func _summon(user) -> void:
@@ -1059,7 +1114,7 @@ func _try_inflict(t, st: String, chance: float) -> void:
 	if t.is_enemy and t.data.get("boss", false) and st == "stun":
 		chance *= 0.3
 	if randf() < chance:
-		t.statuses[st] = 3 if st != "stun" else 1
+		t.statuses[st] = 1 if st == "stun" else (2 if st == "choco" else 3)
 		_float(t, DB.STATUS[st]["name"], Color(1, 0.9, 0.5))
 		_refresh_ui()
 	else:
@@ -1145,6 +1200,19 @@ func _enemy_act(e) -> void:
 			if ratio < 0.5 and not e.flags.get("taunt", false):
 				e.flags["taunt"] = true
 				await show_top("Kaelen: «¿Por qué siempre tú? ¡¿Por qué nunca yo?!»", 1.4)
+		"aleixolo":
+			var chocos: Array = _alive(party).filter(func(p): return p.statuses.has("choco"))
+			if e.flags.get("weakened", false):
+				skill_id = ["e_panzazo", "e_bombon"].pick_random()
+			elif not chocos.is_empty() and randf() < 0.8:
+				await _do_skill(e, "e_comer", [chocos.pick_random()])
+				return
+			elif ratio < 0.4 and not e.flags.get("snack", false):
+				e.flags["snack"] = true
+				e.hp = mini(e.max_hp(), e.hp + int(e.max_hp() * 0.2))
+				await show_top("Aleixolo se zampa una tableta entera de chocolate. ¡Recupera fuerzas!", 1.2)
+				_refresh_ui()
+				return
 		"nhalzur":
 			if ratio < 0.5 and not e.flags.get("phase2", false):
 				e.flags["phase2"] = true
@@ -1528,6 +1596,9 @@ func _refresh_ui() -> void:
 			ic.stretch_mode = TextureRect.STRETCH_SCALE
 			icons.add_child(ic)
 		b.set_idle_frame()
+		if b.alive():
+			var base_mod := Color(0.78, 0.62, 0.9) if b.id == "player" and GameState.has_flag("player_dark") else Color.WHITE
+			b.sprite.modulate = Color(0.55, 0.35, 0.2) if b.statuses.has("choco") else base_mod
 	for e in enemies:
 		if e.hp_bar:
 			_tween_bar(e.hp_bar, e.hp, e.max_hp())

@@ -170,6 +170,8 @@ func _kaelen_fate() -> String:
 
 func _yara_fate() -> String:
 	var y: Dictionary = GameState.companions["yara"]
+	if f("yara_eaten"):
+		return "De Yara solo quedó una flor de luna, caída en el camino del Corazón. Tu madre la guarda en un vaso junto a la ventana. Nunca habláis de ello."
 	if f("yara_lost"):
 		return "Yara no regresó. Los leñadores hablan de una bruja en lo más oscuro del bosque, que cura a los animales heridos... y castiga a los que talan."
 	var witch := GameState.corruption() >= 40

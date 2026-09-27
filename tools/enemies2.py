@@ -21,6 +21,10 @@ def ramp(dark, mid, light, n=5):
 
 
 MAT = {
+    "choco": ramp((40, 20, 10), (110, 62, 34), (190, 130, 80)),
+    "chef": ramp((150, 150, 160), (225, 225, 232), (255, 255, 255)),
+    "pinkskin": ramp((120, 70, 70), (226, 164, 140), (255, 220, 200)),
+    "shirt": ramp((80, 30, 50), (170, 70, 100), (240, 150, 170)),
     "purple": ramp((34, 18, 48), (104, 52, 128), (196, 140, 214)),
     "flesh": ramp((48, 22, 44), (140, 70, 110), (230, 160, 190)),
     "bark": ramp((26, 18, 16), (86, 56, 42), (166, 124, 90)),
@@ -482,8 +486,60 @@ def nhalzur(f):
     return c
 
 
+def aleixolo(f):
+    """Aleixolo, el Glotón de la Torre Negra: gordito, gorro de cocinero y cucharón de cacao."""
+    W, H = 110, 104
+    s = Sculpt(W, H)
+    jig = [0, 2][f]
+    # piernas cortas
+    s.capsule(44, 84, 42, 99, 7, 7, "shirt", cz=-4)
+    s.capsule(64, 84, 66, 99, 7, 7, "shirt", cz=-4)
+    s.ellipsoid(41, 101, 9, 4, "choco", cz=-2)
+    s.ellipsoid(67, 101, 9, 4, "choco", cz=-2)
+    # barrigón
+    s.ellipsoid(54, 66 + jig // 2, 34 + jig, 28, "shirt", cz=0)
+    s.ellipsoid(56, 72 + jig // 2, 20 + jig, 16, "pinkskin", cz=14)     # barriga asomando
+    # brazos regordetes
+    s.capsule(24, 56, 12, 74, 8, 7, "pinkskin", cz=8)
+    s.capsule(84, 56, 96, 66, 8, 7, "pinkskin", cz=8)
+    # cucharón gigante
+    s.capsule(98, 66, 104, 20, 2.5, 2.5, "chef", cz=12)
+    s.ellipsoid(102, 16, 9, 7, "chef", cz=14)
+    s.ellipsoid(102, 15, 6, 4, "choco", cz=18)
+    # cabeza y gorro de cocinero
+    s.ellipsoid(54, 34, 15, 13, "pinkskin", cz=10)
+    s.ellipsoid(54, 17, 13, 7, "chef", cz=12)
+    s.ellipsoid(46, 10, 7, 6, "chef", cz=13)
+    s.ellipsoid(58, 8, 8, 7, "chef", cz=13)
+    s.capsule(42, 22, 66, 22, 3, 3, "chef", cz=14)
+    c = s.render()
+    # cara: ojitos, mofletes, bigote y boca manchada de chocolate
+    c.px(48, 33, (30, 20, 20))
+    c.px(59, 33, (30, 20, 20))
+    c.px(48, 32, (255, 255, 255))
+    c.px(59, 32, (255, 255, 255))
+    for (x, y) in ((44, 37), (45, 37), (62, 37), (63, 37)):
+        c.px(x, y, (240, 130, 130))
+    for x in range(49, 60):
+        c.px(x, 38, (70, 40, 26))
+    c.rect(51, 40, 6, 3, (60, 30, 20))
+    c.px(53, 43, (110, 62, 34))
+    c.px(54, 44, (110, 62, 34))
+    # manchas de chocolate en la camisa y goteo del cucharón
+    for (x, y, r) in ((40, 60, 3), (66, 78, 2.5), (48, 88, 2), (72, 58, 2)):
+        c.ellipse(x, y + jig // 2, r, r * 0.8, (100, 56, 30))
+    for k in range(3):
+        c.px(101 + k, 23 + k * 2 + f, (100, 56, 30))
+    # tableta de chocolate en la mano izquierda
+    c.rect(4, 70, 10, 7, (90, 48, 26))
+    for (x, y) in ((6, 72), (9, 72), (6, 75), (9, 75)):
+        c.px(x, y, (130, 76, 44))
+    halo(c, 102, 16, (180, 110, 60), 12, 60)
+    return c
+
+
 ENEMIES = {"larva": larva, "bat": bat, "brute": brute, "root": root, "spectre": spectre, "custodian": custodian,
-           "mother_root": mother_root, "wisp": wisp, "boar": boar, "nhalzur": nhalzur}
+           "mother_root": mother_root, "wisp": wisp, "boar": boar, "nhalzur": nhalzur, "aleixolo": aleixolo}
 
 
 def build_all(out):

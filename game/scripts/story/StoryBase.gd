@@ -186,8 +186,9 @@ func cycle(key: String, options: Array) -> Array:
 	return pick if pick is Array else [pick]
 
 
-func battle(id: String, enemies: Array, bg: String, music: String = "", boss: bool = false) -> void:
+func battle(id: String, enemies: Array, bg: String, music: String = "", boss: bool = false, extra: Dictionary = {}) -> void:
 	var enc := {"id": id, "enemies": enemies, "bg": bg, "boss": boss, "can_flee": not boss}
+	enc.merge(extra)
 	if music != "":
 		enc["music"] = music
 	await world.start_battle(enc)

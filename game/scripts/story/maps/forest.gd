@@ -131,7 +131,34 @@ func _class_tutorial() -> void:
 		K("Vale, vale, profesora. ¿Podemos ir ya a buscar al ciervo?")])
 
 
+func _old_well() -> void:
+	begin()
+	if flag("curriculum_found"):
+		await say(["El pozo abandonado. Ya no queda nada dentro, salvo un olor dulzón a cacao."])
+		end()
+		return
+	if not flag("marta_saved") or not flag("act3_started"):
+		await say(["Un pozo viejo, seco y tapado con tablas podridas.", "Por alguna razón, huele a chocolate."])
+		end()
+		return
+	await say(["El pozo del que habló Marta. Apartas las tablas: hay una escalerilla de hierro oxidado.",
+		"Bajas. Al fondo, entre cáscaras de nuez y envoltorios de chocolate, hay unos papeles doblados."])
+	setf("curriculum_found")
+	GameState.add_item("curriculum")
+	Audio.sfx("chest", -4.0)
+	await say(["Obtienes: Currículum de Aleixolo.",
+		"«ALEIXOLO. Aspirante a Maestro Repostero. Experiencia: tres meses de ayudante. Motivo del despido: comerse el género.»",
+		"«Aficiones: el chocolate. Otras aficiones: el chocolate con leche.»",
+		"Grapada al currículum hay una carta: «Estimado Aleixolo: lamentamos comunicarle que no ha sido seleccionado.» Hay otras cuarenta iguales.",
+		K("Esto es lo más triste que he leído en mi vida."),
+		"(Úsalo en combate contra Aleixolo desde Objetos. O enséñaselo antes de luchar.)"])
+	end()
+
+
 func on_interact(id: String) -> void:
+	if id == "old_well":
+		await _old_well()
+		return
 	if id == "shrine" and flag("ov3") and not flag("ov_done") and not flag("won_wolf") \
 			and str(GameState.player_data.get("class", "")) != "":
 		await _overlord()

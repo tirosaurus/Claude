@@ -16,6 +16,9 @@ func on_map_ready(_m: String) -> void:
 	if flag("won_horde") and not flag("kaelen_resolved"):
 		await _after_horde()
 		return
+	if flag("won_aleixolo") and not flag("aleixolo_done"):
+		await _after_aleixolo()
+		return
 	if flag("won_nhalzur") and not flag("ov_end_chosen"):
 		await _after_nhalzur()
 		return
@@ -38,12 +41,110 @@ func on_map_ready(_m: String) -> void:
 
 func on_trigger(id: String) -> void:
 	match id:
+		"aleixolo_zone":
+			if not flag("aleixolo_event"):
+				await _aleixolo()
 		"kaelen_zone":
 			if not flag("kaelen_event"):
 				await _kaelen_event()
 		"final_zone":
 			if not flag("final_started"):
 				await _final()
+
+
+# ------------------------------------------------------------ Aleixolo, el Glotón
+func AL(t: String) -> Dictionary:
+	return {"who": "Aleixolo", "text": t}
+
+
+func _aleixolo() -> void:
+	setf("aleixolo_event")
+	begin()
+	var spot: Vector2 = world.marker("aleixolo")
+	await pan_to(spot, 0.9)
+	var al := monster("res://assets/enemies/aleixolo.png", 2, spot + Vector2(0, 30), 0.5)
+	var elf = world.spawn_npc("prisoner", spot + Vector2(-34, 32), 2, 0, Appearance.tex("res://assets/chars/elf_guard.png"))
+	await say(["En mitad del camino hay un hombre enorme, redondo como un tonel, con un gorro de cocinero manchado.",
+		"Lleva un cucharón gigante que gotea chocolate. A su lado, un elfo atado tiembla de miedo."])
+	await say([AL("¡Ay, qué hambre tengo! ¿Tú qué opinas, orejitas? ¿Elfo con leche o elfo negro?")])
+	Audio.sfx("magic", -4.0, 0.7)
+	var tw := create_tween()
+	tw.tween_property(elf, "modulate", Color(0.5, 0.3, 0.16), 0.6)
+	await tw.finished
+	await say(["Un rayo marrón sale del cucharón. El elfo se queda rígido, brillante... convertido en chocolate."])
+	await move_node(al, elf.position + Vector2(20, -2), 0.6)
+	Audio.sfx("crit", -4.0, 0.6)
+	world.remove_npc("prisoner")
+	var grow := create_tween()
+	grow.tween_property(al, "scale", al.scale * 1.15, 0.4).set_trans(Tween.TRANS_BACK)
+	await say(["Ñam. Crunch. Ñam.", AL("¡Mmmm! Con avellanas. Cada bocado me hace más fuerte, ¿sabéis?"),
+		AL("Soy Aleixolo, Gran Repostero de la Torre Negra. Nadie quiso contratarme... ¡pero la Torre sí! Y me dio este cucharón."),
+		AL("Todo lo que toca se vuelve chocolate. Y todo el chocolate... ¡acaba aquí!"), "Se da unas palmaditas en la barriga."])
+	await release_camera(0.3)
+	var weak := false
+	if GameState.item_count("curriculum") > 0:
+		var i := await choose(["Enseñarle su currículum.", "Luchar sin más."], AL("¿Y vosotros? Tenéis cara de... ¡merienda!"))
+		if i == 0:
+			weak = true
+			GameState.remove_item("curriculum")
+			await say(["Sacas los papeles del pozo y se los plantas delante de la cara.",
+				"Aleixolo se queda blanco. Luego rojo. Luego empieza a temblarle el labio.",
+				AL("¿D-de dónde habéis sacado eso? «Motivo del despido: comerse el género»... ¡No fue culpa mía! ¡Estaba muy rico!"),
+				AL("Cuarenta cartas de rechazo... ¡CUARENTA! ¡Buaaaaaa!"),
+				"Aleixolo llora a moco tendido. Su cucharón tiembla y apenas brilla. Es el momento."])
+	if not weak and flag("romance_yara") and has("yara"):
+		await _aleixolo_eats_yara(al)
+	elif not weak:
+		await say([AL("¡A la mesa!")])
+	end()
+	await battle("aleixolo", ["aleixolo"], "heart", "boss", true, {"weaken_aleixolo": weak})
+
+
+## Si Yara es tu pareja y no tienes su punto débil, Aleixolo se la come... y te pierdes a ti mism{o}.
+func _aleixolo_eats_yara(al: Sprite2D) -> void:
+	var yara = npc("yara")
+	await say([AL("Oh, oh, oh. ¿Y esta pelirroja tan dulce? Huele a flor de luna... ¡Postre!"),
+		Y("{name}...!")])
+	Audio.sfx("magic", -2.0, 0.6)
+	if yara:
+		var tw := create_tween()
+		tw.tween_property(yara, "modulate", Color(0.5, 0.3, 0.16), 0.7)
+		await tw.finished
+	await say(["El rayo alcanza a Yara antes de que puedas moverte. Su mano, tendida hacia ti, se vuelve de chocolate.",
+		"Y luego todo lo demás."])
+	if yara:
+		await move_node(al, yara.position + Vector2(18, -2), 0.5)
+	Audio.sfx("crit", -2.0, 0.5)
+	setf("yara_eaten")
+	setf("yara_lost")
+	GameState.companions["yara"]["alive"] = false
+	GameState.leave_party("yara")
+	world.remove_npc("yara")
+	await say(["Ñam.", "..."])
+	await world.set_tint(Color(0.35, 0.1, 0.25), 1.2)
+	Audio.sfx("dark", 0.0, 0.5)
+	setf("player_dark")
+	await say(["Algo se rompe dentro de ti.", "No es tristeza. Es algo mucho más frío.",
+		"Una voz que no es la tuya te susurra que el mundo ya no merece ser salvado. Y tú... la escuchas.",
+		"(Te has vuelto oscur" + GameState.g("o", "a") + ". Ya no hay vuelta atrás.)"])
+	if has("kaelen"):
+		await say([K("{name}... tus ojos. ¿Qué te está pasando?")])
+
+
+func _after_aleixolo() -> void:
+	begin()
+	setf("aleixolo_done")
+	if flag("player_dark"):
+		await say(["Aleixolo se derrite en un charco de chocolate humeante. No sientes nada.",
+			"Ni alegría, ni alivio. Solo hambre. Hambre de algo que no sabes nombrar.",
+			K("Ya está, {name}. Ya está... ¿verdad?") if has("kaelen") else "Nadie se atreve a hablarte."])
+	else:
+		await say(["Aleixolo cae de culo con un «¡plof!» y el cucharón se le parte en dos.",
+			AL("¡Mi cucharón! Buaaa... Me voy a buscar trabajo honrado. En una panadería. O en dos."),
+			"Se aleja rodando entre las raíces, sollozando y mordisqueando una tableta.",
+			K("¿Lo dejamos ir?"), Y("Creo que ya ha sufrido bastante. Cuarenta cartas, Kaelen.") if has("yara") else "Nadie tiene valor para perseguirlo."])
+	await world.set_tint(world._map_modulate(), 0.8)
+	end()
 
 
 # ------------------------------------------------------------ Kaelen
@@ -227,6 +328,14 @@ func _after_final() -> void:
 		carrier = "Yara"
 	elif flag("seed_kaelen") and has("kaelen"):
 		carrier = "Kaelen"
+	if flag("player_dark"):
+		setf("ending_king")
+		await say(["La Semilla late. Y tú ya no quieres plantarla.",
+			"La voz fría decide por ti. Aprietas la Semilla contra el pecho y dejas que su poder te llene.",
+			"Así, piensas, nadie volverá a arrebatarte nada."])
+		end()
+		_go_ending()
+		return
 	var opts := ["Plantar la Semilla y purificar el Corazón.", "Absorber el poder de la Semilla.", "Fundirte con la Semilla, como Ysolde."]
 	var i := await choose(opts, "La Semilla espera. (La lleva %s.)" % carrier)
 	match i:
@@ -288,7 +397,11 @@ func _after_nhalzur() -> void:
 		"«Heredero», susurra el Soberano. «Ya lo has visto. Hay dos caminos.»",
 		"«Puedes quedarte conmigo. Ocupar mi trono. Con este acero, nadie volverá a amenazar Vaelmoor... nunca. Ni nadie te dirá nunca que no.»",
 		"«O puedes romperme contra el Velo. Mi alma lo sellará para siempre, y yo descansaré por fin. Pero el arma desaparecerá contigo... o sin ti.»"])
-	var i := await choose(["Ocupar el trono del Soberano.", "Romper el arma y sellar el Velo para siempre."], "El arma espera.")
+	var i := 0
+	if not flag("player_dark"):
+		i = await choose(["Ocupar el trono del Soberano.", "Romper el arma y sellar el Velo para siempre."], "El arma espera.")
+	else:
+		await say(["La voz fría ya ha elegido por ti."])
 	setf("ov_end_chosen")
 	if i == 0:
 		setf("ending_sovereign")

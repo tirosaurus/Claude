@@ -647,3 +647,22 @@ def equip_icons(out):
     c.rect(7, 2, 3, 3, (220, 60, 90))
     c.outline(OUT)
     c.save(f"{d}/eq_ring.png")
+
+
+def aleixolo_icons(out):
+    d = f"{out}/ui"
+    c = Canvas(16, 16)
+    c.rect(3, 2, 10, 12, (236, 226, 200))
+    c.rect(3, 2, 10, 1, (200, 186, 156))
+    for y in (5, 7, 9, 11):
+        c.hline(5, y, 6, (120, 110, 100))
+    c.ellipse(10, 11, 2.5, 2, (110, 62, 34))
+    c.outline(OUT)
+    c.save(f"{d}/it_scroll.png")
+    c = Canvas(12, 12)
+    c.rect(2, 2, 8, 8, (110, 62, 34))
+    c.rect(2, 2, 8, 1, (160, 100, 60))
+    c.px(5, 5, (70, 38, 20))
+    c.px(5, 6, (70, 38, 20))
+    c.outline(OUT)
+    c.save(f"{d}/st_choco.png")

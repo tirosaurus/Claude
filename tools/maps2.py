@@ -467,6 +467,8 @@ def heart():
     m.exit([256, 694, 32, 10], "elf_camp", "from_heart")
     m.trigger("kaelen_zone", [96, 400, 96, 12])
     m.trigger("final_zone", [180, 186, 184, 12])
+    m.trigger("aleixolo_zone", [196, 600, 160, 12])
+    m.marker("aleixolo", 272, 540)
     return m
 
 

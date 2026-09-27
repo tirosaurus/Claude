@@ -212,6 +212,10 @@ func stats(id: String) -> Dictionary:
 			var est: Dictionary = DB.EQUIP[eid]["stats"]
 			for k in est:
 				s[k] += int(est[k])
+	if id == "player" and has_flag("player_dark"):
+		s["atk"] += 8
+		s["mag"] += 8
+		s["res"] -= 3
 	for k in s:
 		s[k] = maxi(1, int(s[k]))
 	return s
