@@ -43,9 +43,9 @@ func _first_attack() -> void:
 	await wait(0.6)
 	await say(["Tortosa arde.",
 		"El tejado de los Ferrer es una antorcha. Hay gritos por todas partes, y entre el humo se mueven cosas."])
-	var vtex := load("res://assets/chars/villager_m.png")
-	var ftex := load("res://assets/chars/villager_f.png")
-	var ttex := load("res://assets/chars/thrall.png")
+	var vtex := Appearance.tex("res://assets/chars/villager_m.png")
+	var ftex := Appearance.tex("res://assets/chars/villager_f.png")
+	var ttex := Appearance.tex("res://assets/chars/thrall.png")
 	# 1) Un vecino huye por la calle; un siervo lo alcanza
 	await pan_to(Vector2(520, 330), 1.1)
 	var v1 = world.spawn_npc("vill1", Vector2(690, 336), 1, 0, vtex)
@@ -235,7 +235,7 @@ func _after_brute() -> void:
 	await wait(0.4)
 	await say(["El bruto se desploma sobre los escombros... y con él, la entrada de la Catedral se viene abajo.",
 		"Donde antes había piedra, ahora hay un agujero negro."])
-	var ttex := load("res://assets/chars/thrall.png")
+	var ttex := Appearance.tex("res://assets/chars/thrall.png")
 	var starts := [Vector2(250, 330), Vector2(500, 320), Vector2(300, 400), Vector2(460, 390)]
 	var ths: Array = []
 	for k in starts.size():

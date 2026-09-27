@@ -144,7 +144,7 @@ func _spawn_enemy(key: String, pos: Vector2) -> Node2D:
 	b.position = pos
 	b.atb = randf_range(0, 40)
 	var s := Sprite2D.new()
-	s.texture = load("res://assets/%s.png" % d["sprite"])
+	s.texture = Appearance.tex("res://assets/%s.png" % d["sprite"])
 	var fr: int = int(d["frames"])
 	b.frames = fr
 	if fr == 0:

@@ -31,7 +31,7 @@ func setup(id: String, pos: Vector2, face: int = 0, m: int = Mode.IDLE, tex: Tex
 	home = pos
 	facing = face
 	sprite = Sprite2D.new()
-	sprite.texture = tex if tex != null else load("res://assets/chars/%s.png" % id)
+	sprite.texture = tex if tex != null else Appearance.tex("res://assets/chars/%s.png" % id)
 	sprite.hframes = 8
 	sprite.vframes = 4
 	sprite.centered = false

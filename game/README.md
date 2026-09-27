@@ -47,6 +47,11 @@ ramificada y varios finales.
   Susurros** (mazmorra opcional); dificultad Fácil/Normal/Difícil; PM que se recuperan por turno; caminar
   con 6 fases; madre de tu raza; el ataque nocturno animado; y el menú (Esc) disponible siempre.
 
+## Sprites personalizados / IA
+Cualquier PNG en `game/assets/custom/` sustituye al sprite generado con el mismo nombre (personajes,
+poses de combate, enemigos, retratos y protagonista). `tools/import_sprite.py` convierte imágenes de IA
+(PixelLab, Retro Diffusion...) al formato exacto. Instrucciones en `game/assets/custom/LEEME.md`.
+
 ## Cómo está hecho
 Todo el arte, los mapas y el audio se generan con `tools/build_assets.py` (Python + Pillow + numpy):
 `chars2.py` (rig de personajes por piezas, poses de combate y capas del creador; `chars.py` retratos),

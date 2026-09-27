@@ -74,11 +74,11 @@ HEAD["down"] = P("""
 .ssssssssss.
 ssssssssssss
 ssssssssssss
-ssseesseesss
-sssiwssiwsss
-srssssssssrs
-.ssssmmssss.
-.kssssssssk.
+sseesssseess
+sswissssswis
+sriissssiirs
+.ssssskssss.
+.kssssmsssk.
 ..kkkkkkkk..
 """)
 HEAD["down_f"] = P("""
@@ -87,12 +87,12 @@ HEAD["down_f"] = P("""
 .ssssssssss.
 .ssssssssss.
 ssssssssssss
-ssessssssess
-sseessseeess
-sssiwssiwsss
-srrssssssrrs
-.sssssmssss.
-..kssssssk..
+ssssssssssss
+seeesssseees
+sswissssswis
+rriissssiirr
+.ssssskssss.
+..ksssmssk..
 ...kkkkkk...
 """)
 HEAD["side"] = P("""
@@ -103,10 +103,10 @@ HEAD["side"] = P("""
 sssssssssss.
 sssssssssss.
 ssssssssees.
-sssssssssiws
-ssssssrssss.
-.ssssssssmss
-..ksssssss..
+sssssssswiss
+ssssssrriiss
+.sssssssssk.
+..kssssssm..
 ...kkkkkk...
 """)
 HEAD["side_f"] = P("""
@@ -115,12 +115,12 @@ HEAD["side_f"] = P("""
 .ssssssssss.
 .ssssssssss.
 sssssssssss.
-sssssssssee.
+ssssssssseee
 ssssssssees.
-sssssssssiws
-sssssrrssss.
-.sssssssssm.
-..ksssssss..
+sssssssswiss
+sssssrrriiss
+.sssssssssk.
+..kssssssm..
 ...kkkkkk...
 """)
 HEAD["up"] = P("""
@@ -719,22 +719,22 @@ TORSO = {}
 TORSO[("m", "down")] = P("""
 ...CccccC.....
 ..TTUTTTTUTT..
-.tTUTTTTTTTTt.
-.tTUTTTTTTTTt.
-.tTTTTTTTTTTt.
-.tTTTTTTTTTTt.
+.tTUTTTtTTTtt.
+.tTUTTTtTTTtt.
+.tTTTTTtTTTtt.
+.tTTTTTTTTttt.
 ..LLLLGLLLLL..
-..TTTTTTTTTT..
+..TTTTtTTTtt..
 """)
 TORSO[("f", "down")] = P("""
 ....CccC......
 ...TUTTTUT....
-..tUTTTTTTt...
-..tUTTTTTTt...
-...TTTTTTT....
+..tUTTtTTtt...
+..tUTTtTTtt...
+...TTTTTtt....
 ...LLLGLLL....
-..TTTTTTTTT...
-.tTTTTTTTTTt..
+..TTTTtTTtt...
+.tTTTTtTTTtt..
 """)
 TORSO[("m", "side")] = P("""
 .....Ccc.....
@@ -1274,6 +1274,81 @@ def apply_shield(c, look, x, y):
 
 
 # =====================================================================================
+# ACABADO: sombreado de volumen y contorno selectivo de color
+# =====================================================================================
+G_SKIN_O, G_HAIR_O, M_TOP_O = (120,) * 3, (70,) * 3, (110, 0, 110)
+
+
+def _ramps(pal):
+    down = {pal["S"]: pal["s"], pal["s"]: pal["k"], pal["r"]: pal["k"],
+            pal["H"]: pal["h"], pal["h"]: pal["d"],
+            pal["U"]: pal["T"], pal["T"]: pal["t"],
+            pal["C"]: pal["c"], pal["P"]: pal["p"], pal["B"]: pal["b"]}
+    up = {pal["s"]: pal["S"], pal["h"]: pal["H"], pal["T"]: pal["U"], pal["d"]: pal["h"]}
+    return down, up
+
+
+def finish(c, pal, light_top=True):
+    """Sombra de 1 px en el borde derecho/inferior y luz en el borde superior izquierdo."""
+    down, up = _ramps(pal)
+    src = c.im.copy()
+    sp = src.load()
+    W, H = c.w, c.h
+
+    def solid(x, y):
+        return 0 <= x < W and 0 <= y < H and sp[x, y][3] > 0
+
+    for y in range(H):
+        for x in range(W):
+            p = sp[x, y]
+            if p[3] == 0:
+                continue
+            rgb = p[:3]
+            if rgb in (EYE_D, EYE_I, EYE_W, MOUTH, OUT):
+                continue
+            if not solid(x + 1, y) and rgb in down:
+                c.px(x, y, down[rgb])
+            elif light_top and (not solid(x, y - 1) or not solid(x - 1, y)) and rgb in up and solid(x + 1, y):
+                c.px(x, y, up[rgb])
+
+
+def selout(c, pal):
+    """Contorno coloreado según el material vecino (en grises marcadores para las capas teñibles)."""
+    skin = {pal["S"], pal["s"], pal["r"], pal["k"]}
+    hair = {pal["H"], pal["h"], pal["d"]}
+    top = {pal["T"], pal["t"], pal["U"]}
+    marker_skin = pal["s"] == G_SKIN
+    marker_hair = pal["h"] == G_HAIR
+    marker_top = pal["T"] == M_TOP
+    src = c.im.copy()
+    sp = src.load()
+    W, H = c.w, c.h
+    for y in range(H):
+        for x in range(W):
+            if sp[x, y][3] > 0:
+                continue
+            best = None
+            for dx, dy in ((0, 1), (1, 0), (-1, 0), (0, -1)):
+                nx, ny = x + dx, y + dy
+                if 0 <= nx < W and 0 <= ny < H and sp[nx, ny][3] > 0:
+                    best = sp[nx, ny][:3]
+                    break
+            if best is None:
+                continue
+            if best in skin:
+                col = G_SKIN_O if marker_skin else darken(pal["k"], 0.5)
+            elif best in hair:
+                col = G_HAIR_O if marker_hair else darken(pal["d"], 0.45)
+            elif best in top:
+                col = M_TOP_O if marker_top else darken(pal["t"], 0.5)
+            elif best == OUT:
+                col = OUT
+            else:
+                col = mix(darken(best, 0.55), OUT, 0.35)
+            c.p[x, y] = col + (255,)
+
+
+# =====================================================================================
 # Ensamblado
 # =====================================================================================
 def layout(spec):
@@ -1418,7 +1493,8 @@ def draw_map_frame(spec, direction, frame):
         apply_armor(c, spec["eq_body"], pal, legs_from_y=ly)
     if spec.get("eq_head"):
         apply_helm(c, spec["eq_head"], direction, hx, hy + hbob)
-    c.outline(OUT)
+    finish(c, pal)
+    selout(c, pal)
     return c
 
 
@@ -1665,7 +1741,8 @@ def draw_battle_frame(spec, pose, weapon=None, orb=(120, 230, 150), weapon_only=
         apply_helm(fig, spec["eq_head"], "side", hx, hy)
     if spec.get("eq_shield"):
         apply_shield(fig, spec["eq_shield"], OX + 13 + lean, ty + 4)
-    fig.outline(OUT)
+    finish(fig, pal)
+    selout(fig, pal)
     c.paste(fig, 0, 0)
     return c
 

@@ -213,7 +213,7 @@ func _show_line(line, wait_input: bool) -> void:
 			var pname: String = str(info["portrait"])
 			if pname == "mother" and GameState.race() != "human":
 				pname = "mother_" + GameState.race()
-			_portrait.texture = load("res://assets/portraits/%s.png" % pname)
+			_portrait.texture = Appearance.tex("res://assets/portraits/%s.png" % pname)
 		_name_label.text = GameState.player_name() if who == "player" else str(info["name"])
 		_pitch = float(info["pitch"])
 		_name_plate.position = Vector2(132, 244)

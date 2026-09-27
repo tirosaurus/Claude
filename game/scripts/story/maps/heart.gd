@@ -49,7 +49,7 @@ func _kaelen_event() -> void:
 	begin()
 	if flag("kaelen_left"):
 		setf("kaelen_dark")
-		var kd = world.spawn_npc("kaelen", world.player.position + Vector2(0, -60), 0, 0, load("res://assets/chars/kaelen_dark.png"))
+		var kd = world.spawn_npc("kaelen", world.player.position + Vector2(0, -60), 0, 0, Appearance.tex("res://assets/chars/kaelen_dark.png"))
 		await wait(0.3)
 		await say(["Una figura os espera en mitad del camino. Tiene la piel gris y los ojos violetas.",
 			{"who": "Kaelen", "text": "Llegáis tarde. Como siempre llegaba yo, ¿verdad, {name}?"}])
@@ -90,7 +90,7 @@ func _kaelen_event() -> void:
 
 func _after_kaelen_fight() -> void:
 	begin()
-	var kd = world.spawn_npc("kaelen", world.player.position + Vector2(0, -40), 0, 0, load("res://assets/chars/kaelen_dark.png"))
+	var kd = world.spawn_npc("kaelen", world.player.position + Vector2(0, -40), 0, 0, Appearance.tex("res://assets/chars/kaelen_dark.png"))
 	await say(["Kaelen cae de rodillas. La luz violeta de sus ojos parpadea.",
 		{"who": "Kaelen", "text": "¿Por qué...? ¿Por qué siempre ganas tú...?"}])
 	var opts := ["Porque nunca luché contra ti, Kaelen. Vuelve.", "Vete. No quiero volver a verte.", "Acaba esto. (Rematarlo)"]

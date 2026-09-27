@@ -7,6 +7,22 @@ const HAIR_LEVELS := {236: 0.3, 170: 0.0, 110: -0.3}
 
 var _cache := {}
 
+## Sprites personalizados: cualquier PNG en res://assets/custom/ con la misma ruta relativa
+## (p. ej. custom/chars/kaelen.png) sustituye al generado. Ver assets/custom/LEEME.md.
+const CUSTOM_DIR := "res://assets/custom/"
+
+
+func custom_path(path: String) -> String:
+	if path.begins_with("res://assets/") and not path.begins_with(CUSTOM_DIR):
+		var c := CUSTOM_DIR + path.substr("res://assets/".length())
+		if ResourceLoader.exists(c):
+			return c
+	return path
+
+
+func tex(path: String) -> Texture2D:
+	return load(custom_path(path))
+
 
 func clear_cache() -> void:
 	_cache.clear()
@@ -19,11 +35,12 @@ func _shade(c: Color, t: float) -> Color:
 
 
 func _skin_map(skin: Color) -> Dictionary:
-	return {228: _shade(skin, 0.12), 200: skin, 184: skin.lerp(Color8(230, 120, 120), 0.45), 160: _shade(skin, -0.18)}
+	return {228: _shade(skin, 0.12), 200: skin, 184: skin.lerp(Color8(230, 120, 120), 0.45), 160: _shade(skin, -0.18),
+		120: _shade(skin, -0.55).lerp(Color8(30, 24, 34), 0.3)}
 
 
 func _hair_map(hair: Color) -> Dictionary:
-	return {236: _shade(hair, 0.3), 170: hair, 110: _shade(hair, -0.3)}
+	return {236: _shade(hair, 0.3), 170: hair, 110: _shade(hair, -0.3), 70: _shade(hair, -0.62)}
 
 
 func _recolor(img: Image, gray_map: Dictionary, outfit: Color, use_outfit: bool) -> void:
@@ -43,6 +60,9 @@ func _recolor(img: Image, gray_map: Dictionary, outfit: Color, use_outfit: bool)
 				img.set_pixel(x, y, Color(outfit.r, outfit.g, outfit.b, c.a))
 			elif use_outfit and c.r8 == 170 and c.g8 == 0 and c.b8 == 170:
 				img.set_pixel(x, y, Color(od.r, od.g, od.b, c.a))
+			elif c.r8 == 110 and c.g8 == 0 and c.b8 == 110:
+				var oo := _shade(outfit, -0.62)
+				img.set_pixel(x, y, Color(oo.r, oo.g, oo.b, c.a))
 			elif use_outfit and c.r8 == 255 and c.g8 == 120 and c.b8 == 255:
 				img.set_pixel(x, y, Color(ol.r, ol.g, ol.b, c.a))
 
@@ -116,8 +136,16 @@ func _key(prefix: String, app: Dictionary) -> String:
 	return prefix + JSON.stringify(app) + JSON.stringify(GameState.gear_look("player"))
 
 
+func _custom_player(kind: String, a: Dictionary) -> Texture2D:
+	var p := CUSTOM_DIR + "player/%s_%s_%s.png" % [kind, a.get("race", "human"), a.get("sex", "m")]
+	return load(p) if ResourceLoader.exists(p) else null
+
+
 func sheet(app = null) -> Texture2D:
 	var a: Dictionary = app if app != null else GameState.appearance
+	var cp := _custom_player("map", a)
+	if cp:
+		return cp
 	var k := _key("s", a)
 	if not _cache.has(k):
 		_cache[k] = _compose("", a)
@@ -126,6 +154,9 @@ func sheet(app = null) -> Texture2D:
 
 func portrait(app = null) -> Texture2D:
 	var a: Dictionary = app if app != null else GameState.appearance
+	var cp := _custom_player("portrait", a)
+	if cp:
+		return cp
 	var k := _key("p", a)
 	if not _cache.has(k):
 		_cache[k] = _compose("p", a)
@@ -141,6 +172,9 @@ func weapon_type() -> String:
 
 func battle_sheet(app = null) -> Texture2D:
 	var a: Dictionary = app if app != null else GameState.appearance
+	var cp := _custom_player("battle", a)
+	if cp:
+		return cp
 	var k := _key("b", a)
 	if not _cache.has(k):
 		_cache[k] = _compose("b", a)
@@ -151,12 +185,15 @@ func battle_sheet(app = null) -> Texture2D:
 func member_battle_sheet(id: String) -> Texture2D:
 	if id == "player":
 		return battle_sheet()
+	var custom := custom_path("res://assets/battle/%s.png" % _member_base_name(id))
+	if custom.begins_with(CUSTOM_DIR):
+		return load(custom)
 	var look := GameState.gear_look(id)
 	var k := "mb_" + _member_base_name(id) + JSON.stringify(look)
 	if not _cache.has(k):
 		var path := "res://assets/battle/%s_nw.png" % _member_base_name(id)
 		if not ResourceLoader.exists(path):
-			return load("res://assets/battle/%s.png" % _member_base_name(id))
+			return tex("res://assets/battle/%s.png" % _member_base_name(id))
 		var img: Image = load(path).get_image().duplicate()
 		img.convert(Image.FORMAT_RGBA8)
 		var rs: Array = MEMBER_BODY.get(id, ["human", "m"])
@@ -183,10 +220,13 @@ func _member_base_name(id: String) -> String:
 func member_sheet(id: String) -> Texture2D:
 	if id == "player":
 		return sheet()
+	var custom := custom_path("res://assets/chars/%s.png" % _member_base_name(id))
+	if custom.begins_with(CUSTOM_DIR):
+		return load(custom)
 	var look := GameState.gear_look(id)
 	var k := "m_" + _member_base_name(id) + JSON.stringify(look)
 	if not _cache.has(k):
-		var img: Image = load("res://assets/chars/%s.png" % _member_base_name(id)).get_image().duplicate()
+		var img: Image = tex("res://assets/chars/%s.png" % _member_base_name(id)).get_image().duplicate()
 		img.convert(Image.FORMAT_RGBA8)
 		var rs: Array = MEMBER_BODY.get(id, ["human", "m"])
 		_overlay_gear(img, "", rs[0], rs[1], look)
@@ -198,7 +238,7 @@ func member_portrait(id: String) -> Texture2D:
 	if id == "player":
 		return portrait()
 	if id == "yara" and GameState.yara_is_witch():
-		return load("res://assets/portraits/yara_dark.png")
+		return tex("res://assets/portraits/yara_dark.png")
 	if id == "kaelen" and GameState.has_flag("kaelen_dark"):
-		return load("res://assets/portraits/kaelen_dark.png")
-	return load("res://assets/portraits/%s.png" % id)
+		return tex("res://assets/portraits/kaelen_dark.png")
+	return tex("res://assets/portraits/%s.png" % id)

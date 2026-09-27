@@ -442,7 +442,7 @@ func spawn_npc(id: String, pos: Vector2, face: int = 0, mode: int = 0, tex: Text
 	if npcs.has(id):
 		npcs[id].queue_free()
 	if id == "mother" and tex == null and GameState.race() != "human":
-		tex = load("res://assets/chars/mother_%s.png" % GameState.race())
+		tex = Appearance.tex("res://assets/chars/mother_%s.png" % GameState.race())
 	var n := NPCScript.new()
 	entities.add_child(n)
 	n.setup(id, pos, face, mode, tex)
