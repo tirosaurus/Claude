@@ -1,8 +1,9 @@
-[gd_scene load_steps=6 format=3 uid="uid://b1w3xk8n2q7ha"]
+[gd_scene load_steps=7 format=3 uid="uid://b1w3xk8n2q7ha"]
 
 [ext_resource type="PackedScene" uid="uid://bqx3wp8k7f2mn" path="res://scenes/Player.tscn" id="1_wld01"]
 [ext_resource type="PackedScene" uid="uid://dqk8yv2mfj1xr" path="res://scenes/NPC.tscn" id="2_wld02"]
 [ext_resource type="PackedScene" uid="uid://c3n0mvxqf5g8a" path="res://scenes/DialogueBox.tscn" id="3_wld03"]
+[ext_resource type="PackedScene" uid="uid://f7h4kq1nvw8ts" path="res://scenes/Yara.tscn" id="4_wld04"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_wld01"]
 size = Vector2(640, 32)
@@ -39,6 +40,9 @@ shape = SubResource("RectangleShape2D_wld02")
 position = Vector2(320, 260)
 
 [node name="Kaelen" parent="." instance=ExtResource("2_wld02")]
-position = Vector2(320, 120)
+position = Vector2(260, 120)
+
+[node name="Yara" parent="." instance=ExtResource("4_wld04")]
+position = Vector2(390, 120)
 
 [node name="DialogueBox" parent="." instance=ExtResource("3_wld03")]

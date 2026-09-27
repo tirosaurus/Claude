@@ -9,7 +9,7 @@ radius = 16.0
 script = ExtResource("1_npc01")
 companion_id = "kaelen"
 display_name = "Kaelen"
-dialogue_lines = PackedStringArray("Mantén la guardia alta, recién llegado. Las Tierras Quebradas no perdonan errores.", "Cada vez que hablas con sentido común, me caes un poco mejor.", "He oído que la Torre Negra se ha movido. No es buena señal.")
+dialogue_lines = PackedStringArray("¿Te acuerdas de cuando nos colamos en la Catedral Vieja y casi nos aplasta una viga? Buenos tiempos.", "Yara dice que el bosque lleva días raro. Silencioso, ¿sabes? Como si algo lo estuviera escuchando.", "Seas quien seas ahora, para mí sigues siendo el crío con el que crecí aquí.")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 
