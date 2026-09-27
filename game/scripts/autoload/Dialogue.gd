@@ -20,6 +20,9 @@ const CHARACTERS := {
 	"elf_guard": {"name": "Guardia élfico", "portrait": "elf_guard", "pitch": 1.0},
 	"emissary": {"name": "El Emisario", "portrait": "emissary", "pitch": 0.5},
 	"thrall": {"name": "Siervo", "portrait": "thrall", "pitch": 0.45},
+	"durgan": {"name": "Capataz Durgan", "portrait": "roc", "pitch": 0.6},
+	"selen": {"name": "Selen", "portrait": "villager_f", "pitch": 1.2},
+	"kraag": {"name": "General Kraag", "portrait": "thrall", "pitch": 0.4},
 }
 
 const TEXT_COLOR := Color(0.24, 0.15, 0.11)

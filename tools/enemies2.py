@@ -37,6 +37,16 @@ MAT = {
     "bone": ramp((70, 60, 50), (190, 176, 150), (250, 244, 226)),
     "dark": ramp((16, 10, 22), (56, 30, 70), (130, 80, 150)),
     "chitin": ramp((20, 14, 26), (66, 40, 86), (160, 110, 190)),
+    "granite": ramp((40, 34, 30), (118, 104, 92), (206, 192, 172)),
+    "lava": ramp((120, 20, 10), (230, 110, 30), (255, 230, 140)),
+    "salam": ramp((50, 16, 14), (160, 60, 34), (240, 160, 90)),
+    "worm": ramp((40, 30, 20), (150, 120, 70), (230, 210, 150)),
+    "mud": ramp((22, 26, 14), (70, 80, 40), (140, 150, 90)),
+    "ice": ramp((40, 70, 110), (140, 200, 230), (245, 255, 255)),
+    "gown": ramp((30, 40, 80), (70, 100, 170), (170, 200, 240)),
+    "orc": ramp((28, 34, 20), (84, 104, 60), (170, 190, 120)),
+    "iron": ramp((26, 26, 34), (90, 92, 104), (200, 204, 214)),
+    "cloth": ramp((40, 8, 12), (130, 24, 30), (210, 90, 90)),
 }
 
 
@@ -538,7 +548,155 @@ def aleixolo(f):
     return c
 
 
-ENEMIES = {"larva": larva, "bat": bat, "brute": brute, "root": root, "spectre": spectre, "custodian": custodian,
+def golem(f):
+    W, H = 64, 70
+    s = Sculpt(W, H)
+    br = f
+    s.capsule(24, 50, 22, 66, 7, 7, "granite", cz=-4)
+    s.capsule(40, 50, 42, 66, 7, 7, "granite", cz=-4)
+    s.ellipsoid(32, 36 + br, 20, 17, "granite")
+    for side in (-1, 1):
+        s.ellipsoid(32 + side * 20, 26 + br, 9, 8, "granite", cz=6)
+        s.capsule(32 + side * 22, 30 + br, 32 + side * 24, 54 + br, 7, 9, "granite", cz=8)
+    s.ellipsoid(32, 18 + br, 9, 8, "granite", cz=10)
+    s.ellipsoid(30, 40 + br, 6, 5, "moss", cz=12)
+    c = s.render()
+    glow_eye(c, 28, 17 + br, (255, 190, 80), 2)
+    glow_eye(c, 34, 17 + br, (255, 190, 80), 2)
+    for (x, y) in ((22, 32), (23, 34), (42, 28), (41, 30), (36, 44)):
+        c.px(x, y + br, (255, 170, 60))
+    return c
+
+
+def salamandra(f):
+    W, H = 64, 40
+    s = Sculpt(W, H)
+    sw = f * 2
+    s.capsule(8, 30 - sw, 22, 28, 2, 5, "salam", cz=-2)
+    s.ellipsoid(32, 27, 14, 8, "salam")
+    for x in (22, 40):
+        s.capsule(x, 30, x - 2, 37, 3, 2, "salam", cz=-3)
+    s.ellipsoid(50, 22 + f, 9, 6, "salam", cz=4)
+    c = s.render()
+    glow_eye(c, 53, 20 + f, (255, 240, 120))
+    for x in range(20, 46, 4):
+        c.px(x, 19, (255, 200, 60))
+        c.px(x + 1, 18 - (x // 4 + f) % 2, (255, 120, 30))
+    halo(c, 56, 24 + f, (255, 140, 40), 4, 80)
+    return c
+
+
+def gusano(f):
+    W, H = 110, 96
+    s = Sculpt(W, H)
+    sway = [0, 3][f]
+    segs = [(55, 90, 20), (58, 76, 18), (60, 62, 17), (58 + sway, 48, 16), (54 + sway, 34, 16), (50 + sway, 22, 17)]
+    for (x, y, r) in segs:
+        s.ellipsoid(x, y, r, r * 0.8, "worm")
+    s.ellipsoid(50 + sway, 20, 12, 9, "flesh", cz=18)
+    c = s.render()
+    c.ellipse(50 + sway, 20, 8, 6, (40, 10, 20))
+    for k in range(10):
+        a = k / 10 * 6.283
+        x = int(50 + sway + math.cos(a) * 7)
+        y = int(20 + math.sin(a) * 5)
+        c.px(x, y, (250, 240, 220))
+    for (x, y, r) in segs[1:]:
+        c.hline(x - r + 3, y - int(r * 0.3), 2 * r - 6, (110, 86, 50))
+    for (x, y) in ((40, 60), (70, 70), (64, 44), (44, 40)):
+        c.px(x, y, (200, 255, 140))
+    halo(c, 50 + sway, 20, (230, 120, 240), 12, 50)
+    return c
+
+
+def lodo(f):
+    W, H = 48, 38
+    s = Sculpt(W, H)
+    s.ellipsoid(24, 28 - f, 20, 10 + f, "mud", flat=0.6)
+    s.ellipsoid(24, 20 - f, 12, 9, "mud", cz=4)
+    c = s.render()
+    glow_eye(c, 19, 18 - f, (220, 255, 120))
+    glow_eye(c, 27, 18 - f, (220, 255, 120))
+    for (x, y) in ((10, 30), (36, 28), (22, 12)):
+        c.px(x, y, (40, 50, 20))
+    return c
+
+
+def emperatriz(f):
+    W, H = 80, 100
+    s = Sculpt(W, H)
+    fl = f
+    s.polygon([(40, 36), (14, 96), (66, 96)], "gown", cz=0, normal=(-0.3, 0.2, 0.9))
+    s.ellipsoid(40, 44 + fl, 11, 12, "gown", cz=4)
+    for side in (-1, 1):
+        s.capsule(40 + side * 9, 40 + fl, 40 + side * 22, 28 - fl * 2, 3, 3, "ice", cz=6)
+    s.ellipsoid(40, 26 + fl, 8, 9, "ice", cz=8)
+    for (x, h) in ((32, 10), (36, 14), (40, 18), (44, 14), (48, 10)):
+        s.polygon([(x - 2, 18 + fl), (x, 18 - h + fl), (x + 2, 18 + fl)], "crystal", cz=10)
+    c = s.render()
+    glow_eye(c, 36, 26 + fl, (200, 250, 255))
+    glow_eye(c, 42, 26 + fl, (200, 250, 255))
+    for (x, y) in ((24, 70), (56, 80), (40, 60), (30, 88), (50, 66)):
+        c.px(x, y, (240, 255, 255))
+    halo(c, 40, 8 + fl, (180, 240, 255), 10, 70)
+    for side in (-1, 1):
+        halo(c, 40 + side * 22, 26 - fl * 2, (160, 230, 255), 6, 90)
+    return c
+
+
+def soldado(f):
+    W, H = 48, 60
+    s = Sculpt(W, H)
+    br = f
+    s.capsule(19, 42, 18, 57, 4, 4, "orc", cz=-4)
+    s.capsule(29, 42, 30, 57, 4, 4, "orc", cz=-4)
+    s.ellipsoid(24, 34 + br, 11, 11, "iron")
+    s.ellipsoid(24, 40 + br, 10, 5, "cloth", cz=2)
+    s.capsule(14, 30 + br, 10, 44 + br, 4, 4, "orc", cz=4)
+    s.capsule(34, 30 + br, 38, 42 + br, 4, 4, "orc", cz=4)
+    s.capsule(38, 44 + br, 42, 14 + br, 2, 2, "iron", cz=6)
+    s.ellipsoid(24, 18 + br, 8, 8, "orc", cz=8)
+    s.ellipsoid(24, 13 + br, 8, 5, "iron", cz=10)
+    c = s.render()
+    glow_eye(c, 21, 18 + br, (255, 80, 60))
+    glow_eye(c, 26, 18 + br, (255, 80, 60))
+    c.px(21, 23 + br, (240, 230, 200))
+    c.px(27, 23 + br, (240, 230, 200))
+    for k in range(5):
+        c.hline(40 - k, 12 + k + br, 4 + k, (210, 214, 224))
+    return c
+
+
+def kraag(f):
+    W, H = 96, 100
+    s = Sculpt(W, H)
+    br = f
+    s.capsule(38, 70, 34, 96, 8, 8, "orc", cz=-4)
+    s.capsule(58, 70, 62, 96, 8, 8, "orc", cz=-4)
+    s.ellipsoid(48, 54 + br, 24, 22, "iron")
+    s.ellipsoid(48, 70 + br, 20, 8, "cloth", cz=3)
+    for side in (-1, 1):
+        s.ellipsoid(48 + side * 24, 38 + br, 12, 10, "iron", cz=8)
+        s.capsule(48 + side * 26, 44 + br, 48 + side * 30, 70 + br, 8, 8, "orc", cz=8)
+    s.capsule(80, 72 + br, 88, 16 + br, 3, 3, "bark", cz=12)
+    s.ellipsoid(88, 16 + br, 10, 7, "iron", cz=14)
+    s.ellipsoid(48, 28 + br, 12, 11, "orc", cz=12)
+    s.ellipsoid(48, 20 + br, 13, 7, "iron", cz=14)
+    for side in (-1, 1):
+        s.capsule(48 + side * 10, 18 + br, 48 + side * 20, 6 + br, 3, 1, "bone", cz=15)
+    c = s.render()
+    glow_eye(c, 43, 28 + br, (255, 60, 40), 2)
+    glow_eye(c, 51, 28 + br, (255, 60, 40), 2)
+    c.px(43, 35 + br, (240, 230, 200))
+    c.px(53, 35 + br, (240, 230, 200))
+    c.ellipse(48, 54 + br, 5, 5, (20, 14, 20))
+    c.px(48, 54 + br, (220, 60, 70))
+    halo(c, 47, 28 + br, (255, 80, 60), 6, 60)
+    return c
+
+
+ENEMIES = {"golem": golem, "salamandra": salamandra, "gusano": gusano, "lodo": lodo, "emperatriz": emperatriz,
+           "soldado": soldado, "kraag": kraag, "larva": larva, "bat": bat, "brute": brute, "root": root, "spectre": spectre, "custodian": custodian,
            "mother_root": mother_root, "wisp": wisp, "boar": boar, "nhalzur": nhalzur, "aleixolo": aleixolo}
 
 

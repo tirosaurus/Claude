@@ -490,6 +490,14 @@
   "fire": [
    290,
    276
+  ],
+  "from_montes": [
+   552,
+   200
+  ],
+  "from_pantano": [
+   280,
+   392
   ]
  },
  "exits": [
@@ -502,6 +510,30 @@
    ],
    "to": "forest_deep",
    "spawn": "from_camp"
+  },
+  {
+   "rect": [
+    568,
+    188,
+    8,
+    36
+   ],
+   "to": "montes",
+   "spawn": "from_camp",
+   "requires": "act4_started",
+   "blocked": "Un sendero de piedra sube hacia los montes. Ilvanis quiere hablar antes de que partáis."
+  },
+  {
+   "rect": [
+    270,
+    408,
+    36,
+    8
+   ],
+   "to": "pantano",
+   "spawn": "from_camp",
+   "requires": "act4_started",
+   "blocked": "Hacia el sur huele a ciénaga. Ilvanis quiere hablar antes de que partáis."
   },
   {
    "rect": [

@@ -1023,12 +1023,12 @@ func _summon(user) -> void:
 		if _alive(enemies).size() >= 3:
 			break
 		var pos: Vector2 = slots[(user.turns + k) % slots.size()]
-		var e := _spawn_enemy("larva", pos)
+		var e := _spawn_enemy(str(DB.ENEMIES.get(user.key, {}).get("summon", "larva")), pos)
 		e.sprite.modulate.a = 0.0
 		var tw := create_tween()
 		tw.tween_property(e.sprite, "modulate:a", 1.0, 0.4)
 	Audio.sfx("dark", -4.0)
-	await show_top("¡De la raíz brotan larvas!", 0.9)
+	await show_top(str(DB.ENEMIES.get(user.key, {}).get("summon_msg", "¡De la raíz brotan larvas!")), 0.9)
 	_refresh_ui()
 
 

@@ -386,6 +386,7 @@ def elf_camp():
     m.fill(0, 12, 18, 13, "p")
     m.fill(17, 8, 18, 25, "p")
     m.fill(17, 0, 18, 8, "p")
+    m.fill(18, 12, 35, 13, "p")
     m.prop("sacred_tree", 290, 150, "sacred_tree")
     m.prop("tent_green", 110, 110, "tent1")
     m.prop("tent_blue", 180, 90, "tent2")
@@ -414,6 +415,12 @@ def elf_camp():
     m.marker("lake", 150, 300)
     m.marker("fire", 290, 276)
     m.exit([0, 188, 8, 36], "forest_deep", "from_camp")
+    m.marker("from_montes", Wt * T - 24, 200)
+    m.marker("from_pantano", 280, Ht * T - 24)
+    m.exit([Wt * T - 8, 188, 8, 36], "montes", "from_camp", requires="act4_started",
+           blocked="Un sendero de piedra sube hacia los montes. Ilvanis quiere hablar antes de que partáis.")
+    m.exit([270, Ht * T - 8, 36, 8], "pantano", "from_camp", requires="act4_started",
+           blocked="Hacia el sur huele a ciénaga. Ilvanis quiere hablar antes de que partáis.")
     m.exit([270, 0, 36, 8], "heart", "from_camp", requires="ready_for_heart",
            blocked="Ilvanis quiere hablar contigo antes de que os adentréis en el Corazón.")
     return m

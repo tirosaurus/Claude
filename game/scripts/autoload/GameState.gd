@@ -212,6 +212,10 @@ func stats(id: String) -> Dictionary:
 			var est: Dictionary = DB.EQUIP[eid]["stats"]
 			for k in est:
 				s[k] += int(est[k])
+	if has_flag("selen_shattered"):
+		s["mag"] += 3
+	if has_flag("kraag_spared") and id == "player":
+		s["res"] += 2
 	if id == "player" and has_flag("player_dark"):
 		s["atk"] += 8
 		s["mag"] += 8

@@ -10,10 +10,52 @@ func on_map_ready(_m: String) -> void:
 	world.spawn_npc("elf_guard", world.marker("shop"), 3)
 	if flag("brom_prisoner") and not flag("brom_pardoned"):
 		world.spawn_npc("brom", Vector2(500, 320), 0)
-	if flag("camp_night") and not flag("ready_for_heart"):
+	if flag("camp_night") and not flag("act4_started"):
 		GameState.set_meta("tod", "night")
+	if flag("act4_started") and not flag("ready_for_heart"):
+		_thorns()
 	if not flag("camp_arrived"):
 		await _arrival()
+	elif flag("act4_started") and not flag("ready_for_heart") and _tears() == 3:
+		await _tears_ritual()
+
+
+func _tears() -> int:
+	var n := 0
+	for t in ["tear_stone", "tear_crystal", "tear_blood"]:
+		if flag(t):
+			n += 1
+	return n
+
+
+func _thorns() -> void:
+	var s := Sprite2D.new()
+	s.texture = load("res://assets/sprites/thorn_wall.png")
+	s.centered = false
+	s.offset = Vector2(-48, -52)
+	s.position = Vector2(288, 30)
+	world.entities.add_child(s)
+
+
+func _tears_ritual() -> void:
+	begin()
+	await walk_party_to(world.marker("ilvanis") + Vector2(0, 36), 60)
+	world.player.face(3)
+	await say([N("ilvanis", "Piedra, cristal y sangre. Las Tres Lágrimas... Nunca pensé que volvería a verlas juntas."),
+		"Colocas las tres lágrimas en las raíces del Árbol Madre. La luz dorada se vuelve blanca.",
+		"Al norte, el Muro de Espinas cruje, se retuerce... y se abre como una flor marchita."])
+	Audio.sfx("magic", -2.0)
+	await world.set_tint(Color(1.3, 1.3, 1.1), 0.5)
+	await world.set_tint(world._map_modulate(), 0.8)
+	for c in world.entities.get_children():
+		if c is Sprite2D and c.texture and c.texture.resource_path.ends_with("thorn_wall.png"):
+			c.queue_free()
+	await say([N("ilvanis", "Habéis visto el mundo que hay más allá de este bosque. Enanos, fantasmas, ejércitos."),
+		N("ilvanis", "Todo lo que la Madre Raíz toca, se pudre. Y todo lo que habéis salvado por el camino, os mira ahora."),
+		N("ilvanis", "El camino al Corazón está abierto. Recordad: la Semilla escucha. Luz... o sombra."),
+		"(Consejo: guarda la partida antes de partir. No habrá vuelta atrás fácil.)"])
+	setf("ready_for_heart")
+	end()
 
 
 func _arrival() -> void:
@@ -158,10 +200,18 @@ func _night() -> void:
 	await say(["Amanece. Ilvanis os espera junto al gran árbol."])
 	await walk_party_to(world.marker("ilvanis") + Vector2(0, 36), 60)
 	world.player.face(3)
-	await say([N("ilvanis", "El camino al Corazón se abre al norte. He apartado las raíces para vosotros."),
-		N("ilvanis", "Recordad: la Semilla escucha. Lo que llevéis dentro, ella lo amplificará. Luz... o sombra."),
-		"(Consejo: guarda la partida antes de partir. No habrá vuelta atrás fácil.)"])
-	setf("ready_for_heart")
+	await say([N("ilvanis", "Tengo malas noticias. Esta noche la Madre Raíz ha sentido la Semilla... y ha cerrado el Corazón."),
+		N("ilvanis", "Un Muro de Espinas se alza al norte. Ni el fuego ni el acero lo atraviesan. Lo he intentado."),
+		Y("¿Entonces? ¿Esperamos a que el bosque se muera?"),
+		N("ilvanis", "No. Hay una forma. Cuando Ysolde plantó la Semilla, tres pueblos lloraron con ella: las Tres Lágrimas de la Savia."),
+		N("ilvanis", "La Lágrima de Piedra, en las Minas de Khazgurim, al este, bajo los montes de los enanos."),
+		N("ilvanis", "La Lágrima de Cristal, en las Ruinas del Imperio de Selen, más allá del pantano del sur."),
+		N("ilvanis", "Y la Lágrima de Sangre... la llevaba el último campeón del Paso del Sur. Hoy ese paso es un campamento de guerra morongul."),
+		N("ilvanis", "Traedme las tres y el Muro caerá."),
+		K("Tres mazmorras, tres tesoros. Por fin algo que suena a aventura de verdad."),
+		"(Acto IV: Las Tres Lágrimas. Salidas nuevas: el este lleva a los Montes; el sur, al Pantano de Selen.)"])
+	setf("act4_started")
+	_thorns()
 	end()
 
 
@@ -281,6 +331,8 @@ func npc_lines(id: String) -> Array:
 func interact_lines(id: String) -> Array:
 	match id:
 		"sacred_tree":
+			if flag("act4_started") and not flag("ready_for_heart"):
+				return ["Las raíces del Árbol Madre tienen tres huecos con forma de lágrima. (Lágrimas: %d/3)" % _tears()]
 			return ["El Árbol Madre de la Corte de la Savia. Su luz dorada pulsa despacio, como si respirara contigo."]
 		"tent1", "tent2", "tent3":
 			return ["Una tienda élfica. Huele a resina y a té de menta."]

@@ -479,11 +479,58 @@ def soberano():
     return s
 
 
+def mountain():
+    s = Song(80, 16)
+    A = P("Dm Bb C Dm Dm F C A")
+    for k in range(16):
+        s.drums("k...s...k.k.s...", s.b(k), 0.25, 1, 0.5)
+    s.pad("strings", A, 0, 38, 57, 0.3, count=3)
+    s.bassline("bass", A, 0, 1, 0.5)
+    s.pad("choir", A, s.b(8), 50, 64, 0.35, count=3)
+    mel = "D5:2 F5:1 E5:1 D5:2 A4:2 Bb4:3 C5:1 A4:4 D5:2 F5:1 G5:1 A5:2 F5:2 E5:3 C#5:1 A4:4"
+    s.melody("horn", mel, 0, 0.5, pan=-0.2)
+    s.melody("violin", mel, s.b(8), 0.35, pan=0.3)
+    s.note("roll", "D2", s.b(15), 4, 0.5)
+    return s
+
+
+def swamp():
+    s = Song(64, 16)
+    A = P("Em C Am B Em C F B")
+    s.pad("strings", A, 0, 40, 59, 0.28, count=3)
+    s.bassline("bass", A, 0, 1, 0.4)
+    mel = "B4:3 C5:1 B4:2 G4:2 E4:4 A4:3 B4:1 C5:2 E5:2 D#5:4 B4:3 C5:1 E5:2 G5:2 F5:4 D#5:4 B4:4"
+    s.melody("flute", mel, s.b(4), 0.4, pan=-0.3)
+    for k in range(16):
+        if k % 2 == 1:
+            s.note("harp", ["E5", "G5", "A5", "B5", "E5", "C6", "F5", "D#5"][k // 2], s.b(k, 2), 1, 0.25, pan=0.4)
+    s.note("bell", "E4", 0, 4, 0.2, pan=0.3)
+    s.note("bell", "B4", s.b(8), 4, 0.2, pan=-0.3)
+    return s
+
+
+def war():
+    s = Song(96, 16)
+    A = P("Cm Cm Ab Bb Cm Cm Ab G")
+    for k in range(16):
+        s.drums("k.k.s..kk.k.s.s.", s.b(k), 0.25, 1, 0.7)
+    s.pad("strings", A, 0, 36, 55, 0.35, count=3)
+    s.bassline("bass", A, 0, 2, 0.5)
+    s.pad("choir", A, s.b(8), 48, 63, 0.4, count=3)
+    mel = "C5:1.5 C5:.5 Eb5:1 G5:1 F5:2 Eb5:2 Ab5:2 G5:1 F5:1 G5:4 C5:1.5 C5:.5 Eb5:1 G5:1 Bb5:2 Ab5:2 G5:4 B4:4"
+    s.melody("horn", mel, 0, 0.55, pan=-0.2)
+    s.melody("brass", mel, s.b(8), 0.4, pan=0.2)
+    s.note("roll", "C2", s.b(7), 4, 0.5)
+    s.note("roll", "C2", s.b(15), 4, 0.6)
+    return s
+
+
 TRACKS = {
     "title": (title, True), "battle": (battle, True), "boss": (boss, True), "final": (final, True),
     "victory": (victory, False), "village": (village, True), "home": (home, True), "forest": (forest, True),
     "night": (night, True), "cathedral": (cathedral, True), "deep": (deep, True), "elves": (elves, True),
     "heart": (heart, True), "sad": (sad, True), "soberano": (soberano, True), "ending_good": (ending_good, True), "ending_bad": (ending_bad, True),
+    "mountain": (mountain, True), "swamp": (swamp, True), "war": (war, True),
 }
 
 

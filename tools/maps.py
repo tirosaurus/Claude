@@ -22,7 +22,7 @@ COLS = {
     "sign": (-3, -4, 6, 4), "stall": (-19, -10, 38, 10), "anvil": (-8, -6, 16, 6),
     "woodpile": (-13, -8, 26, 8), "hay": (-9, -8, 18, 8), "shrine": (-10, -6, 20, 6), "torch": (-2, -3, 4, 3),
 }
-FRAMES = {"fireplace": 3, "torch": 3, "shrine": 2}
+FRAMES = {"fireplace": 3, "torch": 3, "shrine": 2, "forge": 3}
 SIZES = {}
 
 
@@ -240,6 +240,10 @@ def wall_top_px(x, y):
 def _stone_pal(style):
     if style == "crypt":
         return (46, 48, 62), (70, 72, 88), (96, 98, 116)
+    if style == "mine":
+        return (62, 46, 36), (96, 72, 54), (128, 100, 76)
+    if style == "ruin":
+        return (40, 70, 80), (66, 108, 118), (104, 150, 160)
     return (78, 76, 88), (110, 108, 120), (140, 138, 150)
 
 
@@ -286,8 +290,56 @@ def stone_face_px(x, y, local_y, face_h, style="stone"):
 
 
 def stone_top_px(x, y, style):
-    base = (34, 32, 42) if style != "crypt" else (22, 22, 32)
+    base = {"crypt": (22, 22, 32), "mine": (30, 22, 18), "ruin": (18, 34, 40)}.get(style, (34, 32, 42))
     return lighten(base, 0.08) if hash2(x, y, 107) > 0.9 else base
+
+
+def rockground_px(x, y):
+    n = fbm(x, y, 14, 130)
+    col = mix((92, 84, 80), (140, 132, 124), n)
+    if hash2(x, y, 131) > 0.97:
+        col = darken(col, 0.25)
+    if abs(fbm(x, y, 9, 132) - 0.5) < 0.02:
+        col = darken(col, 0.3)
+    if fbm(x, y, 30, 133) > 0.72:
+        col = mix(col, (230, 234, 240), 0.55)   # nieve
+    return col
+
+
+def cliff_px(x, y):
+    n = fbm(x * 0.7, y * 1.5, 9, 134)
+    col = mix((50, 44, 46), (100, 92, 90), n)
+    if (y + int(fbm(x, y, 6, 135) * 6)) % 7 == 0:
+        col = darken(col, 0.3)
+    return col
+
+
+def bog_px(x, y):
+    n = fbm(x, y, 16, 136)
+    col = mix((46, 58, 40), (82, 92, 54), n)
+    if fbm(x, y, 24, 137) > 0.65:
+        col = mix(col, (40, 70, 70), 0.5)
+    if hash2(x, y, 138) > 0.985:
+        col = (140, 160, 90)
+    return col
+
+
+def swampwater_px(x, y):
+    n = fbm(x, y, 18, 139)
+    col = mix((24, 44, 40), (52, 80, 66), n)
+    if hash2(x, y, 140) > 0.993:
+        col = (150, 190, 140)
+    return col
+
+
+def ash_px(x, y):
+    n = fbm(x, y, 12, 141)
+    col = mix((74, 58, 50), (118, 96, 80), n)
+    if hash2(x, y, 142) > 0.975:
+        col = (50, 36, 30)
+    if fbm(x, y, 22, 143) > 0.7:
+        col = mix(col, (130, 60, 40), 0.35)
+    return col
 
 
 def corrupt_px(x, y):
@@ -404,6 +456,18 @@ def render_ground(m):
                 col = sap_px(x, y)
             elif ch == "s":
                 col = stone_floor_px(x, y, "stone")
+            elif ch == "k":
+                col = rockground_px(x, y)
+            elif ch == "K":
+                col = cliff_px(x, y)
+            elif ch == "b":
+                col = bog_px(x, y)
+            elif ch == "B":
+                col = swampwater_px(x, y)
+            elif ch == "q":
+                col = ash_px(x, y)
+            elif ch == "R":
+                col = stone_floor_px(x, y, "ruin")
             else:
                 col = grass_px(x, y)
             c.p[x, y] = col + (255,)
@@ -429,7 +493,7 @@ def bake_shadows(m, c):
 
 def solids_from_grid(m):
     rects = []
-    solid = "#W " if m.interior else "xwz"
+    solid = "#W " if m.interior else "xwzKB"
     for ty in range(m.h):
         tx = 0
         while tx < m.w:
@@ -877,5 +941,6 @@ def build_all(out):
     import os
     os.makedirs(f"{out}/maps", exist_ok=True)
     import maps2
-    for fn in (bedroom, housemain, village, forest) + maps2.MAPS:
+    import maps3
+    for fn in (bedroom, housemain, village, forest) + maps2.MAPS + maps3.MAPS:
         save_map(fn())
