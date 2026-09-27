@@ -168,7 +168,7 @@ func _night() -> void:
 func _kaelen_night() -> void:
 	var r := GameState.rivalry()
 	await say(["Kaelen está solo junto a la hoguera, afilando una espada élfica que no es suya."])
-	if r >= 25:
+	if r >= 15:
 		await say([K("¿Sabes qué me dijo la Semilla hoy? No, da igual.") if not flag("seed_kaelen") else K("La Semilla me habla, ¿sabes? Dice que soy fuerte. Que no necesito ir detrás de nadie."),
 			K("Toda la vida igual. {name} decide, {name} elige, {name} es el héroe. Y Kaelen... Kaelen lleva las bolsas."),
 			K("Ni siquiera Yara me mira ya.")])
@@ -185,7 +185,7 @@ func _kaelen_night() -> void:
 			2:
 				GameState.change_kaelen_rivalry(25)
 				await say([K("...Puede que lo haga.")])
-		if GameState.rivalry() >= 45:
+		if GameState.rivalry() >= 40:
 			setf("kaelen_left")
 			GameState.companions["kaelen"]["left"] = true
 			GameState.leave_party("kaelen")
@@ -219,7 +219,7 @@ func _kaelen_night() -> void:
 func _yara_night() -> void:
 	await say(["Encuentras a Yara junto al lago de la luna, con los pies en el agua."])
 	var c := GameState.corruption()
-	if c >= 25:
+	if c >= 15:
 		await say([Y("¿Puedo contarte un secreto? Oigo la Semilla. Incluso cuando no la tengo cerca."),
 			Y("Me dice que puedo curarlo todo. A Bartolo, a Nil, a todos. Que solo tengo que... aceptar lo que me ofrece."),
 			"Sus manos brillan con una luz violeta. Por un instante, sus ojos también."])
@@ -256,7 +256,7 @@ func _yara_night() -> void:
 				GameState.change_approval("yara", 3)
 				await say([Y("Siempre. Los Guardianes de Tortosa, ¿no?"), "Apoya la cabeza en tu hombro un rato."])
 			2:
-				GameState.change_yara_kaelen_approval(25)
+				GameState.change_yara_kaelen_approval(30)
 				GameState.change_kaelen_rivalry(-6)
 				await say([Y("...Lo sé. Ese idiota nunca se atreve a decirlo."), Y("Gracias, {name}. De verdad.")])
 			3:

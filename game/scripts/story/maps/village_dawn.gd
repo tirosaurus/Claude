@@ -122,7 +122,8 @@ func _marta() -> void:
 	if i == 0:
 		setf("marta_saved")
 		GameState.change_approval("yara", 5)
-		GameState.change_kaelen_rivalry(3)
+		GameState.change_approval("kaelen", 2)
+		GameState.change_kaelen_rivalry(-2)
 		await Transition.fade_out(0.5)
 		Audio.sfx("hit", -4.0, 0.7)
 		await wait(0.6)
@@ -141,6 +142,7 @@ func _marta() -> void:
 	else:
 		setf("marta_lost")
 		GameState.change_approval("yara", -6)
+		GameState.change_yara_corruption(5)
 		GameState.change_approval("kaelen", 2)
 		await say(["Das la espalda a la casa. El techo se desploma con un rugido.",
 			"Nadie ve salir a Marta. Solo, entre las ruinas, una forma marrón y brillante... como una estatua de chocolate.",

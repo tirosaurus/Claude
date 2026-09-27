@@ -290,7 +290,7 @@ func _final() -> void:
 	tw2.tween_property(em.sprite, "modulate:a", 0.0, 0.6)
 	await tw2.finished
 	world.remove_npc("emissary")
-	if has("yara") and GameState.corruption() >= 60:
+	if has("yara") and GameState.corruption() >= 45:
 		await _yara_turns()
 	await say(["La Madre Raíz abre todos sus ojos a la vez.", "Es ahora o nunca."])
 	await battle("final", ["mother_root"], "heart", "final", true)
