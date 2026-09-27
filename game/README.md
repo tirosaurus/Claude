@@ -40,6 +40,12 @@ ramificada y varios finales.
   (fuego fatuo y jabalí), interfaz de combate estilo JRPG clásico con barras de vida/PM y retratos,
   efectos por elemento, banda sonora orquestal (cuerdas, metales, coro, timbales) y menú de **Opciones**
   (volumen, velocidad de texto y de combate, pantalla completa). El maná ya no se rellena al subir de nivel.
+- **v4:** eliges senda y clase con Yara antes del lobo (Guerrero, Pícaro, Paladín, Mago, Brujo, Cazador,
+  Clérigo, Druida, Guardián), cada una con un **árbol de 9 talentos** y puntos al subir de nivel; **equipo**
+  para todo el grupo (arma, escudo, cabeza, cuerpo, anillo) que se ve en el personaje, con **rarezas**
+  (Básico, Común, Raro, Muy raro, Divino, Legendario) y armas legendarias con historia; la **Cueva de los
+  Susurros** (mazmorra opcional); dificultad Fácil/Normal/Difícil; PM que se recuperan por turno; caminar
+  con 6 fases; madre de tu raza; el ataque nocturno animado; y el menú (Esc) disponible siempre.
 
 ## Cómo está hecho
 Todo el arte, los mapas y el audio se generan con `tools/build_assets.py` (Python + Pillow + numpy):
