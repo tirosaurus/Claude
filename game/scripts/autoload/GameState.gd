@@ -190,11 +190,11 @@ func _recalculate_yara_romance_target() -> void:
 	var y: Dictionary = companions["yara"]
 	var k: Dictionary = companions["kaelen"]
 
-	var player_wants := y.approval >= ROMANCE_THRESHOLD
-	var kaelen_wants := y.kaelen_approval >= ROMANCE_THRESHOLD and k.get("in_party", false)
+	var player_wants: bool = y.approval >= ROMANCE_THRESHOLD
+	var kaelen_wants: bool = y.kaelen_approval >= ROMANCE_THRESHOLD and k.get("in_party", false)
 	## El trío consentido requiere además una ruta de amistad alta entre
 	## jugador y Kaelen (no tendría sentido con rivalidad de por medio).
-	var trio_possible := player_wants and kaelen_wants and k.rivalry <= FRIENDSHIP_ROMANCE_THRESHOLD
+	var trio_possible: bool = player_wants and kaelen_wants and k.rivalry <= FRIENDSHIP_ROMANCE_THRESHOLD
 
 	var new_target := "none"
 	if trio_possible:
