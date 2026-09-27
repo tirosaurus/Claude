@@ -1,0 +1,76 @@
+[gd_scene load_steps=10 format=3 uid="uid://f2m9wv3hq7ntx"]
+
+[ext_resource type="PackedScene" uid="uid://bqx3wp8k7f2mn" path="res://scenes/Player.tscn" id="1_frs01"]
+[ext_resource type="PackedScene" uid="uid://c3n0mvxqf5g8a" path="res://scenes/DialogueBox.tscn" id="2_frs02"]
+[ext_resource type="Script" path="res://scripts/NPC.gd" id="3_frs03"]
+[ext_resource type="Script" path="res://scripts/ForestBeast.gd" id="4_frs04"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_frs01"]
+size = Vector2(640, 32)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_frs02"]
+size = Vector2(32, 360)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_frs03"]
+size = Vector2(40, 30)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_frs04"]
+size = Vector2(20, 20)
+
+[node name="Forest" type="Node2D"]
+
+[node name="Ground" type="ColorRect" parent="."]
+offset_right = 640.0
+offset_bottom = 360.0
+color = Color(0.11, 0.22, 0.13, 1)
+
+[node name="Walls" type="StaticBody2D" parent="."]
+
+[node name="Top" type="CollisionShape2D" parent="Walls"]
+position = Vector2(320, 0)
+shape = SubResource("RectangleShape2D_frs01")
+
+[node name="Bottom" type="CollisionShape2D" parent="Walls"]
+position = Vector2(320, 360)
+shape = SubResource("RectangleShape2D_frs01")
+
+[node name="Left" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, 180)
+shape = SubResource("RectangleShape2D_frs02")
+
+[node name="Right" type="CollisionShape2D" parent="Walls"]
+position = Vector2(640, 180)
+shape = SubResource("RectangleShape2D_frs02")
+
+[node name="Yara" type="Area2D" groups=["interactable"]]
+script = ExtResource("3_frs03")
+companion_id = "yara"
+display_name = "Yara"
+dialogue_lines = PackedStringArray("Mira qué flores, ¡el bosque está precioso hoy! Aunque... hay algo raro en el aire, ¿no crees?", "Desde pequeña siento que este bosque me habla, de una forma buena. Espero que siga siendo así siempre.", "¿Vamos los tres juntos un rato? Como cuando éramos niños.")
+color = Color(0.85, 0.7, 0.35, 1)
+sets_flag_on_interact = "yara_met"
+
+[node name="Sprite2D" type="Sprite2D" parent="Yara"]
+position = Vector2(260, 150)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Yara"]
+position = Vector2(260, 150)
+shape = SubResource("RectangleShape2D_frs03")
+
+[node name="ForestBeast" type="Area2D" parent="."]
+script = ExtResource("4_frs04")
+position = Vector2(420, 220)
+required_flag = "yara_met"
+enemy_name = "Lobo del Bosque Santo"
+enemy_max_hp = 40
+enemy_attack = 6
+xp_reward = 60
+return_scene = "res://scenes/Forest.tscn"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ForestBeast"]
+shape = SubResource("RectangleShape2D_frs04")
+
+[node name="Player" parent="." instance=ExtResource("1_frs01")]
+position = Vector2(320, 300)
+
+[node name="DialogueBox" parent="." instance=ExtResource("2_frs02")]

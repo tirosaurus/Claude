@@ -108,13 +108,32 @@ hogar de la infancia del jugador, de Kaelen y de Yara (ver sección 3).
   necesidad de comer/dormir, inmune a veneno, pero teme y provoca terror;
   la mayoría de facciones "civilizadas" empiezan hostiles.
 
-### Clases (borrador, ampliable con subclases)
-- Guerrero, Paladín, Pícaro, Explorador, Mago Arcano, Nigromante,
-  Clérigo, Invocador, Berserker, Bardo.
+### Progresión: de rama a clase
+No se elige una clase cerrada desde el minuto uno. Al empezar solo tienes
+acciones básicas (Atacar, Curar, Defender) y vas definiendo tu build por
+niveles:
+
+1. **Primer nivel (tutorial del bosque)**: eliges una **rama básica** entre
+   Cuerpo a cuerpo, A distancia, DPS, Sanador o Tanque. Esto ya condiciona
+   qué acciones/bonus empiezas a desbloquear.
+2. **Niveles siguientes**: cada rama se ramifica en subramas más
+   específicas y, más adelante, cristaliza en clases completas (Guerrero,
+   Paladín, Pícaro, Explorador, Mago Arcano, Nigromante, Clérigo,
+   Invocador, Berserker, Bardo...), con nombres y habilidades distintas
+   según la raza y facción del jugador.
+3. El sistema es deliberadamente abierto al principio para que el jugador
+   pruebe combate antes de comprometerse a una identidad de personaje.
 
 ### Trasfondo (background)
 Determina el punto de partida narrativo, una facción inicial con la que
 ya tienes historia (buena o mala) y 1-2 rasgos de diálogo únicos.
+
+### Raza elegible desde el inicio
+La raza se elige en la creación de personaje (con Humano como opción por
+defecto) y condiciona cómo reacciona el mundo hacia ti — facciones,
+diálogos únicos, aceptación o rechazo en ciertas regiones. El diseño fino
+de cada raza (bonus, restricciones, quests exclusivas) se hará más
+adelante; de momento la elección ya queda registrada en `GameState`.
 
 ---
 
@@ -181,12 +200,37 @@ Kaelen y Yara son el núcleo emocional fijo de la historia.
 
 ---
 
+## 3.5. Prólogo jugable (el que existe ahora mismo)
+
+Flujo actual del prototipo, estilo "despertar en tu casa" tipo Pokémon:
+
+1. **Creación de personaje** — nombre y raza (Humano por defecto).
+2. **Dormitorio** — una cama interactuable ("ya has dormido bastante") y
+   unas escaleras que bajan a la casa.
+3. **Casa** — tu madre te comenta que hace buen día y te pregunta si has
+   descansado bien; te anima a salir a ver a tus amigos.
+4. **Plaza de Tortosa** — Kaelen te espera aburrido y te propone ir al
+   Bosque Santo. Hasta no hablar con él, el camino al bosque queda
+   bloqueado (con un mensaje recordándotelo).
+5. **Bosque Santo** — encuentras a Yara cogiendo flores; los tres vais de
+   aventura. Aparece una bestia del bosque (aún no un morongul — el bosque
+   todavía no está corrompido) con la que se libra el primer combate:
+   Atacar / Curar / Defender. Al ganar y subir de nivel, se elige la
+   primera rama de progresión (sección 2).
+
+Todo con placeholders de color; el foco de esta fase es la estructura
+narrativa y los sistemas (flags de historia, combate básico, progresión),
+no el arte.
+
+---
+
 ## 4. Sistemas técnicos a construir (roadmap)
 
-1. **Prototipo (vertical slice actual)**: movimiento top-down, un mapa
-   pequeño, un NPC con diálogo básico y una barra de aprobación funcional.
+1. **Prototipo (vertical slice actual)**: prólogo completo (arriba),
+   combate por turnos básico, sistema de niveles y ramas iniciales.
 2. Sistema de diálogo ramificado con condiciones (reputación, raza, clase).
-3. Sistema de combate (por turnos o acción táctica — a decidir).
+3. Ampliar el combate: habilidades específicas por rama/clase, más
+   enemigos, dificultad progresiva.
 4. Sistema de inventario/equipo.
 5. Sistema de facciones y reputación global.
 6. Sistema de guardado/carga.
@@ -201,5 +245,10 @@ Kaelen y Yara son el núcleo emocional fijo de la historia.
 - [ ] Un NPC de prueba con diálogo y barra de aprobación.
 - [ ] Definir estilo visual pixel art (resolución de sprite, paleta).
 - [x] Nombrar y perfilar a los primeros 2-3 compañeros fijos (Kaelen, Yara).
-- [ ] Primera decisión de diálogo real con ramas (mover rivalidad/relación).
-- [ ] Escena inicial de la Catedral Vieja y el Bosque Santo.
+- [x] Prólogo jugable: casa, madre, plaza, invitación de Kaelen, bosque
+      con Yara, primer combate y elección de rama al subir de nivel.
+- [ ] Primera decisión de diálogo real con ramas narrativas (mover
+      rivalidad de Kaelen o la relación/corrupción de Yara según lo que
+      se elija responder).
+- [ ] Escena de la Catedral Vieja en ruinas (aún no visitada).
+- [ ] Sprites de pixel art reales para jugador, Kaelen, Yara y madre.

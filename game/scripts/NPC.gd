@@ -6,6 +6,9 @@ extends Area2D
 @export var display_name: String = "???"
 @export var dialogue_lines: Array[String] = ["..."]
 @export var color: Color = Color(0.8, 0.35, 0.4)
+## Si no está vacío, se activa como flag de GameState la primera vez
+## que se habla con este NPC (útil para hitos narrativos simples).
+@export var sets_flag_on_interact: String = ""
 
 @onready var sprite: Sprite2D = $Sprite2D
 
@@ -35,3 +38,6 @@ func interact() -> void:
 
 	if companion_id != "":
 		GameState.change_approval(companion_id, 2)
+
+	if sets_flag_on_interact != "":
+		GameState.set_flag(sets_flag_on_interact)

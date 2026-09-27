@@ -1,0 +1,66 @@
+[gd_scene load_steps=9 format=3 uid="uid://c8n2wv7hq3mxr"]
+
+[ext_resource type="PackedScene" uid="uid://bqx3wp8k7f2mn" path="res://scenes/Player.tscn" id="1_bed01"]
+[ext_resource type="PackedScene" uid="uid://c3n0mvxqf5g8a" path="res://scenes/DialogueBox.tscn" id="2_bed02"]
+[ext_resource type="Script" path="res://scripts/Bed.gd" id="3_bed03"]
+[ext_resource type="Script" path="res://scripts/Door.gd" id="4_bed04"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_bed01"]
+size = Vector2(400, 24)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_bed02"]
+size = Vector2(24, 240)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_bed03"]
+size = Vector2(48, 32)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_stairs"]
+size = Vector2(40, 40)
+
+[node name="Bedroom" type="Node2D"]
+
+[node name="Ground" type="ColorRect" parent="."]
+offset_right = 400.0
+offset_bottom = 240.0
+color = Color(0.3, 0.22, 0.16, 1)
+
+[node name="Walls" type="StaticBody2D" parent="."]
+
+[node name="Top" type="CollisionShape2D" parent="Walls"]
+position = Vector2(200, 0)
+shape = SubResource("RectangleShape2D_bed01")
+
+[node name="Bottom" type="CollisionShape2D" parent="Walls"]
+position = Vector2(200, 240)
+shape = SubResource("RectangleShape2D_bed01")
+
+[node name="Left" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, 120)
+shape = SubResource("RectangleShape2D_bed02")
+
+[node name="Right" type="CollisionShape2D" parent="Walls"]
+position = Vector2(400, 120)
+shape = SubResource("RectangleShape2D_bed02")
+
+[node name="Bed" type="Area2D" groups=["interactable"]]
+script = ExtResource("3_bed03")
+position = Vector2(80, 60)
+
+[node name="Sprite2D" type="Sprite2D" parent="Bed"]
+modulate = Color(0.55, 0.4, 0.75, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Bed"]
+shape = SubResource("RectangleShape2D_bed03")
+
+[node name="Stairs" type="Area2D" parent="."]
+script = ExtResource("4_bed04")
+position = Vector2(320, 200)
+target_scene = "res://scenes/HouseMain.tscn"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Stairs"]
+shape = SubResource("RectangleShape2D_stairs")
+
+[node name="Player" parent="." instance=ExtResource("1_bed01")]
+position = Vector2(180, 160)
+
+[node name="DialogueBox" parent="." instance=ExtResource("2_bed02")]
