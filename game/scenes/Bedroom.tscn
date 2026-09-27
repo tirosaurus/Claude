@@ -42,12 +42,11 @@ shape = SubResource("RectangleShape2D_bed02")
 position = Vector2(400, 120)
 shape = SubResource("RectangleShape2D_bed02")
 
-[node name="Bed" type="Area2D" groups=["interactable"]]
-script = ExtResource("3_bed03")
+[node name="Bed" type="Area2D" parent="." groups=["interactable"]]
 position = Vector2(80, 60)
+script = ExtResource("3_bed03")
 
 [node name="Sprite2D" type="Sprite2D" parent="Bed"]
-modulate = Color(0.55, 0.4, 0.75, 1)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Bed"]
 shape = SubResource("RectangleShape2D_bed03")

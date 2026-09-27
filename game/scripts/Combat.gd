@@ -58,7 +58,7 @@ func _on_attack_pressed() -> void:
 	if _battle_over:
 		return
 	var dmg := randi_range(7, 12)
-	enemy_hp = max(0, enemy_hp - dmg)
+	enemy_hp = maxi(0, enemy_hp - dmg)
 	_log("Atacas y haces %d de daño." % dmg)
 	_refresh_bars()
 	if enemy_hp <= 0:
@@ -108,6 +108,9 @@ func _win() -> void:
 	_set_buttons_enabled(false)
 	_log("¡Has derrotado a %s! Ganas %d de experiencia." % [enemy_name, xp_reward])
 	GameState.add_xp(xp_reward)
+	var defeat_flag: String = GameState.pending_encounter.get("defeat_flag", "")
+	if defeat_flag != "":
+		GameState.set_flag(defeat_flag)
 
 	if GameState.needs_branch_choice():
 		var choice_scene := preload("res://scenes/BranchChoice.tscn")

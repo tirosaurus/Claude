@@ -17,9 +17,10 @@ func _on_body_entered(body: Node) -> void:
 		return
 	if required_flag != "" and not GameState.has_flag(required_flag):
 		if blocked_message != "":
-			var dialogue_box := get_tree().get_first_node_in_group("dialogue_box")
+			var dialogue_box = get_tree().get_first_node_in_group("dialogue_box")
 			if dialogue_box:
 				dialogue_box.show_line("", blocked_message, "", 0)
 		return
 	if target_scene != "":
-		get_tree().change_scene_to_file(target_scene)
+		# No se puede cambiar de escena dentro de un callback de física.
+		get_tree().change_scene_to_file.call_deferred(target_scene)

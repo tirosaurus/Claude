@@ -38,19 +38,18 @@ shape = SubResource("RectangleShape2D_vs02")
 position = Vector2(640, 180)
 shape = SubResource("RectangleShape2D_vs02")
 
-[node name="Kaelen" type="Area2D" groups=["interactable"]]
+[node name="Kaelen" type="Area2D" parent="." groups=["interactable"]]
+position = Vector2(280, 160)
 script = ExtResource("3_vs003")
 companion_id = "kaelen"
 display_name = "Kaelen"
-dialogue_lines = PackedStringArray("¡Por fin sales! Menudo día tan bueno hace, no puedo quedarme quieto.", "Estoy muerto de aburrimiento. ¿Me acompañas al Bosque Santo? Total, siempre volvemos antes de que anochezca.", "Yara seguro que ya anda por allí cogiendo flores, como siempre.")
+dialogue_lines = Array[String](["¡Por fin sales! Menudo día tan bueno hace, no puedo quedarme quieto.", "Estoy muerto de aburrimiento. ¿Me acompañas al Bosque Santo? Total, siempre volvemos antes de que anochezca.", "Yara seguro que ya anda por allí cogiendo flores, como siempre."])
 color = Color(0.4, 0.6, 0.85, 1)
 sets_flag_on_interact = "kaelen_invited"
 
 [node name="Sprite2D" type="Sprite2D" parent="Kaelen"]
-position = Vector2(280, 160)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Kaelen"]
-position = Vector2(280, 160)
 shape = SubResource("RectangleShape2D_vs03")
 
 [node name="ForestPath" type="Area2D" parent="."]

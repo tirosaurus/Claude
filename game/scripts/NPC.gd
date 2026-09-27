@@ -24,7 +24,7 @@ func _ready() -> void:
 
 
 func interact() -> void:
-	var dialogue_box := get_tree().get_first_node_in_group("dialogue_box")
+	var dialogue_box = get_tree().get_first_node_in_group("dialogue_box")
 	if dialogue_box == null:
 		return
 	var line: String = dialogue_lines[_line_index % dialogue_lines.size()]

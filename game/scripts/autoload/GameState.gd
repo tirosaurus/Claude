@@ -255,4 +255,4 @@ var combat_return_scene := ""
 func start_encounter(enemy: Dictionary, return_scene: String) -> void:
 	pending_encounter = enemy
 	combat_return_scene = return_scene
-	get_tree().change_scene_to_file("res://scenes/Combat.tscn")
+	get_tree().change_scene_to_file.call_deferred("res://scenes/Combat.tscn")

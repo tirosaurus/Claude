@@ -42,30 +42,31 @@ shape = SubResource("RectangleShape2D_frs02")
 position = Vector2(640, 180)
 shape = SubResource("RectangleShape2D_frs02")
 
-[node name="Yara" type="Area2D" groups=["interactable"]]
+[node name="Yara" type="Area2D" parent="." groups=["interactable"]]
+position = Vector2(260, 150)
 script = ExtResource("3_frs03")
 companion_id = "yara"
 display_name = "Yara"
-dialogue_lines = PackedStringArray("Mira qué flores, ¡el bosque está precioso hoy! Aunque... hay algo raro en el aire, ¿no crees?", "Desde pequeña siento que este bosque me habla, de una forma buena. Espero que siga siendo así siempre.", "¿Vamos los tres juntos un rato? Como cuando éramos niños.")
+dialogue_lines = Array[String](["Mira qué flores, ¡el bosque está precioso hoy! Aunque... hay algo raro en el aire, ¿no crees?", "Desde pequeña siento que este bosque me habla, de una forma buena. Espero que siga siendo así siempre.", "¿Vamos los tres juntos un rato? Como cuando éramos niños."])
 color = Color(0.85, 0.7, 0.35, 1)
 sets_flag_on_interact = "yara_met"
 
 [node name="Sprite2D" type="Sprite2D" parent="Yara"]
-position = Vector2(260, 150)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Yara"]
-position = Vector2(260, 150)
 shape = SubResource("RectangleShape2D_frs03")
 
-[node name="ForestBeast" type="Area2D" parent="."]
-script = ExtResource("4_frs04")
+[node name="ForestBeast" type="Area2D" parent="." groups=["interactable"]]
 position = Vector2(420, 220)
+script = ExtResource("4_frs04")
 required_flag = "yara_met"
 enemy_name = "Lobo del Bosque Santo"
 enemy_max_hp = 40
 enemy_attack = 6
 xp_reward = 60
 return_scene = "res://scenes/Forest.tscn"
+
+[node name="Sprite2D" type="Sprite2D" parent="ForestBeast"]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="ForestBeast"]
 shape = SubResource("RectangleShape2D_frs04")

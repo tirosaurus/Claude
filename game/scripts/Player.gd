@@ -31,7 +31,7 @@ func _physics_process(_delta: float) -> void:
 		sprite.flip_h = input_dir.x < 0
 
 	if Input.is_action_just_pressed("interact") and not _interactables.is_empty():
-		var target := _interactables[0]
+		var target = _interactables[0]
 		if target.has_method("interact"):
 			target.interact()
 

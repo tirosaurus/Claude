@@ -15,6 +15,6 @@ func _ready() -> void:
 
 func interact() -> void:
 	GameState.set_flag("slept", true)
-	var dialogue_box := get_tree().get_first_node_in_group("dialogue_box")
+	var dialogue_box = get_tree().get_first_node_in_group("dialogue_box")
 	if dialogue_box:
 		dialogue_box.show_line("", "Ya has dormido bastante por hoy. Mejor bajar.", "", 0)

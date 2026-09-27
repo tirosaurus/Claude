@@ -39,18 +39,17 @@ shape = SubResource("RectangleShape2D_hm02")
 position = Vector2(400, 120)
 shape = SubResource("RectangleShape2D_hm02")
 
-[node name="Mother" type="Area2D" groups=["interactable"]]
+[node name="Mother" type="Area2D" parent="." groups=["interactable"]]
+position = Vector2(200, 70)
 script = ExtResource("3_hm003")
 companion_id = ""
 display_name = "Madre"
-dialogue_lines = PackedStringArray("Hoy hace muy buen día, ¿verdad? ¿Has descansado bien?", "Ten cuidado ahí fuera. El bosque lleva unos días raro, dicen.", "Anda, ve a ver a tus amigos antes de que se hagan viejos esperándote.")
+dialogue_lines = Array[String](["Hoy hace muy buen día, ¿verdad? ¿Has descansado bien?", "Ten cuidado ahí fuera. El bosque lleva unos días raro, dicen.", "Anda, ve a ver a tus amigos antes de que se hagan viejos esperándote."])
 color = Color(0.75, 0.55, 0.6, 1)
 
 [node name="Sprite2D" type="Sprite2D" parent="Mother"]
-position = Vector2(200, 70)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Mother"]
-position = Vector2(200, 70)
 shape = SubResource("RectangleShape2D_hm03")
 
 [node name="FrontDoor" type="Area2D" parent="."]
