@@ -1,7 +1,7 @@
-[gd_scene load_steps=9 format=3 uid="uid://exq6n2wh8m4tj"]
+[gd_scene load_steps=9 format=3]
 
-[ext_resource type="PackedScene" uid="uid://bqx3wp8k7f2mn" path="res://scenes/Player.tscn" id="1_vs001"]
-[ext_resource type="PackedScene" uid="uid://c3n0mvxqf5g8a" path="res://scenes/DialogueBox.tscn" id="2_vs002"]
+[ext_resource type="PackedScene" path="res://scenes/Player.tscn" id="1_vs001"]
+[ext_resource type="PackedScene" path="res://scenes/DialogueBox.tscn" id="2_vs002"]
 [ext_resource type="Script" path="res://scripts/NPC.gd" id="3_vs003"]
 [ext_resource type="Script" path="res://scripts/Door.gd" id="4_vs004"]
 

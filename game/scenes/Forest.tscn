@@ -1,7 +1,7 @@
-[gd_scene load_steps=10 format=3 uid="uid://f2m9wv3hq7ntx"]
+[gd_scene load_steps=10 format=3]
 
-[ext_resource type="PackedScene" uid="uid://bqx3wp8k7f2mn" path="res://scenes/Player.tscn" id="1_frs01"]
-[ext_resource type="PackedScene" uid="uid://c3n0mvxqf5g8a" path="res://scenes/DialogueBox.tscn" id="2_frs02"]
+[ext_resource type="PackedScene" path="res://scenes/Player.tscn" id="1_frs01"]
+[ext_resource type="PackedScene" path="res://scenes/DialogueBox.tscn" id="2_frs02"]
 [ext_resource type="Script" path="res://scripts/NPC.gd" id="3_frs03"]
 [ext_resource type="Script" path="res://scripts/ForestBeast.gd" id="4_frs04"]
 

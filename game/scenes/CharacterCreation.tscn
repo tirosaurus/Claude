@@ -1,4 +1,4 @@
-[gd_scene load_steps=2 format=3 uid="uid://cn8x2vh9m4qwl"]
+[gd_scene load_steps=2 format=3]
 
 [ext_resource type="Script" path="res://scripts/CharacterCreation.gd" id="1_cc001"]
 
