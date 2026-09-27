@@ -19,6 +19,7 @@ import audio  # noqa: E402
 import songs  # noqa: E402
 import enemies2  # noqa: E402
 import sfx2  # noqa: E402
+import icon  # noqa: E402
 
 
 def preview(out_dir):
@@ -50,6 +51,7 @@ if __name__ == "__main__":
     ui.build_v2(OUT)
     ui.build_v3(OUT)
     ui.equip_icons(OUT)
+    icon.build_icon(os.path.join(HERE, "..", "game"))
     audio.build_all(OUT)
     audio.build_v2(OUT)
     sfx2.build_all(OUT)
