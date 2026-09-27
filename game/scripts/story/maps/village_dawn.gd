@@ -114,8 +114,10 @@ func _marta() -> void:
 	await pan_to(Vector2(400, 470), 1.0)
 	dust(Vector2(400, 450), Color(0.5, 0.45, 0.4))
 	await say([K("{name}, no. Esa casa se está cayendo. Si entras, no sales. Y la Semilla no puede esperar."),
-		Y("¡Hay alguien ahí dentro, Kaelen!")])
-	var i := await choose(["¡Voy a por ella!", "Kaelen tiene razón. La Semilla es lo primero."], "Las llamas crecen.")
+		K("Una vida contra la de todo el pueblo. Hay que ser práctico."),
+		Y("¡Es una persona, Kaelen! ¡La conocemos desde críos! ¡Marta nos daba pan de higo a escondidas!"),
+		"Desde dentro se oye una voz débil: «¡Ayuda... por favor!»"])
+	var i := await choose(["¡Voy a por ella!", "Kaelen tiene razón. La Semilla es lo primero."], "Las llamas crecen. No hay tiempo para pensarlo dos veces.")
 	await release_camera(0.3)
 	if i == 0:
 		setf("marta_saved")
@@ -134,7 +136,7 @@ func _marta() -> void:
 			{"who": "Marta", "text": "Luego fue al pozo viejo del Bosque Santo, el del claro del este, y tiró unos papeles dentro. Llorando."},
 			{"who": "Marta", "text": "Decía: «¡Que nadie los lea jamás!». Si es lo que le da miedo... quizá os sirva."},
 			K("...Vale. Ha merecido la pena. Pero la próxima vez que entres en una casa en llamas, avísame."),
-			"(Nuevo lugar: el pozo abandonado del claro del este, en el Bosque Santo.)"])
+			"(Nuevo lugar: el pozo abandonado del claro del este, en el Bosque Santo. Queda de camino al bosque profundo.)"])
 		world.remove_npc("marta")
 	else:
 		setf("marta_lost")

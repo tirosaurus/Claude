@@ -5,6 +5,16 @@ var _wolf: Sprite2D
 
 func on_map_ready(_m: String) -> void:
 	if flag("act3_started"):
+		if flag("marta_saved") and not flag("curriculum_found"):
+			_well_sparkle()
+			if not flag("well_hint"):
+				setf("well_hint")
+				begin()
+				await wait(0.4)
+				await say([Y("Mirad, el claro del este. Ahí está el pozo viejo del que habló Marta."),
+					K("El del gordo del cucharón. Si tiró algo que le daba miedo, más vale tenerlo nosotros."),
+					"(El pozo abandonado está al este del claro, al norte del camino. Examínalo con E.)"])
+				end()
 		return
 	if not flag("yara_joined"):
 		var y = world.spawn_npc("yara", world.marker("yara"), 0)
@@ -129,6 +139,49 @@ func _class_tutorial() -> void:
 		Y("Cuando crezcáis en fuerza aprenderéis técnicas nuevas: pensad bien en cuáles os especializáis."),
 		"(Menú Esc: Talentos para gastar puntos al subir de nivel, y Equipo para cambiar armas y armaduras de todo el grupo.)",
 		K("Vale, vale, profesora. ¿Podemos ir ya a buscar al ciervo?")])
+
+
+func _well_sparkle() -> void:
+	var p := CPUParticles2D.new()
+	p.position = Vector2(700, 186)
+	p.amount = 14
+	p.lifetime = 1.4
+	p.emission_shape = CPUParticles2D.EMISSION_SHAPE_SPHERE
+	p.emission_sphere_radius = 10
+	p.gravity = Vector2(0, -16)
+	p.initial_velocity_min = 2
+	p.initial_velocity_max = 8
+	p.scale_amount_min = 1.2
+	p.scale_amount_max = 2.2
+	p.color = Color(1, 0.9, 0.5)
+	p.z_index = 5
+	world.entities.add_child(p)
+
+
+## Si sales hacia el bosque profundo sin haber mirado el pozo, el grupo te lo recuerda.
+func before_exit(to: String) -> bool:
+	if to == "forest_deep" and flag("marta_saved") and not flag("curriculum_found") and not flag("well_skipped"):
+		world.player.position.x -= 12
+		_well_prompt.call_deferred()
+		return false
+	return true
+
+
+func _well_prompt() -> void:
+	begin()
+	var i := await choose(["Tienes razón. Vamos al pozo primero.", "No. Sigamos: ese gordo no me preocupa."],
+		Y("Espera, {name}. ¿Y el pozo de Marta? Arriesgaste la vida por esa pista."))
+	if i == 0:
+		await walk_party_to(Vector2(700, 222), 80)
+		world.player.face(3)
+		end()
+		await _old_well()
+		return
+	setf("well_skipped")
+	GameState.change_approval("yara", -3)
+	await say([Y("...Como quieras. Espero que no nos arrepintamos.")])
+	end()
+	Transition.go_to_map("forest_deep", "from_forest")
 
 
 func _old_well() -> void:
