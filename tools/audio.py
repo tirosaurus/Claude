@@ -335,13 +335,6 @@ def sfx_step():
 
 
 def build_all(out):
-    m = f"{out}/music"
-    write(f"{m}/home.wav", track_home())
-    write(f"{m}/village.wav", track_village())
-    write(f"{m}/forest.wav", track_forest())
-    write(f"{m}/battle.wav", track_battle())
-    write(f"{m}/victory.wav", track_victory())
-    write(f"{m}/title.wav", track_title())
     s = f"{out}/sfx"
     for name, fn in (("blip", sfx_blip), ("select", sfx_select), ("confirm", sfx_confirm), ("door", sfx_door),
                      ("hit", sfx_hit), ("crit", sfx_crit), ("heal", sfx_heal), ("defend", sfx_defend),
@@ -518,11 +511,6 @@ def sfx_flee():
 
 
 def build_v2(out):
-    m = f"{out}/music"
-    for name, fn in (("night", track_night), ("cathedral", track_cathedral), ("deep", track_deep),
-                     ("elves", track_elves), ("heart", track_heart), ("boss", track_boss), ("final", track_final),
-                     ("sad", track_sad), ("ending_good", track_ending_good), ("ending_bad", track_ending_bad)):
-        write(f"{m}/{name}.wav", fn())
     s = f"{out}/sfx"
     for name, fn in (("magic", sfx_magic), ("fire", sfx_fire), ("ice", sfx_ice), ("bolt", sfx_bolt),
                      ("dark", sfx_dark), ("buy", sfx_buy), ("save", sfx_save), ("chest", sfx_chest),

@@ -301,12 +301,22 @@ func _build_trigger(t: Dictionary) -> void:
 	_add_rect_shape(area, rect)
 	area.collision_mask = 1
 	add_child(area)
-	area.body_entered.connect(_on_trigger_body.bind(str(t["id"])))
+	area.body_entered.connect(_on_trigger_body.bind(str(t["id"]), area))
 
 
-func _on_trigger_body(b: Node, id: String) -> void:
-	if b == player and not cutscene and not Transition.busy:
-		story.on_trigger.call_deferred(id)
+func _on_trigger_body(b: Node, id: String, area: Area2D = null) -> void:
+	if b != player:
+		return
+	# Si entra durante un fundido (p. ej. al volver de un combate), espera a que termine.
+	while Transition.busy:
+		await get_tree().process_frame
+		if not is_inside_tree():
+			return
+	if cutscene:
+		return
+	if area != null and not area.overlaps_body(player):
+		return
+	story.on_trigger.call_deferred(id)
 
 
 func _build_particles() -> void:
@@ -547,7 +557,7 @@ func _process(delta: float) -> void:
 				var r: Rect2 = target["rect"]
 				_hint.position = Vector2(r.get_center().x, r.position.y - 6)
 			else:
-				_hint.position = target.position + Vector2(0, -28)
+				_hint.position = target.position + Vector2(0, -36)
 			_hint.position.y += sin(_t * 5.0) * 1.5
 	if Input.is_action_just_pressed("pause") and not Dialogue.active and not cutscene and not Transition.busy:
 		_pause.open()

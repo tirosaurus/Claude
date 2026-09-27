@@ -47,7 +47,7 @@ func _ready() -> void:
 	add_child(sub)
 
 	var box := VBoxContainer.new()
-	box.position = Vector2(230, 180)
+	box.position = Vector2(230, 170)
 	box.size = Vector2(180, 150)
 	box.add_theme_constant_override("separation", 6)
 	add_child(box)
@@ -69,6 +69,12 @@ func _ready() -> void:
 	load_b.disabled = last < 0
 	load_b.pressed.connect(_on_load)
 	box.add_child(load_b)
+	var opt := UIKit.button("Opciones", 17)
+	opt.pressed.connect(func():
+		var o = load("res://scripts/ui/OptionsUI.gd").new()
+		add_child(o)
+		o.closed.connect(func(): opt.grab_focus()))
+	box.add_child(opt)
 	var quit := UIKit.button("Salir", 17)
 	quit.pressed.connect(func(): get_tree().quit())
 	box.add_child(quit)

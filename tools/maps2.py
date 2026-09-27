@@ -139,7 +139,7 @@ def cathedral():
     m.style = "stone"
     m.battle_bg = "cathedral"
     m.encounters = {"rate": 34, "table": [["larva", "larva"], ["bat", "bat"], ["spectre"], ["larva", "bat"],
-                                          ["spectre", "larva"]]}
+                                          ["spectre", "larva"], ["wisp", "bat"], ["wisp"]]}
     m.decals += [stained_glass(40, 18, 0), stained_glass(88, 18, 1), stained_glass(280, 18, 2),
                  stained_glass(328, 18, 3), door_light_decal(192, 384, 32)]
     m.prop("altar", 208, 90, "altar")
@@ -234,7 +234,7 @@ def forest_deep():
     m = Map("forest_deep", ["v" * Wt] * Ht, False, "Bosque Profundo", "deep", modulate=[0.72, 0.66, 0.82])
     m.battle_bg = "deep"
     m.encounters = {"rate": 38, "table": [["wolf"], ["root"], ["larva", "larva"], ["bat", "larva"], ["root", "larva"],
-                                          ["wolf", "wolf"]]}
+                                          ["wolf", "wolf"], ["boar"], ["boar", "wisp"], ["wisp", "wisp", "larva"]]}
     pts = [(0, 15), (6, 16), (12, 13), (18, 12), (24, 14), (30, 17), (36, 16), (42, 13), (49, 13)]
     for (a, b) in zip(pts, pts[1:]):
         steps = max(abs(b[0] - a[0]), abs(b[1] - a[1])) * 2
@@ -378,7 +378,7 @@ def heart():
     m = Map("heart", to_rows(g), False, "Corazón del Bosque", "heart", modulate=[0.62, 0.52, 0.74])
     m.battle_bg = "heart"
     m.encounters = {"rate": 34, "table": [["root", "root"], ["thrall", "larva"], ["spectre", "bat"],
-                                          ["thrall", "thrall"], ["root", "larva", "larva"], ["brute"]]}
+                                          ["thrall", "thrall"], ["root", "larva", "larva"], ["brute"], ["boar", "boar"], ["wisp", "thrall", "wisp"]]}
     for i in range(60):
         tx, ty = rng.randint(1, Wt - 2), rng.randint(1, Ht - 2)
         if g[ty][tx] == "v" and any(g[ty + dy][tx + dx] == "x" for dx in (-1, 0, 1) for dy in (-1, 0, 1)):

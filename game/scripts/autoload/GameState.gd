@@ -235,6 +235,15 @@ func skills_of(id: String) -> Array:
 	return out
 
 
+## Al subir de nivel: media vida y una cuarta parte del maná (el maná es un recurso a gestionar).
+func level_restore() -> void:
+	for id in members:
+		var st := stats(id)
+		var m: Dictionary = members[id]
+		m["hp"] = mini(int(st["hp"]), maxi(1, int(m["hp"])) + int(st["hp"] * 0.5))
+		m["mp"] = mini(int(st["mp"]), int(m["mp"]) + int(ceil(st["mp"] * 0.25)))
+
+
 func heal_all() -> void:
 	for id in members:
 		var st := stats(id)
@@ -258,7 +267,7 @@ func add_xp(amount: int) -> Array:
 			for s in skills_of(id):
 				if not before[id].has(s):
 					learned.append([id, s])
-		heal_all()
+		level_restore()
 		result.append({"level": level, "learned": learned})
 		leveled_up.emit(level)
 	return result

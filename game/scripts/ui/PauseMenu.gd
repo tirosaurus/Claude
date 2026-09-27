@@ -28,17 +28,17 @@ func open() -> void:
 	dim.color = Color(0, 0, 0, 0.55)
 	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(dim)
-	var side := UIKit.panel(Rect2(12, 20, 150, 250))
+	var side := UIKit.panel(Rect2(12, 14, 150, 258))
 	add_child(side)
 	var box := VBoxContainer.new()
 	box.position = Vector2(14, 14)
 	box.size = Vector2(122, 220)
-	box.add_theme_constant_override("separation", 6)
+	box.add_theme_constant_override("separation", 4)
 	side.add_child(box)
-	for pair in [["Grupo", _show_party], ["Objetos", _show_items], ["Guardar", _show_save], ["Continuar", close],
+	for pair in [["Grupo", _show_party], ["Objetos", _show_items], ["Guardar", _show_save], ["Opciones", _show_options], ["Continuar", close],
 			["Volver al título", _to_title]]:
 		var b := UIKit.button(pair[0], 15)
-		b.custom_minimum_size = Vector2(122, 30)
+		b.custom_minimum_size = Vector2(122, 36)
 		b.pressed.connect(pair[1])
 		box.add_child(b)
 		_tabs.append(b)
@@ -218,6 +218,16 @@ func _show_save() -> void:
 		_sub_open = false
 		if _tabs.size() > 2:
 			_tabs[2].grab_focus())
+
+
+func _show_options() -> void:
+	_sub_open = true
+	var o = load("res://scripts/ui/OptionsUI.gd").new()
+	add_child(o)
+	o.closed.connect(func():
+		_sub_open = false
+		if _tabs.size() > 3:
+			_tabs[3].grab_focus())
 
 
 func _to_title() -> void:

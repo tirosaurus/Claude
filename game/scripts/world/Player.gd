@@ -34,7 +34,7 @@ func setup(w: Node, pos: Vector2, face: int = 0) -> void:
 	sprite.hframes = 3
 	sprite.vframes = 4
 	sprite.centered = false
-	sprite.offset = Vector2(-8, -23)
+	sprite.offset = Vector2(-10, -29)
 	add_child(sprite)
 	for i in 80:
 		trail.append(position)

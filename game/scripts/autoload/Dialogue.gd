@@ -250,7 +250,7 @@ func _process(delta: float) -> void:
 	var pressed := Input.is_action_just_pressed("interact") and Engine.get_process_frames() > _ignore_frame
 	if _typing:
 		var total := _text.get_total_character_count()
-		var speed := CHARS_PER_SEC * (3.0 if Input.is_action_pressed("cancel") else 1.0)
+		var speed := CHARS_PER_SEC * Audio.text_speed_mult() * (3.0 if Input.is_action_pressed("cancel") else 1.0)
 		_visible_f += delta * speed
 		var shown := int(_visible_f)
 		if shown != _text.visible_characters:

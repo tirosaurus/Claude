@@ -496,3 +496,46 @@ def build_v2(out):
     for k, v in icons_v2().items():
         v.save(f"{out}/ui/{k}.png")
     bgs_v2(out)
+
+
+# --- v3: ventanas estilo JRPG clásico ------------------------------------------------
+def window_v3(top=(52, 70, 160), bot=(14, 18, 62)):
+    W, H = 32, 48
+    c = Canvas(W, H)
+    for y in range(H):
+        col = mix(top, bot, y / (H - 1))
+        c.hline(0, y, W, col)
+    # bordes: exterior oscuro, plata, sombra interior
+    for x in range(W):
+        for y in range(H):
+            edge = min(x, y, W - 1 - x, H - 1 - y)
+            if edge == 0:
+                c.px(x, y, (20, 18, 30))
+            elif edge == 1:
+                c.px(x, y, (236, 236, 244) if (x < W / 2 or y < H / 2) else (170, 172, 190))
+            elif edge == 2:
+                c.px(x, y, (120, 124, 150))
+    for (x, y) in ((0, 0), (1, 0), (0, 1), (W - 1, 0), (W - 2, 0), (W - 1, 1), (0, H - 1), (1, H - 1), (0, H - 2),
+                   (W - 1, H - 1), (W - 2, H - 1), (W - 1, H - 2)):
+        c.px(x, y, (0, 0, 0), 0)
+        c.p[x, y] = (0, 0, 0, 0)
+    for (x, y) in ((1, 1), (W - 2, 1), (1, H - 2), (W - 2, H - 2)):
+        c.p[x, y] = (20, 18, 30, 255)
+    return c
+
+
+def build_v3(out):
+    d = f"{out}/ui"
+    window_v3().save(f"{d}/window.png")
+    window_v3((90, 40, 60), (30, 12, 24)).save(f"{d}/window_red.png")
+    # barra de selección
+    s = Canvas(16, 16)
+    for y in range(16):
+        s.hline(0, y, 16, mix((120, 150, 240), (60, 80, 180), y / 15))
+    s.save(f"{d}/select_bar.png")
+    # triángulo indicador de turno
+    t = Canvas(9, 7)
+    for y in range(5):
+        t.hline(y, y, 9 - 2 * y, (255, 230, 120))
+    t.outline(OUT)
+    t.save(f"{d}/turn_arrow.png")

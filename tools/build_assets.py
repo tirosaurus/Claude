@@ -16,6 +16,9 @@ import props2  # noqa: E402
 import maps  # noqa: E402
 import ui  # noqa: E402
 import audio  # noqa: E402
+import songs  # noqa: E402
+import enemies2  # noqa: E402
+import sfx2  # noqa: E402
 
 
 def preview(out_dir):
@@ -41,11 +44,16 @@ if __name__ == "__main__":
     chars.build_all(OUT)
     props.build_all(OUT)
     props2.build_all(OUT)
+    enemies2.build_all(OUT)
     maps.build_all(OUT)
     ui.build_all(OUT)
     ui.build_v2(OUT)
+    ui.build_v3(OUT)
     audio.build_all(OUT)
     audio.build_v2(OUT)
+    sfx2.build_all(OUT)
+    if "--no-music" not in sys.argv:
+        songs.build(os.path.join(OUT, "music"))
     if "--preview" in sys.argv:
         preview(sys.argv[sys.argv.index("--preview") + 1])
     print("assets ok")

@@ -3058,6 +3058,18 @@
    [
     "wolf",
     "wolf"
+   ],
+   [
+    "boar"
+   ],
+   [
+    "boar",
+    "wisp"
+   ],
+   [
+    "wisp",
+    "wisp",
+    "larva"
    ]
   ]
  },

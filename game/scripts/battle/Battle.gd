@@ -4,7 +4,12 @@ extends Control
 
 const BattlerScript := preload("res://scripts/battle/Battler.gd")
 const ATB_RATE := 1.15
-const PARTY_POS := [Vector2(466, 112), Vector2(492, 152), Vector2(466, 192), Vector2(492, 232)]
+const PARTY_POS := [Vector2(500, 84), Vector2(530, 126), Vector2(500, 168), Vector2(530, 210)]
+const C_TEXT := Color(0.97, 0.97, 1.0)
+const C_HI := Color(1.0, 0.86, 0.35)
+const C_DIS := Color(0.55, 0.57, 0.68)
+const C_HP := Color(0.36, 0.86, 0.42)
+const C_MP := Color(0.42, 0.66, 1.0)
 const ENEMY_SLOTS := {
 	1: [Vector2(180, 168)],
 	2: [Vector2(140, 130), Vector2(220, 200)],
@@ -31,6 +36,8 @@ var _start_snapshot := {}
 
 # UI
 var _top_panel: NinePatchRect
+var _turn_arrow: Sprite2D
+var _sel_bar: NinePatchRect
 var _top_label: Label
 var _enemy_panel: NinePatchRect
 var _enemy_labels: Array = []
@@ -101,15 +108,20 @@ func _build_scene() -> void:
 		b.home = PARTY_POS[i]
 		b.position = b.home
 		b.atb = randf_range(20, 60) + b.max_stats["spd"]
-		_shadow(b, 14, 4, Vector2(0, 24))
+		_shadow(b, 18, 5, Vector2(0, 30))
 		var s := Sprite2D.new()
-		s.texture = Appearance.member_sheet(id)
-		s.hframes = 3
-		s.vframes = 4
-		s.frame = 3
+		s.texture = Appearance.member_battle_sheet(id)
+		s.hframes = 9
+		s.frame = 0
 		s.scale = Vector2(2, 2)
 		b.add_child(s)
 		b.sprite = s
+		b.party_anim = true
+		var mb := _mini_bar(Vector2(-18, 36), 36, C_HP)
+		b.add_child(mb)
+		b.hp_bar = mb
+		mb.max_value = b.max_hp()
+		mb.value = b.hp
 		stage.add_child(b)
 		party.append(b)
 		_apply_dead_look(b)
@@ -137,6 +149,10 @@ func _spawn_enemy(key: String, pos: Vector2) -> Node2D:
 		s.hframes = 3
 		s.vframes = 4
 		s.frame = 6
+	elif fr == -1:
+		s.hframes = 9
+		s.frame = 0
+		s.flip_h = true
 	else:
 		s.hframes = fr
 	var sc: float = float(d["scale"])
@@ -178,105 +194,172 @@ func _shadow(parent: Node2D, rx: float, ry: float, offset: Vector2) -> void:
 	parent.add_child(poly)
 
 
+func _win(rect: Rect2, red: bool = false) -> NinePatchRect:
+	var n := NinePatchRect.new()
+	n.texture = load("res://assets/ui/window_red.png" if red else "res://assets/ui/window.png")
+	n.patch_margin_left = 6
+	n.patch_margin_right = 6
+	n.patch_margin_top = 6
+	n.patch_margin_bottom = 6
+	n.position = rect.position
+	n.size = rect.size
+	return n
+
+
+func _bar(pos: Vector2, w: float, h: float, col: Color) -> ProgressBar:
+	var bar := ProgressBar.new()
+	bar.show_percentage = false
+	bar.position = pos
+	bar.size = Vector2(w, h)
+	bar.custom_minimum_size = Vector2(w, h)
+	var bgs := StyleBoxFlat.new()
+	bgs.bg_color = Color(0.03, 0.03, 0.1, 0.9)
+	bgs.border_color = Color(0.0, 0.0, 0.0, 0.9)
+	bgs.set_border_width_all(1)
+	var fg := StyleBoxFlat.new()
+	fg.bg_color = col
+	fg.border_color = col.lightened(0.35)
+	fg.border_width_top = 1
+	bar.add_theme_stylebox_override("background", bgs)
+	bar.add_theme_stylebox_override("fill", fg)
+	bar.set_meta("fill", fg)
+	return bar
+
+
+func _mini_bar(pos: Vector2, w: float, col: Color) -> ProgressBar:
+	var b := _bar(pos, w, 4, col)
+	b.z_index = 5
+	return b
+
+
+func _hp_color(r: float) -> Color:
+	if r <= 0.25:
+		return Color(0.95, 0.3, 0.28)
+	if r <= 0.5:
+		return Color(0.98, 0.8, 0.3)
+	return C_HP
+
+
 func _build_ui() -> void:
-	_top_panel = UIKit.panel(Rect2(150, 8, 340, 34), true)
+	_top_panel = _win(Rect2(120, 6, 400, 30))
 	add_child(_top_panel)
-	_top_label = UIKit.label("", 16, UIKit.TEXT_LIGHT)
-	_top_label.position = Vector2(8, 6)
-	_top_label.size = Vector2(324, 22)
+	_top_label = UIKit.label("", 15, C_TEXT, 3)
+	_top_label.position = Vector2(8, 5)
+	_top_label.size = Vector2(384, 20)
 	_top_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_top_label.clip_text = true
 	_top_panel.add_child(_top_label)
 	_top_panel.visible = false
 
-	_enemy_panel = UIKit.panel(Rect2(8, 272, 206, 82), true)
+	_enemy_panel = _win(Rect2(6, 262, 196, 94))
 	add_child(_enemy_panel)
 	for k in 5:
-		var l := UIKit.label("", 13, UIKit.TEXT_LIGHT)
-		l.position = Vector2(12, 7 + k * 13)
-		l.size = Vector2(186, 14)
+		var l := UIKit.label("", 13, C_TEXT, 3)
+		l.position = Vector2(12, 6 + k * 16)
+		l.size = Vector2(176, 16)
 		l.clip_text = true
 		_enemy_panel.add_child(l)
 		_enemy_labels.append(l)
 
-	_party_panel = UIKit.panel(Rect2(218, 272, 414, 82), true)
+	_party_panel = _win(Rect2(206, 262, 428, 94))
 	add_child(_party_panel)
-	var y := 7
+	var hdr := [["HP", 112], ["PM", 216], ["TIEMPO", 312]]
+	for h in hdr:
+		var hl := UIKit.label(h[0], 9, Color(0.75, 0.8, 1.0), 2)
+		hl.position = Vector2(h[1], 1)
+		_party_panel.add_child(hl)
+	var y := 10
 	for b in party:
 		var row := {}
-		var nm := UIKit.label(b.display_name, 13, UIKit.TEXT_LIGHT)
-		nm.position = Vector2(10, y - 2)
-		nm.size = Vector2(78, 16)
+		var por := TextureRect.new()
+		por.texture = Appearance.member_portrait(b.id)
+		por.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		por.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		por.position = Vector2(6, y - 3)
+		por.size = Vector2(24, 24)
+		por.custom_minimum_size = Vector2(24, 24)
+		_party_panel.add_child(por)
+		row["portrait"] = por
+		var nm := UIKit.label(b.display_name, 13, C_TEXT, 3)
+		nm.position = Vector2(32, y + 1)
+		nm.size = Vector2(76, 16)
 		nm.clip_text = true
 		_party_panel.add_child(nm)
 		row["name"] = nm
-		var hp := UIKit.label("", 13, UIKit.TEXT_LIGHT)
-		hp.position = Vector2(92, y - 2)
-		hp.size = Vector2(80, 16)
+		var hp := UIKit.label("", 13, C_TEXT, 3)
+		hp.position = Vector2(112, y - 2)
+		hp.size = Vector2(92, 16)
+		hp.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		_party_panel.add_child(hp)
 		row["hp"] = hp
-		var mp := UIKit.label("", 13, Color(0.6, 0.75, 1))
-		mp.position = Vector2(176, y - 2)
-		mp.size = Vector2(60, 16)
+		var hpb := _bar(Vector2(112, y + 14), 92, 5, C_HP)
+		hpb.max_value = b.max_hp()
+		hpb.value = b.hp
+		_party_panel.add_child(hpb)
+		row["hp_bar"] = hpb
+		var mp := UIKit.label("", 13, Color(0.8, 0.88, 1.0), 3)
+		mp.position = Vector2(216, y - 2)
+		mp.size = Vector2(84, 16)
+		mp.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		_party_panel.add_child(mp)
 		row["mp"] = mp
-		var atb := ProgressBar.new()
-		atb.show_percentage = false
-		atb.position = Vector2(240, y + 3)
-		atb.size = Vector2(90, 7)
+		var mpb := _bar(Vector2(216, y + 14), 84, 5, C_MP)
+		mpb.max_value = max(1, b.max_mp())
+		mpb.value = b.mp
+		_party_panel.add_child(mpb)
+		row["mp_bar"] = mpb
+		var atb := _bar(Vector2(312, y + 5), 64, 7, Color(0.85, 0.7, 0.25))
 		atb.max_value = 100
-		var bgs := StyleBoxFlat.new()
-		bgs.bg_color = Color(0.1, 0.08, 0.12)
-		bgs.border_color = Color(0.4, 0.35, 0.3)
-		bgs.set_border_width_all(1)
-		var fg := StyleBoxFlat.new()
-		fg.bg_color = Color(0.95, 0.8, 0.3)
-		atb.add_theme_stylebox_override("background", bgs)
-		atb.add_theme_stylebox_override("fill", fg)
 		_party_panel.add_child(atb)
 		row["atb"] = atb
-		row["atb_fill"] = fg
+		row["atb_fill"] = atb.get_meta("fill")
 		var icons := HBoxContainer.new()
-		icons.position = Vector2(336, y - 1)
+		icons.position = Vector2(380, y + 3)
 		icons.add_theme_constant_override("separation", 1)
 		_party_panel.add_child(icons)
 		row["icons"] = icons
 		_rows[b.id] = row
-		y += 18
+		y += 20
 
-	_cmd_panel = UIKit.panel(Rect2(8, 238, 160, 116))
+	_cmd_panel = _win(Rect2(6, 262, 150, 94))
 	add_child(_cmd_panel)
+	_sel_bar = NinePatchRect.new()
+	_sel_bar.texture = load("res://assets/ui/select_bar.png")
+	_sel_bar.size = Vector2(132, 17)
+	_sel_bar.modulate = Color(1, 1, 1, 0.55)
+	_cmd_panel.add_child(_sel_bar)
 	var cmds := [["Atacar", "cmd_attack", "attack"], ["Habilidades", "cmd_skill", "skill"], ["Objetos", "cmd_item", "item"],
 		["Defender", "cmd_defend", "defend"], ["Huir", "cmd_flee", "flee"]]
 	for k in cmds.size():
 		var ic := TextureRect.new()
 		ic.texture = load("res://assets/ui/%s.png" % cmds[k][1])
-		ic.position = Vector2(26, 10 + k * 19)
+		ic.position = Vector2(26, 6 + k * 17)
 		ic.size = Vector2(16, 16)
 		_cmd_panel.add_child(ic)
-		var l := UIKit.label(cmds[k][0], 15)
-		l.position = Vector2(46, 8 + k * 19)
+		var l := UIKit.label(cmds[k][0], 14, C_TEXT, 3)
+		l.position = Vector2(46, 5 + k * 17)
 		_cmd_panel.add_child(l)
-		_cmd_items.append({"label": l, "action": cmds[k][2]})
+		_cmd_items.append({"label": l, "action": cmds[k][2], "icon": ic})
 	_cmd_panel.visible = false
 
-	_sub_panel = UIKit.panel(Rect2(172, 180, 300, 174))
+	_sub_panel = _win(Rect2(160, 150, 320, 206))
 	add_child(_sub_panel)
-	for k in 7:
+	for k in 8:
 		var row := {}
 		var ic := TextureRect.new()
-		ic.position = Vector2(24, 10 + k * 22)
+		ic.position = Vector2(26, 9 + k * 23)
 		ic.size = Vector2(16, 16)
 		_sub_panel.add_child(ic)
 		row["icon"] = ic
-		var l := UIKit.label("", 14)
-		l.position = Vector2(44, 9 + k * 22)
-		l.size = Vector2(190, 18)
+		var l := UIKit.label("", 14, C_TEXT, 3)
+		l.position = Vector2(46, 8 + k * 23)
+		l.size = Vector2(200, 18)
 		l.clip_text = true
 		_sub_panel.add_child(l)
 		row["label"] = l
-		var c := UIKit.label("", 14, Color(0.25, 0.35, 0.7))
-		c.position = Vector2(236, 9 + k * 22)
-		c.size = Vector2(56, 18)
+		var c := UIKit.label("", 14, Color(0.7, 0.82, 1.0), 3)
+		c.position = Vector2(246, 8 + k * 23)
+		c.size = Vector2(62, 18)
 		c.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		_sub_panel.add_child(c)
 		row["cost"] = c
@@ -295,12 +378,18 @@ func _build_ui() -> void:
 		h.visible = false
 		add_child(h)
 		_hand2.append(h)
+	_turn_arrow = Sprite2D.new()
+	_turn_arrow.texture = load("res://assets/ui/turn_arrow.png")
+	_turn_arrow.scale = Vector2(2, 2)
+	_turn_arrow.z_index = 90
+	_turn_arrow.visible = false
+	add_child(_turn_arrow)
 
-	_auto_label = UIKit.label("AUTO", 14, Color(1, 0.85, 0.3), 4)
-	_auto_label.position = Vector2(584, 250)
+	_auto_label = UIKit.label("AUTO", 14, C_HI, 4)
+	_auto_label.position = Vector2(590, 240)
 	add_child(_auto_label)
-	var tip := UIKit.label("Mayús: auto", 11, Color(0.85, 0.85, 0.9), 3)
-	tip.position = Vector2(566, 234)
+	var tip := UIKit.label("Mayús: auto", 10, Color(0.85, 0.85, 0.95), 3)
+	tip.position = Vector2(576, 226)
 	add_child(tip)
 	_refresh_ui()
 
@@ -350,7 +439,7 @@ func _tick_atb(delta: float) -> void:
 		if not b.alive():
 			continue
 		if b.atb < 100:
-			b.atb = minf(100.0, b.atb + delta * (20.0 + b.stat("spd") * 2.2) * ATB_RATE)
+			b.atb = minf(100.0, b.atb + delta * (20.0 + b.stat("spd") * 2.2) * ATB_RATE * Audio.battle_speed_mult())
 			if b.atb >= 100 and not ready_queue.has(b):
 				ready_queue.append(b)
 	_refresh_atb()
@@ -441,7 +530,6 @@ func _open_command(b) -> void:
 		if it["action"] == "item":
 			dis = _usable_items().is_empty()
 		it["disabled"] = dis
-		it["label"].add_theme_color_override("font_color", Color(0.55, 0.5, 0.45) if dis else UIKit.TEXT_DARK)
 	_highlight_row()
 	Audio.sfx("select", -12.0)
 
@@ -496,8 +584,10 @@ func _input_command() -> void:
 func _highlight_row() -> void:
 	for k in _cmd_items.size():
 		var l: Label = _cmd_items[k]["label"]
-		if not _cmd_items[k].get("disabled", false):
-			l.add_theme_color_override("font_color", Color(0.6, 0.2, 0.1) if k == _cmd_index else UIKit.TEXT_DARK)
+		var dis: bool = _cmd_items[k].get("disabled", false)
+		l.add_theme_color_override("font_color", C_DIS if dis else (C_HI if k == _cmd_index else C_TEXT))
+		_cmd_items[k]["icon"].modulate = Color(1, 1, 1, 0.45) if dis else Color.WHITE
+	_sel_bar.position = Vector2(9, 5 + _cmd_index * 17)
 
 
 func _usable_items() -> Array:
@@ -535,7 +625,7 @@ func _refresh_sub() -> void:
 			row["icon"].texture = null
 			continue
 		var id: String = _sub_entries[idx]
-		var color := UIKit.TEXT_DARK
+		var color := C_TEXT
 		if _sub_kind == "skill":
 			var sk: Dictionary = DB.SKILLS[id]
 			row["label"].text = str(sk["name"])
@@ -544,13 +634,13 @@ func _refresh_sub() -> void:
 			var ic := "el_" + el if el != "" else ("st_regen" if sk["kind"] in ["heal", "revive", "cure"] else ("cmd_defend" if sk["kind"] == "buff" else "cmd_attack"))
 			row["icon"].texture = load("res://assets/ui/%s.png" % ic)
 			if int(sk.get("mp", 0)) > actor.mp:
-				color = Color(0.55, 0.5, 0.45)
+				color = C_DIS
 		else:
 			var it: Dictionary = DB.ITEMS[id]
 			row["label"].text = str(it["name"])
 			row["cost"].text = "×%d" % GameState.item_count(id)
 			row["icon"].texture = load("res://assets/ui/%s.png" % it["icon"])
-		row["label"].add_theme_color_override("font_color", Color(0.6, 0.2, 0.1) if idx == _sub_index else color)
+		row["label"].add_theme_color_override("font_color", C_HI if idx == _sub_index and color != C_DIS else color)
 	if _sub_entries.size() > 0:
 		var id2: String = _sub_entries[_sub_index]
 		var desc: String = str(DB.SKILLS[id2]["desc"]) if _sub_kind == "skill" else str(DB.ITEMS[id2]["desc"])
@@ -652,10 +742,10 @@ func _update_hand() -> void:
 	var bob := sin(_t * 8.0) * 2.0
 	match state:
 		"command":
-			_hand.position = _cmd_panel.position + Vector2(14 + bob, 18 + _cmd_index * 19)
+			_hand.position = _cmd_panel.position + Vector2(14 + bob, 13 + _cmd_index * 17)
 			_hand.flip_h = false
 		"skill", "item":
-			_hand.position = _sub_panel.position + Vector2(12 + bob, 18 + (_sub_index - _sub_scroll) * 22)
+			_hand.position = _sub_panel.position + Vector2(14 + bob, 17 + (_sub_index - _sub_scroll) * 23)
 			_hand.flip_h = false
 		"target":
 			var multi := _target_mode in ["enemies", "allies", "enemies_random"]
@@ -669,7 +759,7 @@ func _update_hand() -> void:
 					h.position = b.position + Vector2(-_half_w(b) - 10 + bob, 0)
 				else:
 					h.flip_h = true
-					h.position = b.position + Vector2(24 - bob, 4)
+					h.position = b.position + Vector2(30 - bob, 4)
 			var tgt = list[0]
 			_top_label.text = tgt.display_name if not multi else ("Todos los enemigos" if tgt.is_enemy else "Todo el grupo")
 			_top_panel.visible = true
@@ -760,7 +850,7 @@ func _do_skill(user, id: String, targets: Array) -> void:
 						await _hit(user, t, sk, el)
 			elif kind == "heal":
 				if t.alive():
-					_effect(t, EL_COLOR.get(el, Color.WHITE))
+					_spell_fx(t, "heal")
 					var amt := int(user.stat("mag") * float(sk["power"]) + float(sk.get("base", 0)))
 					if not user.is_enemy and user.id == "player" and str(GameState.player_data["branch"]) == "healer":
 						amt = int(amt * 1.2)
@@ -821,7 +911,7 @@ func _do_item(user, id: String, targets: Array) -> void:
 		if it.has("damage"):
 			if t.alive():
 				Audio.sfx("fire", -2.0)
-				_effect(t, EL_COLOR["fire"])
+				_spell_fx(t, "fire")
 				var mult := _el_mult(t, str(it.get("el", "")))
 				_damage(t, int(float(it["damage"]) * mult * randf_range(0.9, 1.1)), false, mult > 1.0)
 			continue
@@ -937,7 +1027,7 @@ func _hit(user, target, sk: Dictionary, el: String) -> void:
 	if kind == "phys":
 		Audio.sfx("crit" if crit else "hit", -2.0)
 	else:
-		_effect(target, EL_COLOR.get(el, Color.WHITE))
+		_spell_fx(target, el)
 	_damage(target, amount, crit, mult > 1.0)
 	if kind == "drain":
 		_heal(user, int(amount * 0.5))
@@ -965,6 +1055,11 @@ func _try_inflict(t, st: String, chance: float) -> void:
 
 func _damage(t, amount: int, crit: bool, weak: bool) -> void:
 	t.hp = maxi(0, t.hp - amount)
+	if not t.is_enemy:
+		t.pose(5, 0.4)
+		var kb := create_tween()
+		kb.tween_property(t.sprite, "position:x", 6.0, 0.05)
+		kb.tween_property(t.sprite, "position:x", 0.0, 0.12)
 	_flash(t.sprite, Color(6, 6, 6) if t.is_enemy else Color(3, 0.6, 0.6))
 	_shake(6.0 if crit else 3.0)
 	_float(t, str(amount), Color(1, 0.95, 0.55) if crit else (Color(1, 0.55, 0.5) if not t.is_enemy else Color.WHITE), crit)
@@ -1010,15 +1105,10 @@ func _on_death(t) -> void:
 func _apply_dead_look(b) -> void:
 	if b.is_enemy:
 		return
-	if b.alive():
-		b.sprite.rotation_degrees = 0
-		b.sprite.modulate = Color.WHITE
-		b.sprite.position = Vector2.ZERO
-		b.sprite.frame = 3
-	else:
-		b.sprite.rotation_degrees = -90
-		b.sprite.modulate = Color(0.5, 0.45, 0.55, 0.9)
-		b.sprite.position = Vector2(0, 16)
+	b.sprite.rotation_degrees = 0
+	b.sprite.position = Vector2.ZERO
+	b.sprite.modulate = Color.WHITE if b.alive() else Color(0.75, 0.7, 0.8)
+	b.set_idle_frame()
 
 
 # ------------------------------------------------------------ IA
@@ -1160,16 +1250,35 @@ func _wait(s: float) -> void:
 
 
 func _float(b, text: String, col: Color, big: bool = false, dy: float = 0) -> void:
-	var l := UIKit.label(text, 22 if big else 16, col, 5)
-	l.position = b.position + Vector2(-40, -_sprite_h(b) * 0.5 - 12 + dy)
+	var l := UIKit.label(text, 22 if big else 17, col, 5)
+	l.position = b.position + Vector2(-40, -_sprite_h(b) * 0.5 - 8 + dy)
 	l.size = Vector2(80, 24)
 	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	l.z_index = 50
+	l.pivot_offset = Vector2(40, 12)
+	l.scale = Vector2(1.6, 1.6) if big else Vector2(1.25, 1.25)
 	add_child(l)
-	var tw := create_tween().set_parallel(true)
-	tw.tween_property(l, "position:y", l.position.y - 24, 0.8).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
-	tw.tween_property(l, "modulate:a", 0.0, 0.35).set_delay(0.55)
+	var y0 := l.position.y
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(l, "scale", Vector2.ONE, 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(l, "position:y", y0 - 14, 0.16).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
+	tw.chain().tween_property(l, "position:y", y0 - 6, 0.14).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUAD)
+	tw.chain().tween_property(l, "position:y", y0 - 20, 0.5).set_delay(0.25)
+	tw.parallel().tween_property(l, "modulate:a", 0.0, 0.35).set_delay(0.45)
 	tw.chain().tween_callback(l.queue_free)
+
+
+func _slash(pos: Vector2) -> void:
+	var ln := Line2D.new()
+	ln.width = 3
+	ln.default_color = Color(1, 1, 0.9, 0.95)
+	ln.points = PackedVector2Array([pos + Vector2(10, -16), pos + Vector2(-10, 14)])
+	ln.z_index = 60
+	add_child(ln)
+	var tw := create_tween()
+	tw.tween_property(ln, "modulate:a", 0.0, 0.18)
+	tw.tween_callback(ln.queue_free)
 
 
 func _sprite_h(b) -> float:
@@ -1191,41 +1300,155 @@ func _shake(amount: float) -> void:
 
 
 func _effect(t, col: Color) -> void:
+	_particles(t.position, col, 24, 14, Vector2(0, -40), 60)
+
+
+func _particles(pos: Vector2, col: Color, amount: int, radius: float, gravity: Vector2, speed: float,
+		life: float = 0.7, size: float = 3.0) -> void:
 	var p := CPUParticles2D.new()
-	p.position = t.position
-	p.amount = 24
+	p.position = pos
+	p.amount = amount
 	p.one_shot = true
 	p.explosiveness = 0.85
-	p.lifetime = 0.7
+	p.lifetime = life
 	p.emission_shape = CPUParticles2D.EMISSION_SHAPE_SPHERE
-	p.emission_sphere_radius = 14
+	p.emission_sphere_radius = radius
 	p.direction = Vector2.UP
 	p.spread = 180
-	p.gravity = Vector2(0, -40)
-	p.initial_velocity_min = 20
-	p.initial_velocity_max = 60
-	p.scale_amount_min = 2
-	p.scale_amount_max = 4
-	p.color = col
+	p.gravity = gravity
+	p.initial_velocity_min = speed * 0.3
+	p.initial_velocity_max = speed
+	p.scale_amount_min = size * 0.6
+	p.scale_amount_max = size * 1.3
+	var grad := Gradient.new()
+	grad.set_color(0, col.lightened(0.4))
+	grad.set_color(1, Color(col.r, col.g, col.b, 0.0))
+	p.color_ramp = grad
 	p.z_index = 40
 	stage.add_child(p)
 	p.emitting = true
-	get_tree().create_timer(1.2).timeout.connect(p.queue_free)
+	get_tree().create_timer(life + 0.6).timeout.connect(p.queue_free)
+
+
+func _screen_flash(col: Color, t: float = 0.18) -> void:
+	var r := ColorRect.new()
+	r.color = col
+	r.size = Vector2(640, 360)
+	r.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	r.z_index = 80
+	add_child(r)
+	var tw := create_tween()
+	tw.tween_property(r, "modulate:a", 0.0, t)
+	tw.tween_callback(r.queue_free)
+
+
+func _ring(pos: Vector2, col: Color, r0: float, r1: float, t: float = 0.35) -> void:
+	var ln := Line2D.new()
+	ln.width = 2
+	ln.default_color = col
+	ln.z_index = 45
+	var pts := PackedVector2Array()
+	for k in 25:
+		var a := TAU * k / 24.0
+		pts.append(Vector2(cos(a), sin(a) * 0.45))
+	ln.points = pts
+	ln.position = pos
+	ln.scale = Vector2(r0, r0)
+	stage.add_child(ln)
+	var tw := create_tween().set_parallel(true)
+	tw.tween_property(ln, "scale", Vector2(r1, r1), t).set_ease(Tween.EASE_OUT)
+	tw.tween_property(ln, "modulate:a", 0.0, t)
+	tw.chain().tween_callback(ln.queue_free)
+
+
+## Efecto visual de hechizo según elemento.
+func _spell_fx(t, el: String) -> void:
+	var pos: Vector2 = t.position
+	match el:
+		"fire":
+			_particles(pos + Vector2(0, 10), Color(1, 0.55, 0.15), 40, 16, Vector2(0, -120), 50, 0.7, 4)
+			_particles(pos, Color(1, 0.9, 0.4), 16, 8, Vector2(0, -60), 30, 0.5, 3)
+			_ring(pos + Vector2(0, 14), Color(1, 0.6, 0.2), 4, 36)
+			_screen_flash(Color(1, 0.5, 0.1, 0.18))
+		"ice":
+			for k in 6:
+				var shard := Polygon2D.new()
+				shard.polygon = PackedVector2Array([Vector2(0, -7), Vector2(3, 0), Vector2(0, 7), Vector2(-3, 0)])
+				shard.color = Color(0.75, 0.95, 1, 0.95)
+				shard.z_index = 45
+				var off := Vector2(randf_range(-22, 22), randf_range(-14, 14))
+				shard.position = pos + off + Vector2(0, -70)
+				stage.add_child(shard)
+				var tw := create_tween()
+				tw.tween_interval(k * 0.04)
+				tw.tween_property(shard, "position", pos + off, 0.16).set_ease(Tween.EASE_IN)
+				tw.tween_property(shard, "modulate:a", 0.0, 0.25)
+				tw.tween_callback(shard.queue_free)
+			_particles(pos, Color(0.7, 0.95, 1), 24, 18, Vector2(0, 30), 40, 0.8, 2)
+			_screen_flash(Color(0.6, 0.9, 1, 0.15))
+		"bolt":
+			var ln := Line2D.new()
+			ln.width = 3
+			ln.default_color = Color(1, 1, 0.75)
+			ln.z_index = 60
+			var pts := PackedVector2Array()
+			var y := -20.0
+			while y < pos.y:
+				pts.append(Vector2(pos.x + randf_range(-10, 10), y))
+				y += randf_range(14, 24)
+			pts.append(pos)
+			ln.points = pts
+			add_child(ln)
+			var tw2 := create_tween()
+			tw2.tween_property(ln, "modulate:a", 0.0, 0.25)
+			tw2.tween_callback(ln.queue_free)
+			_particles(pos, Color(1, 1, 0.6), 20, 6, Vector2.ZERO, 90, 0.4, 2)
+			_screen_flash(Color(1, 1, 0.8, 0.35), 0.15)
+		"light":
+			var col := ColorRect.new()
+			col.color = Color(1, 0.97, 0.75, 0.6)
+			col.size = Vector2(30, pos.y + 30)
+			col.position = Vector2(pos.x - 15, -10)
+			col.z_index = 44
+			add_child(col)
+			var tw3 := create_tween().set_parallel(true)
+			tw3.tween_property(col, "size:x", 4.0, 0.45)
+			tw3.tween_property(col, "position:x", pos.x - 2, 0.45)
+			tw3.tween_property(col, "modulate:a", 0.0, 0.45)
+			tw3.chain().tween_callback(col.queue_free)
+			_particles(pos, Color(1, 1, 0.8), 30, 16, Vector2(0, -30), 40, 0.8, 2)
+		"dark":
+			_particles(pos, Color(0.6, 0.25, 0.85), 40, 30, Vector2.ZERO, 10, 0.6, 3)
+			_ring(pos, Color(0.7, 0.3, 0.9), 40, 4, 0.4)
+			_screen_flash(Color(0.25, 0.05, 0.35, 0.25))
+		"nature":
+			_particles(pos + Vector2(0, 16), Color(0.5, 0.95, 0.4), 30, 20, Vector2(0, -50), 40, 0.9, 3)
+			_ring(pos + Vector2(0, 16), Color(0.5, 0.9, 0.4), 6, 30)
+		"heal":
+			_particles(pos + Vector2(0, 20), Color(0.6, 1, 0.65), 28, 16, Vector2(0, -70), 20, 0.9, 2)
+			_ring(pos + Vector2(0, 24), Color(0.6, 1, 0.6), 4, 26)
+			_ring(pos + Vector2(0, 24), Color(1, 1, 0.8), 2, 18, 0.5)
+		_:
+			_particles(pos, Color(1, 1, 1), 18, 12, Vector2(0, -30), 50)
 
 
 func _cast_pose(b) -> void:
 	if not b.is_enemy:
-		b.sprite.frame = 4
+		b.pose(4, 0.6)
 		_effect(b, Color(1, 1, 0.8, 0.8))
 
 
 func _lunge(b) -> void:
 	var dir := 1.0 if b.is_enemy else -1.0
-	if not b.is_enemy:
-		b.sprite.frame = 4
+	var humanoid: bool = not b.is_enemy or b.frames == -1
+	if humanoid:
+		b.pose(2, 0.2)
 	var tw := create_tween()
-	tw.tween_property(b, "position", b.home + Vector2(dir * 40, 0), 0.13).set_trans(Tween.TRANS_QUAD)
+	tw.tween_property(b, "position", b.home + Vector2(dir * 44, 0), 0.14).set_trans(Tween.TRANS_QUAD)
 	await tw.finished
+	if humanoid:
+		b.pose(3, 0.35)
+		_slash(b.position + Vector2(dir * 34, 0))
 
 
 func _return(b) -> void:
@@ -1244,16 +1467,32 @@ func _alive(list: Array) -> Array:
 # ------------------------------------------------------------ UI
 func _refresh_ui() -> void:
 	var alive_e := _alive(enemies)
+	var counted := {}
+	for e in alive_e:
+		counted[e.display_name] = int(counted.get(e.display_name, 0)) + 1
+	var names: Array = counted.keys()
 	for k in _enemy_labels.size():
 		var l: Label = _enemy_labels[k]
-		l.text = alive_e[k].display_name if k < alive_e.size() else ""
+		if k < names.size():
+			var n: String = names[k]
+			l.text = n if counted[n] == 1 else "%s  ×%d" % [n, counted[n]]
+		else:
+			l.text = ""
 	for b in party:
 		var row: Dictionary = _rows[b.id]
 		row["hp"].text = "%d/%d" % [b.hp, b.max_hp()]
 		var r := float(b.hp) / float(b.max_hp())
-		row["hp"].add_theme_color_override("font_color", Color(1, 0.4, 0.35) if r <= 0.25 else (Color(1, 0.85, 0.4) if r <= 0.5 else UIKit.TEXT_LIGHT))
-		row["mp"].text = "%d PM" % b.mp
-		row["name"].add_theme_color_override("font_color", Color(1, 0.85, 0.35) if b == actor else (Color(0.6, 0.55, 0.6) if not b.alive() else UIKit.TEXT_LIGHT))
+		row["hp"].add_theme_color_override("font_color", Color(1, 0.45, 0.4) if r <= 0.25 else (Color(1, 0.88, 0.45) if r <= 0.5 else C_TEXT))
+		_tween_bar(row["hp_bar"], b.hp, b.max_hp())
+		row["hp_bar"].get_meta("fill").bg_color = _hp_color(r)
+		row["mp"].text = "%d/%d" % [b.mp, b.max_mp()]
+		_tween_bar(row["mp_bar"], b.mp, max(1, b.max_mp()))
+		row["name"].add_theme_color_override("font_color", C_HI if b == actor else (C_DIS if not b.alive() else C_TEXT))
+		row["portrait"].modulate = Color(0.45, 0.45, 0.55) if not b.alive() else Color.WHITE
+		if b.hp_bar:
+			_tween_bar(b.hp_bar, b.hp, b.max_hp())
+			b.hp_bar.get_meta("fill").bg_color = _hp_color(r)
+			b.hp_bar.visible = b.alive()
 		var icons: HBoxContainer = row["icons"]
 		for c in icons.get_children():
 			c.queue_free()
@@ -1264,17 +1503,32 @@ func _refresh_ui() -> void:
 			ic.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 			ic.stretch_mode = TextureRect.STRETCH_SCALE
 			icons.add_child(ic)
+		b.set_idle_frame()
 	for e in enemies:
 		if e.hp_bar:
-			e.hp_bar.value = e.hp
+			_tween_bar(e.hp_bar, e.hp, e.max_hp())
 	_refresh_atb()
+
+
+func _tween_bar(bar: ProgressBar, value: float, maxv: float) -> void:
+	bar.max_value = maxv
+	if absf(bar.value - value) < 0.5:
+		return
+	var tw := bar.create_tween()
+	tw.tween_property(bar, "value", value, 0.35).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 
 
 func _refresh_atb() -> void:
 	for b in party:
 		var row: Dictionary = _rows[b.id]
 		row["atb"].value = b.atb if b.alive() else 0
-		row["atb_fill"].bg_color = Color(1, 0.95, 0.5) if b.atb >= 100 else Color(0.85, 0.7, 0.25)
+		var full: bool = b.atb >= 100 and b.alive()
+		row["atb_fill"].bg_color = Color(1, 0.97, 0.6).lerp(Color(1, 0.75, 0.3), 0.5 + 0.5 * sin(_t * 10.0)) if full else Color(0.85, 0.68, 0.22)
+	if actor != null and is_instance_valid(actor) and state in ["command", "skill", "item", "target"]:
+		_turn_arrow.visible = true
+		_turn_arrow.position = actor.position + Vector2(0, -42 + sin(_t * 6.0) * 2.0)
+	else:
+		_turn_arrow.visible = false
 
 
 # ------------------------------------------------------------ Fin
@@ -1316,6 +1570,8 @@ func _victory() -> void:
 		if not b.alive():
 			b.hp = 1
 			_apply_dead_look(b)
+		b.victory = true
+		b.set_idle_frame()
 	_write_back()
 	GameState.gold += gold_total
 	for d in drops:
@@ -1340,13 +1596,16 @@ func _victory() -> void:
 	var results := GameState.add_xp(xp_total)
 	for r in results:
 		Audio.sfx("levelup", -2.0)
-		var lines := "¡Nivel %d! El grupo se recupera." % r["level"]
+		var lines := "¡Nivel %d! Recuperáis parte de las fuerzas." % r["level"]
 		for l in r["learned"]:
 			lines += "\n%s aprende %s." % [GameState.member_name(l[0]), DB.SKILLS[l[1]]["name"]]
 		info.text = lines
 		for b in party:
-			b.hp = b.max_hp()
+			b.max_stats = GameState.stats(b.id)
+			b.hp = int(GameState.members[b.id]["hp"])
+			b.mp = int(GameState.members[b.id]["mp"])
 			_flash(b.sprite, Color(2.5, 2.5, 1.2))
+		_refresh_ui()
 		await _wait(2.0)
 	panel.queue_free()
 	if GameState.needs_branch_choice():

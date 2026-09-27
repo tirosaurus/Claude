@@ -35,11 +35,19 @@ ramificada y varios finales.
   con epílogo del destino de cada personaje y romance.
 - **Guardado** en 3 ranuras desde el menú (Esc) o en las hogueras; **Continuar/Cargar** desde el título.
 - Tiendas, oro, objetos, mejoras de equipo, cofres y encuentros aleatorios.
+- **v3:** sprites nuevos más grandes y detallados (mapa 20x30 y poses de combate: ataque, magia, herido,
+  agotado, KO y victoria, con el arma de cada rama), enemigos redibujados con volumen y dos nuevos
+  (fuego fatuo y jabalí), interfaz de combate estilo JRPG clásico con barras de vida/PM y retratos,
+  efectos por elemento, banda sonora orquestal (cuerdas, metales, coro, timbales) y menú de **Opciones**
+  (volumen, velocidad de texto y de combate, pantalla completa). El maná ya no se rellena al subir de nivel.
 
 ## Cómo está hecho
 Todo el arte, los mapas y el audio se generan con `tools/build_assets.py` (Python + Pillow + numpy):
-`chars.py` (personajes y capas del creador), `props.py`/`props2.py` (escenarios y enemigos),
-`maps.py`/`maps2.py` (diseño de mapas), `ui.py` (interfaz y fondos) y `audio.py` (16 pistas y efectos).
+`chars2.py` (rig de personajes por piezas, poses de combate y capas del creador; `chars.py` retratos),
+`enemies2.py` (enemigos esculpidos con volumen), `props.py`/`props2.py` (escenarios),
+`maps.py`/`maps2.py` (diseño de mapas), `ui.py` (interfaz y fondos), `orch.py` + `songs.py`
+(sintetizador orquestal y las 16 pistas en OGG) y `sfx2.py` (efectos de sonido).
+Requisitos: `pip install pillow numpy scipy soundfile`.
 
 En Godot: `scripts/data/DB.gd` (razas, clases, habilidades, objetos, enemigos), `scripts/battle/` (combate),
 `scripts/world/` (mapas, jugador, PNJ), `scripts/story/maps/` (guion por mapa), `scripts/ui/` (menús,

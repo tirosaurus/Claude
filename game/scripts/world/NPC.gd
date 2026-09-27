@@ -32,7 +32,7 @@ func setup(id: String, pos: Vector2, face: int = 0, m: int = Mode.IDLE, tex: Tex
 	sprite.hframes = 3
 	sprite.vframes = 4
 	sprite.centered = false
-	sprite.offset = Vector2(-8, -23)
+	sprite.offset = Vector2(-10, -29)
 	add_child(sprite)
 	body = StaticBody2D.new()
 	var shape := CollisionShape2D.new()

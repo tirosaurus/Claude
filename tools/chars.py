@@ -586,7 +586,9 @@ def build_creator(out):
 
 
 def build_all(out_dir):
+    import chars2
     for name, spec in SPECS.items():
-        build_sheet(spec).save(f"{out_dir}/chars/{name}.png")
         portrait(spec).save(f"{out_dir}/portraits/{name}.png")
     build_creator(out_dir)
+    # v3: sprites de mapa y de combate con el nuevo rig
+    chars2.build_all(out_dir, SPECS, HAIR_STYLES, RACES, SEXES)

@@ -28,6 +28,7 @@ func _hair_map(hair: Color) -> Dictionary:
 
 func _recolor(img: Image, gray_map: Dictionary, outfit: Color, use_outfit: bool) -> void:
 	var od := _shade(outfit, -0.3)
+	var ol := _shade(outfit, 0.2)
 	for y in img.get_height():
 		for x in img.get_width():
 			var c := img.get_pixel(x, y)
@@ -42,6 +43,8 @@ func _recolor(img: Image, gray_map: Dictionary, outfit: Color, use_outfit: bool)
 				img.set_pixel(x, y, Color(outfit.r, outfit.g, outfit.b, c.a))
 			elif use_outfit and c.r8 == 170 and c.g8 == 0 and c.b8 == 170:
 				img.set_pixel(x, y, Color(od.r, od.g, od.b, c.a))
+			elif use_outfit and c.r8 == 255 and c.g8 == 120 and c.b8 == 255:
+				img.set_pixel(x, y, Color(ol.r, ol.g, ol.b, c.a))
 
 
 func _compose(prefix: String, app: Dictionary) -> ImageTexture:
@@ -55,6 +58,13 @@ func _compose(prefix: String, app: Dictionary) -> ImageTexture:
 	var base: Image = load(body_path).get_image()
 	base.convert(Image.FORMAT_RGBA8)
 	_recolor(base, _skin_map(skin), outfit, true)
+	if prefix == "b":
+		var wpath := "res://assets/creator/weapon_%s_%s.png" % [race, weapon_type()]
+		if ResourceLoader.exists(wpath):
+			var w: Image = load(wpath).get_image()
+			w.convert(Image.FORMAT_RGBA8)
+			w.blend_rect(base, Rect2i(0, 0, base.get_width(), base.get_height()), Vector2i.ZERO)
+			base = w
 	var hair_img: Image = load("res://assets/creator/%shair_%s_%s_%s.png" % [prefix, race, sex, style]).get_image()
 	hair_img.convert(Image.FORMAT_RGBA8)
 	_recolor(hair_img, _hair_map(hair), outfit, false)
@@ -85,6 +95,39 @@ func portrait(app = null) -> Texture2D:
 	if not _cache.has(k):
 		_cache[k] = _compose("p", a)
 	return _cache[k]
+
+
+func weapon_type() -> String:
+	var b: String = str(GameState.player_data.get("branch", "")) if GameState.player_data else ""
+	match b:
+		"ranged":
+			return "bow"
+		"dps":
+			return "daggers"
+		"healer":
+			return "staff"
+		"tank":
+			return "axe"
+	return "sword"
+
+
+func battle_sheet(app = null) -> Texture2D:
+	var a: Dictionary = app if app != null else GameState.appearance
+	var k := _key("b" + weapon_type(), a)
+	if not _cache.has(k):
+		_cache[k] = _compose("b", a)
+	return _cache[k]
+
+
+## Hoja de poses de combate (9 frames de 32x32) para un miembro.
+func member_battle_sheet(id: String) -> Texture2D:
+	if id == "player":
+		return battle_sheet()
+	if id == "yara" and GameState.yara_is_witch():
+		return load("res://assets/battle/yara_dark.png")
+	if id == "kaelen" and GameState.has_flag("kaelen_dark"):
+		return load("res://assets/battle/kaelen_dark.png")
+	return load("res://assets/battle/%s.png" % id)
 
 
 ## Textura de hoja de sprites para cualquier miembro del grupo.
