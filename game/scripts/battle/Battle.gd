@@ -428,6 +428,8 @@ func _process(delta: float) -> void:
 	_update_hand()
 	if _over:
 		return
+	if state in ["idle", "busy"]:
+		_tap_accept = false
 	match state:
 		"idle":
 			if not _busy:
@@ -557,7 +559,65 @@ func _close_menus() -> void:
 	_top_panel.visible = false
 
 
+var _tap_accept := false
+
+
+## Toques/clics directos sobre el menú de combate y los objetivos (móvil).
+func _input(event: InputEvent) -> void:
+	var pos := Vector2.ZERO
+	if event is InputEventScreenTouch and event.pressed:
+		pos = event.position
+	elif event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT \
+			and not DisplayServer.is_touchscreen_available():
+		pos = event.position
+	else:
+		return
+	if _over or Engine.get_process_frames() <= _ignore_until:
+		return
+	if TouchControls.visible and TouchControls._button_at(pos) != null:
+		return
+	match state:
+		"command":
+			for k in _cmd_items.size():
+				var r := Rect2(_cmd_panel.position + Vector2(4, 4 + k * 17), Vector2(_cmd_panel.size.x - 8, 17))
+				if r.has_point(pos):
+					if k == _cmd_index:
+						_tap_accept = true
+					else:
+						_cmd_index = k
+						Audio.sfx("select", -14.0)
+						_highlight_row()
+					return
+		"skill", "item":
+			for k in _sub_rows.size():
+				var idx := _sub_scroll + k
+				if idx >= _sub_entries.size():
+					break
+				var r2 := Rect2(_sub_panel.position + Vector2(4, 6 + k * 23), Vector2(_sub_panel.size.x - 8, 23))
+				if r2.has_point(pos):
+					if idx == _sub_index:
+						_tap_accept = true
+					else:
+						_sub_index = idx
+						Audio.sfx("select", -14.0)
+						_refresh_sub()
+					return
+		"target":
+			for k in _target_list.size():
+				var b = _target_list[k]
+				if pos.distance_to(b.position) < 40.0:
+					if k == _target_index or _target_mode in ["enemies", "allies", "enemies_random", "self"]:
+						_tap_accept = true
+					else:
+						_target_index = k
+						Audio.sfx("select", -14.0)
+					return
+
+
 func _pressed(action: String) -> bool:
+	if action == "interact" and _tap_accept:
+		_tap_accept = false
+		return true
 	return Engine.get_process_frames() > _ignore_until and Input.is_action_just_pressed(action)
 
 
@@ -798,10 +858,65 @@ func _execute(user, action: Dictionary, targets: Array) -> void:
 
 
 func _do_attack(user, target) -> void:
+	if not user.is_enemy:
+		var look: Dictionary = GameState.gear_look(user.id)
+		var wk: String = str(look.get("weapon_kind", ""))
+		if wk in ["staff", "bow"]:
+			await _ranged_attack(user, target, wk, str(look.get("orb", "")))
+			return
 	await _lunge(user)
 	if target.alive():
 		await _hit(user, target, {"kind": "phys", "power": 1.0}, "")
 	await _return(user)
+
+
+## Ataque básico a distancia: bastones lanzan un proyectil mágico (sin PM, usa MAG);
+## arcos disparan una flecha (usa ATQ). El personaje no se mueve de su sitio.
+func _ranged_attack(user, target, wk: String, orb: String) -> void:
+	var magic := wk == "staff"
+	user.pose(4 if magic else 3, 0.5)
+	Audio.sfx("magic" if magic else "select", -8.0, 1.3 if magic else 0.7)
+	var from: Vector2 = user.position + Vector2(-18, -6)
+	var to: Vector2 = target.position
+	var shot: Node2D
+	if magic:
+		var col := Color(0.55, 0.85, 1.0)
+		if orb == "dark":
+			col = Color(0.7, 0.35, 0.95)
+		elif orb == "light":
+			col = Color(1.0, 0.95, 0.6)
+		shot = Node2D.new()
+		for r in [6.0, 4.0, 2.0]:
+			var p := Polygon2D.new()
+			var pts := PackedVector2Array()
+			for k in 10:
+				pts.append(Vector2(cos(k * TAU / 10), sin(k * TAU / 10)) * r)
+			p.polygon = pts
+			p.color = col.lerp(Color.WHITE, 1.0 - r / 6.0) * Color(1, 1, 1, 0.55 + (6.0 - r) * 0.1)
+			shot.add_child(p)
+	else:
+		var ln := Line2D.new()
+		ln.width = 2
+		ln.default_color = Color(0.85, 0.75, 0.55)
+		var dir := (to - from).normalized()
+		ln.points = PackedVector2Array([-dir * 9, dir * 3])
+		shot = ln
+	shot.position = from
+	shot.z_index = 50
+	stage.add_child(shot)
+	var tw := create_tween()
+	tw.tween_property(shot, "position", to, 0.22 if magic else 0.14).set_trans(Tween.TRANS_SINE)
+	await tw.finished
+	shot.queue_free()
+	if target.alive():
+		if magic:
+			_particles(to, Color(0.8, 0.9, 1) if orb == "" else (Color(0.7, 0.35, 0.95) if orb == "dark" else Color(1, 0.95, 0.6)), 14, 8, Vector2(0, -30), 40, 0.4, 2)
+			await _hit(user, target, {"kind": "mag", "power": 0.85}, orb if orb in ["dark", "light"] else "")
+		else:
+			await _hit(user, target, {"kind": "phys", "power": 0.95}, "")
+	user.set_idle_frame()
+	if not user.is_enemy:
+		_apply_dead_look(user)
 
 
 func _do_defend(b) -> void:

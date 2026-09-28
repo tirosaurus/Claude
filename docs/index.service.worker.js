@@ -4,7 +4,7 @@
 // Incrementing CACHE_VERSION will kick off the install event and force
 // previously cached resources to be updated from the network.
 /** @type {string} */
-const CACHE_VERSION = '1790532765|7424939';
+const CACHE_VERSION = '1790620374|8275200';
 /** @type {string} */
 const CACHE_PREFIX = 'Vaelmoor-sw-cache-';
 const CACHE_NAME = CACHE_PREFIX + CACHE_VERSION;

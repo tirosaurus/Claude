@@ -129,7 +129,7 @@ var _finger := {}   # índice de dedo -> botón
 
 func _button_at(p: Vector2):
 	for b in _buttons:
-		if b.hit(p):
+		if b.visible and b.hit(p):
 			return b
 	return null
 
@@ -190,5 +190,14 @@ func _process(_d: float) -> void:
 			for a in b.actions:
 				if str(a).begins_with("move_") and not Input.is_action_pressed(a):
 					Input.action_press(a)
+	# en combate la cruceta tapa el menú: se ocultan y se toca directamente la opción
+	var cs := get_tree().current_scene
+	var in_battle := cs != null and cs.name == "Battle"
+	for b in _buttons:
+		if b.shape in ["up", "down", "left", "right"] and b.visible == in_battle:
+			b.visible = not in_battle
+			if in_battle and not b._touches.is_empty():
+				for f in b._touches.keys():
+					b.set_pressed(false, f)
 	var ws := DisplayServer.window_get_size()
 	_rotate_hint.visible = ws.y > ws.x
