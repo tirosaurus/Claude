@@ -279,7 +279,10 @@ func _wolf_encounter() -> void:
 	for k in 8:
 		_wolf.frame = k % 2
 		await wait(0.12)
-	await tw.finished
+	# en móviles lentos el tween puede haber terminado ya: no esperar una señal que no llegará
+	if tw.is_running():
+		await tw.finished
+	_wolf.position = target
 	Audio.sfx("growl", 0.0, 0.9)
 	await say([
 		K("¿Un lobo? ¿Tan cerca del pueblo?"),
