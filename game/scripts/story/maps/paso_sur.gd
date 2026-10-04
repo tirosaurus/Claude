@@ -22,7 +22,7 @@ func on_map_ready(_m: String) -> void:
 		await wait(0.5)
 		await say(["Tierra quemada. Estandartes rojos. Tambores de guerra que retumban en el pecho.",
 			"Un campamento morongul entero cierra el paso. Y en jaulas, junto a la hoguera... gente.",
-			Y("{name}... ¡Esos son Bartolo y la tía Remei! ¡De Tortosa!"),
+			Y("{name}... ¡Esa es la tía Remei! ¡Y más gente de Tortosa!") if flag("bartolo_dead") else Y("{name}... ¡Esos son Bartolo y la tía Remei! ¡De Tortosa!"),
 			K("Se los llevaron la noche del ataque. Creía que estaban muertos."),
 			"(Abríos paso hasta el general del campamento, al este.)"])
 		end()
@@ -67,7 +67,7 @@ func _after_kraag() -> void:
 		GameState.change_approval("kaelen", 2)
 		GameState.change_yara_corruption(3)
 	await say(["Abrís las jaulas.",
-		N("bartolo", "¡Chaval! ¡Sabía que alguien vendría! ¡Os invito a una ronda en cuanto volvamos a Tortosa!"),
+		"Los vecinos de Tortosa salen a trompicones, llorando y riendo a la vez." if flag("bartolo_dead") else N("bartolo", "¡Chaval! ¡Sabía que alguien vendría! ¡Os invito a una ronda en cuanto volvamos a Tortosa!"),
 		N("remei", "Dios te bendiga, criatura. Toma, lo que les robamos a esos brutos antes de que nos encerraran."),
 		"(Recibes: %s.)" % give_items({"pocion_mayor": 3, "gold": 300}),
 		"(Obtienes la Lágrima de Sangre. %d de 3.)" % (1 + int(flag("tear_stone")) + int(flag("tear_crystal")))])
