@@ -331,6 +331,29 @@ func _build_exit(e: Dictionary) -> void:
 	area.collision_mask = 1
 	add_child(area)
 	area.body_entered.connect(func(b): _on_exit.call_deferred(b, e))
+	_exit_areas.append([area, e])
+
+
+var _exit_areas: Array = []
+var _exit_poll := 0.0
+
+
+## Si el jugador ya estaba dentro de una salida cuando acabó una escena, body_entered no
+## vuelve a dispararse: se comprueba de vez en cuando (solo salidas desbloqueadas).
+func _poll_exits() -> void:
+	if cutscene or Transition.busy or Dialogue.active or _t - _exit_poll < 0.4:
+		return
+	_exit_poll = _t
+	for pair in _exit_areas:
+		var area: Area2D = pair[0]
+		var e: Dictionary = pair[1]
+		if not is_instance_valid(area) or not area.overlaps_body(player):
+			continue
+		var req: String = story.exit_requirement(str(e["to"]), str(e.get("requires", "")))
+		if req != "" and not GameState.has_flag(req):
+			continue
+		_on_exit(player, e)
+		return
 
 
 func resolve_target(to: String) -> String:
@@ -646,6 +669,7 @@ func _process(delta: float) -> void:
 		l.energy = fl["base"] * (0.88 + 0.12 * sin(_t * 9.0 + fl["seed"]) + 0.06 * sin(_t * 23.0 + fl["seed"] * 2.0))
 	if player:
 		_update_camera(delta)
+		_poll_exits()
 		var can_hint: bool = not cutscene and not Dialogue.active and not Transition.busy
 		var target = _find_target(player) if can_hint else null
 		_hint.visible = target != null
