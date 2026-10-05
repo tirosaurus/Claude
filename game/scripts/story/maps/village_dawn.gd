@@ -6,14 +6,15 @@ func encounters_disabled() -> bool:
 
 
 func exit_requirement(to: String, default_req: String) -> String:
-	if to == "cathedral":
-		return "never"
+	# la Catedral se puede volver a visitar (el altar guarda el primer eco del Soberano)
+	if to == "cathedral" and not flag("dawn_done"):
+		return "dawn_done"
 	return default_req
 
 
 func exit_blocked_message(to: String, default_msg: String) -> String:
-	if to == "cathedral":
-		return "No hay nada más que hacer ahí dentro."
+	if to == "cathedral" and not flag("dawn_done"):
+		return "Ahora no. El pueblo te necesita aquí."
 	return default_msg
 
 
