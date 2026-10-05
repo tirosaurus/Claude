@@ -123,7 +123,9 @@ def village_night():
 
 
 def village_dawn():
-    return _village_variant("village_dawn", "Tortosa, al alba", "sad", [0.82, 0.76, 0.84], False, True)
+    m = _village_variant("village_dawn", "Tortosa, al alba", "sad", [0.82, 0.76, 0.84], False, True)
+    m.marker("from_waystone", 410, 342)
+    return m
 
 
 # ------------------------------------------------------------ Catedral

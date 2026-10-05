@@ -360,6 +360,7 @@ const WAYSTONES := {
 	"paso_sur": {"pos": Vector2(490, 200), "flag": "tear_blood", "name": "Paso del Sur"},
 }
 const CAMP_WAYSTONE := Vector2(360, 150)
+const TORTOSA_WAYSTONE := Vector2(410, 320)
 
 
 func place_waystone() -> void:
@@ -369,8 +370,10 @@ func place_waystone() -> void:
 	var pos := Vector2.INF
 	if WAYSTONES.has(map) and flag(WAYSTONES[map]["flag"]):
 		pos = WAYSTONES[map]["pos"]
-	elif map == "elf_camp" and flag("act4_started") and (flag("tear_stone") or flag("tear_crystal") or flag("tear_blood")):
+	elif map == "elf_camp" and flag("act4_started"):
 		pos = CAMP_WAYSTONE
+	elif map == "village_dawn" and flag("act4_started"):
+		pos = TORTOSA_WAYSTONE
 	if pos == Vector2.INF:
 		return
 	world.add_prop("rune_on", pos, "waystone", 1, {"col": [-6, -6, 12, 6],
@@ -380,25 +383,25 @@ func place_waystone() -> void:
 func _use_waystone() -> void:
 	begin()
 	var map := GameState.current_map
-	if map == "elf_camp":
-		var dests: Array = []
-		var opts: Array = []
+	var dests: Array = []
+	var opts: Array = []
+	if map != "elf_camp":
+		dests.append("elf_camp")
+		opts.append("Viajar a: Claro de la Savia")
+	if map != "village_dawn":
+		dests.append("village_dawn")
+		opts.append("Viajar a: Tortosa")
+	if map in ["elf_camp", "village_dawn"]:
 		for k in WAYSTONES:
 			if flag(WAYSTONES[k]["flag"]):
 				dests.append(k)
 				opts.append("Viajar a: " + str(WAYSTONES[k]["name"]))
-		opts.append("Quedarme en el Claro")
-		var i := await choose(opts, "La piedra de retorno zumba con luz azul.")
-		end()
-		if i < dests.size():
-			Audio.sfx("magic", -4.0)
-			Transition.go_to_map(dests[i], "from_waystone")
-		return
-	var j := await choose(["Viajar al Claro de la Savia", "Quedarme aquí"], "La piedra de retorno zumba con luz azul.")
+	opts.append("Quedarme aquí")
+	var i := await choose(opts, "La piedra de retorno zumba con luz azul.")
 	end()
-	if j == 0:
+	if i < dests.size():
 		Audio.sfx("magic", -4.0)
-		Transition.go_to_map("elf_camp", "from_waystone")
+		Transition.go_to_map(dests[i], "from_waystone")
 
 
 func on_interact(id: String) -> void:
