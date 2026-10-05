@@ -227,7 +227,7 @@ def paso_sur():
     m.marker("from_pantano", 24, 236)
     m.marker("kraag", 540, 250)
     m.exit([0, 14 * T, 8, 2 * T], "camino_paso", "from_east")
-    m.trigger("kraag_zone", [440, 150, 12, 200])
+    m.trigger("kraag_zone", [430, 40, 16, 380])
     return m
 
 

@@ -10,6 +10,11 @@ func on_map_ready(_m: String) -> void:
 	if flag("won_kraag") and not flag("tear_blood"):
 		await _after_kraag()
 		return
+	if not flag("won_kraag"):
+		# el campamento tiene que verse vivo: Kraag junto a la hoguera y guardias en la empalizada
+		monster("res://assets/enemies/kraag.png", 2, world.marker("kraag"), 0.4, true)
+		for p in [Vector2(470, 215), Vector2(470, 300), Vector2(560, 120), Vector2(560, 380)]:
+			monster("res://assets/enemies/soldado.png", 2, p, 0.42, true)
 	if flag("tear_blood"):
 		for c in ["cage1", "cage2", "cage3"]:
 			var node = world.props_by_id.get(c)
@@ -24,7 +29,7 @@ func on_map_ready(_m: String) -> void:
 			"Un campamento morongul entero cierra el paso. Y en jaulas, junto a la hoguera... gente.",
 			Y("{name}... ¡Esa es la tía Remei! ¡Y más gente de Tortosa!") if flag("bartolo_dead") else Y("{name}... ¡Esos son Bartolo y la tía Remei! ¡De Tortosa!"),
 			K("Se los llevaron la noche del ataque. Creía que estaban muertos."),
-			"(Abríos paso hasta el general del campamento, al este.)"])
+			"(El general Kraag está al este, junto a la hoguera grande, tras la empalizada.)"])
 		end()
 
 
