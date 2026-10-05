@@ -28,7 +28,7 @@ func on_map_ready(_m: String) -> void:
 		await say(["Tierra quemada. Estandartes rojos. Tambores de guerra que retumban en el pecho.",
 			"Un campamento morongul entero cierra el paso. Y en jaulas, junto a la hoguera... gente.",
 			Y("{name}... ¡Esa es la tía Remei! ¡Y más gente de Tortosa!") if flag("bartolo_dead") else Y("{name}... ¡Esos son Bartolo y la tía Remei! ¡De Tortosa!"),
-			K("Se los llevaron la noche del ataque. Creía que estaban muertos."),
+			K("Se los llevaron la noche del ataque. Creía que estaban muertos.") if has("kaelen") else Y("Se los llevaron la noche del ataque... y nadie vino a buscarlos."),
 			"(El general Kraag está al este, junto a la hoguera grande, tras la empalizada.)"])
 		end()
 

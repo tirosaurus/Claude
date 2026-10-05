@@ -566,8 +566,8 @@ const ENEMIES := {
 		"boss": true, "summon": "wisp", "summon_msg": "¡Los reflejos de los espejos cobran vida!"},
 	"soldado": {"name": "Soldado morongul", "sprite": "enemies/soldado", "frames": 2, "scale": 1.7, "hp": 170, "atk": 21, "def": 13, "mag": 6, "res": 8, "spd": 11,
 		"xp": 64, "gold": 30, "weak": ["light"], "resist": ["dark"], "ai": [["e_hachazo", 3], ["e_rugido", 1]], "drops": [["pocion", 0.3], ["pan", 0.3]]},
-	"kraag": {"name": "General Kraag", "sprite": "enemies/kraag", "frames": 2, "scale": 1.35, "hp": 1600, "atk": 24, "def": 15, "mag": 10, "res": 12, "spd": 10,
-		"xp": 850, "gold": 500, "weak": ["light"], "resist": ["dark", "phys"], "ai": [["e_martillo", 2], ["e_hachazo", 3], ["e_rugido", 1], ["e_invocar", 1]],
+	"kraag": {"name": "General Kraag", "sprite": "enemies/kraag", "frames": 2, "scale": 1.35, "hp": 1500, "atk": 22, "def": 15, "mag": 10, "res": 12, "spd": 10,
+		"xp": 850, "gold": 500, "weak": ["light"], "resist": ["dark", "phys"], "ai": [["e_martillo", 2], ["e_hachazo", 4], ["e_rugido", 1], ["e_invocar", 1]],
 		"boss": true, "summon": "soldado", "summon_msg": "¡Kraag llama a su guardia!"},
 	"heraldo": {"name": "Heraldo de Vael", "sprite": "enemies/custodian", "frames": 2, "scale": 1.5, "hp": 950, "atk": 17, "def": 13, "mag": 17, "res": 13, "spd": 11,
 		"xp": 900, "gold": 0, "weak": ["dark"], "resist": ["light", "ice"], "ai": [["e_puño_cristal", 3], ["e_haz", 2], ["e_rayo_cristal", 2], ["e_escudo", 1]],
@@ -577,7 +577,7 @@ const ENEMIES := {
 	"aleixolo": {"name": "Aleixolo, el Glotón", "sprite": "enemies/aleixolo", "frames": 2, "scale": 1.5, "hp": 2400, "atk": 23, "def": 12, "mag": 21, "res": 10, "spd": 10,
 		"xp": 600, "gold": 400, "weak": ["fire"], "resist": ["dark"], "ai": [["e_rayo_choco", 3], ["e_comer", 3], ["e_panzazo", 2], ["e_bombon", 2]],
 		"boss": true, "drops": [["pocion_mayor", 1.0]]},
-	"mother_root": {"name": "Madre Raíz", "sprite": "enemies/mother_root", "frames": 2, "scale": 1.25, "hp": 1500, "atk": 22, "def": 11, "mag": 20, "res": 13, "spd": 9,
+	"mother_root": {"name": "Madre Raíz", "sprite": "enemies/mother_root", "frames": 2, "scale": 1.25, "hp": 2300, "atk": 27, "def": 12, "mag": 25, "res": 13, "spd": 9,
 		"xp": 0, "gold": 0, "weak": ["fire", "light"], "resist": ["dark", "nature"], "ai": [["e_raices", 3], ["e_latido", 2], ["e_escupir", 2]], "boss": true},
 }
 

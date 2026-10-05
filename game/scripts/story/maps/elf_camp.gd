@@ -208,7 +208,7 @@ func _night() -> void:
 		N("ilvanis", "La Lágrima de Cristal, en las Ruinas del Imperio de Selen, más allá del pantano del sur."),
 		N("ilvanis", "Y la Lágrima de Sangre... la llevaba el último campeón del Paso del Sur. Hoy ese paso es un campamento de guerra morongul."),
 		N("ilvanis", "Traedme las tres y el Muro caerá."),
-		K("Tres mazmorras, tres tesoros. Por fin algo que suena a aventura de verdad."),
+		K("Tres mazmorras, tres tesoros. Por fin algo que suena a aventura de verdad.") if has("kaelen") else Y("Tres viajes. Sin Kaelen. Bueno... habrá que apañárselas."),
 		"(Acto IV: Las Tres Lágrimas. Salidas nuevas: el este lleva a los Montes; el sur, al Pantano de Selen.)"])
 	setf("act4_started")
 	_thorns()

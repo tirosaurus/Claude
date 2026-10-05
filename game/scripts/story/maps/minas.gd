@@ -27,7 +27,7 @@ func on_trigger(id: String) -> void:
 		shake(6.0, 1.0)
 		await say(["El santuario de Thrain. Un altar de piedra con una gema parda, lisa como una lágrima.",
 			"La roca detrás del altar revienta. Una boca redonda llena de dientes, goteando savia negra.",
-			K("Vale. Eso es un gusano. Un gusano muy, muy grande.")])
+			K("Vale. Eso es un gusano. Un gusano muy, muy grande.") if has("kaelen") else Y("Eso... es un gusano. Un gusano enorme. {name}, ¡cuidado!")])
 		if has("brom"):
 			await say([B("¡Por Thrain y por Khazgurim! ¡Hoy como gusano a la brasa!")])
 		await battle("worm", ["gusano"], "crypt", "boss", true)
