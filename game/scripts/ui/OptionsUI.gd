@@ -91,17 +91,23 @@ func _change(d: int) -> void:
 func _process(_d: float) -> void:
 	if Engine.get_process_frames() <= _ignore:
 		return
-	if Input.is_action_just_pressed("ui_up") or Input.is_action_just_pressed("move_up"):
+	var nav_up := Input.is_action_just_pressed("ui_up") or Input.is_action_just_pressed("move_up")
+	var nav_dn := Input.is_action_just_pressed("ui_down") or Input.is_action_just_pressed("move_down")
+	var nav_l := Input.is_action_just_pressed("ui_left") or Input.is_action_just_pressed("move_left")
+	var nav_r := Input.is_action_just_pressed("ui_right") or Input.is_action_just_pressed("move_right")
+	if (nav_up or nav_dn or nav_l or nav_r) and not TouchControls.nav_gate():
+		return
+	if nav_up:
 		_index = (_index - 1 + _rows.size()) % _rows.size()
 		Audio.sfx("select", -14.0)
 		_refresh()
-	elif Input.is_action_just_pressed("ui_down") or Input.is_action_just_pressed("move_down"):
+	elif nav_dn:
 		_index = (_index + 1) % _rows.size()
 		Audio.sfx("select", -14.0)
 		_refresh()
-	elif Input.is_action_just_pressed("ui_left") or Input.is_action_just_pressed("move_left"):
+	elif nav_l:
 		_change(-1)
-	elif Input.is_action_just_pressed("ui_right") or Input.is_action_just_pressed("move_right"):
+	elif nav_r:
 		_change(1)
 	elif Input.is_action_just_pressed("ui_accept"):
 		if _rows[_index] == "back":

@@ -249,6 +249,33 @@ func _show_line(line, wait_input: bool) -> void:
 	_next.visible = false
 
 
+## Tocar/clicar directamente una opción: el primer toque la marca, el segundo la elige.
+func _input(event: InputEvent) -> void:
+	if not _choosing:
+		return
+	var pos := Vector2.ZERO
+	if event is InputEventScreenTouch and event.pressed:
+		pos = event.position
+	elif event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT \
+			and not DisplayServer.is_touchscreen_available():
+		pos = event.position
+	else:
+		return
+	if TouchControls.visible and TouchControls._button_at(pos) != null:
+		return
+	for k in _choice_labels.size():
+		var l: Label = _choice_labels[k]
+		if l.visible and l.get_global_rect().grow_individual(24, 3, 8, 3).has_point(pos):
+			get_viewport().set_input_as_handled()
+			if k == _choice_index:
+				_chosen.emit(_choice_index)
+			else:
+				_choice_index = k
+				Audio.sfx("select", -14.0)
+				_update_choice()
+			return
+
+
 func _process(delta: float) -> void:
 	_t += delta
 	if _next.visible:
@@ -274,11 +301,11 @@ func _process(delta: float) -> void:
 			_typing = false
 		return
 	if _choosing:
-		if Input.is_action_just_pressed("move_up") or Input.is_action_just_pressed("ui_up"):
+		if (Input.is_action_just_pressed("move_up") or Input.is_action_just_pressed("ui_up")) and TouchControls.nav_gate():
 			_choice_index = (_choice_index - 1 + _choice_labels.size()) % _choice_labels.size()
 			Audio.sfx("select", -14.0)
 			_update_choice()
-		elif Input.is_action_just_pressed("move_down") or Input.is_action_just_pressed("ui_down"):
+		elif (Input.is_action_just_pressed("move_down") or Input.is_action_just_pressed("ui_down")) and TouchControls.nav_gate():
 			_choice_index = (_choice_index + 1) % _choice_labels.size()
 			Audio.sfx("select", -14.0)
 			_update_choice()

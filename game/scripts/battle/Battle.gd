@@ -622,9 +622,9 @@ func _pressed(action: String) -> bool:
 
 
 func _nav() -> int:
-	if _pressed("move_up") or _pressed("ui_up"):
+	if (_pressed("move_up") or _pressed("ui_up")) and TouchControls.nav_gate():
 		return -1
-	if _pressed("move_down") or _pressed("ui_down"):
+	if (_pressed("move_down") or _pressed("ui_down")) and TouchControls.nav_gate():
 		return 1
 	return 0
 

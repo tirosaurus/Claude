@@ -39,18 +39,18 @@ class TouchBtn extends Control:
 
 	func _send(pressed: bool) -> void:
 		for a in actions:
-			# estado de la acción (para el movimiento y los menús que leen el teclado)
-			if pressed:
-				Input.action_press(a)
-			else:
-				Input.action_release(a)
-			# evento para la navegación de menús con foco (botones de la interfaz)
 			if str(a).begins_with("ui_"):
+				# un único evento: actualiza el estado de la acción y llega a los menús con foco.
+				# (antes se pulsaba dos veces —action_press + evento— y los menús saltaban dos opciones)
 				var ev := InputEventAction.new()
 				ev.action = a
 				ev.pressed = pressed
 				ev.strength = 1.0 if pressed else 0.0
-				Input.parse_input_event.call_deferred(ev)
+				Input.parse_input_event(ev)
+			elif pressed:
+				Input.action_press(a)
+			else:
+				Input.action_release(a)
 
 	func _draw() -> void:
 		var pressed := not _touches.is_empty()
@@ -125,6 +125,17 @@ func _ready() -> void:
 
 
 var _finger := {}   # índice de dedo -> botón
+var _last_nav := -100
+
+
+## Evita que una sola pulsación cuente dos veces en los menús (move_* y ui_* llegan en
+## fotogramas distintos). Devuelve true si la navegación debe aplicarse.
+func nav_gate() -> bool:
+	var f := Engine.get_process_frames()
+	if f - _last_nav < 8:
+		return false
+	_last_nav = f
+	return true
 
 
 func _button_at(p: Vector2):
