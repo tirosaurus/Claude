@@ -1073,6 +1073,9 @@ func _do_item(user, id: String, targets: Array) -> void:
 			Audio.sfx("heal", -6.0, 1.3)
 		if it.get("cure", false):
 			_cure(t)
+		if it.get("nap", false):
+			t.statuses["stun"] = 1
+			_float(t, "¡Zzz… qué rico!", Color(0.85, 0.6, 0.4))
 	await _wait(0.4)
 	user.set_idle_frame()
 	_refresh_ui()

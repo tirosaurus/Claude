@@ -142,7 +142,11 @@ func _after_aleixolo() -> void:
 		await say(["Aleixolo cae de culo con un «¡plof!» y el cucharón se le parte en dos.",
 			AL("¡Mi cucharón! Buaaa... Me voy a buscar trabajo honrado. En una panadería. O en dos."),
 			"Se aleja rodando entre las raíces, sollozando y mordisqueando una tableta.",
+			"Con las prisas, se le cae otra del bolsillo. Está intacta. Es un milagro.",
+			"(Obtienes: Tableta de Aleixolo. Cura toda la vida y 30 PM, pero te echas una siestecita de un turno.)",
 			K("¿Lo dejamos ir?"), Y("Creo que ya ha sufrido bastante. Cuarenta cartas, Kaelen.") if has("yara") else "Nadie tiene valor para perseguirlo."])
+	if not flag("player_dark"):
+		GameState.add_item("tableta_aleixolo")
 	await world.set_tint(world._map_modulate(), 0.8)
 	end()
 

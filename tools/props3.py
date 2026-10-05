@@ -183,7 +183,23 @@ def tear(kind):
     return c
 
 
+def choco_icon():
+    c = Canvas(16, 16)
+    c.rect(2, 3, 12, 11, (40, 22, 12))
+    c.rect(3, 4, 10, 9, (96, 54, 28))
+    for (x, y) in ((3, 4), (8, 4), (3, 9), (8, 9)):
+        c.rect(x, y, 4, 4, (120, 70, 38))
+        c.px(x, y, (160, 100, 60))
+    c.rect(2, 9, 12, 5, (200, 40, 50))      # envoltorio rojo
+    c.hline(2, 9, 12, (240, 90, 90))
+    c.px(7, 11, (250, 220, 120))
+    c.px(8, 11, (250, 220, 120))
+    c.outline(OUT)
+    return c
+
+
 def build_all(out):
+    choco_icon().save(f"{out}/ui/it_choco.png")
     d = f"{out}/sprites"
     minecart().save(f"{d}/minecart.png")
     ore_rock().save(f"{d}/ore_rock.png")

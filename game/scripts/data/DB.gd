@@ -322,6 +322,8 @@ const ITEMS := {
 	"flor_luna_item": {"name": "Flor de luna", "desc": "Cura 50 a todo el grupo y limpia el veneno.", "icon": "it_flower", "price": 90, "target": "allies", "heal": 50, "cure": true},
 	"curriculum": {"name": "Currículum de Aleixolo", "desc": "Un currículum viejo y manchado de chocolate. Úsalo contra Aleixolo.",
 		"icon": "it_scroll", "price": 0, "target": "enemy", "special": "aleixolo", "key": true},
+	"tableta_aleixolo": {"name": "Tableta de Aleixolo", "desc": "Chocolate con avellanas. Cura toda la vida y 30 PM... pero da tanto gustito que te quedas dormido un turno.",
+		"icon": "it_choco", "price": 0, "target": "ally", "heal": 9999, "mp": 30, "nap": true},
 	"bomba": {"name": "Bomba de fuego", "desc": "70 de daño de fuego a todos los enemigos.", "icon": "it_bomb", "price": 60, "target": "enemies", "damage": 70, "el": "fire"},
 }
 

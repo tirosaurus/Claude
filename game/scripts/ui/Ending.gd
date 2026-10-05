@@ -103,11 +103,15 @@ func _slides(id: String) -> Array:
 			out.append("Sin su señor, la Torre Negra se derrumbó en una sola noche. Los Moronguls regresaron al sur, confusos, como quien despierta de un sueño.")
 			out.append("La Semilla floreció en el Corazón del Bosque. En Tortosa, las campanas de la Catedral volvieron a sonar después de mil años.")
 			out.append("Nadie supo nunca qué pasó de verdad en el Corazón. Solo %s, y un nombre que ya nadie olvidaría: Vael." % n)
+			if f("aleixolo_done") and not f("player_dark"):
+				out.append("Ah, y en Tortosa abrió una panadería nueva. Su dueño, un tal Aleixolo, jura que esta vez no se comerá el género. Lleva tres semanas sin vender una sola barra.")
 		"sovereign":
 			out.append("%s volvió a Tortosa con una corona de cristal negro. Nadie se atrevió a preguntar." % n)
 			out.append("El bosque sanó. La Torre Negra cayó. Los Moronguls juraron lealtad al nuevo Soberano de Vaelmoor.")
 			out.append("Hubo paz. Una paz perfecta, absoluta, que nadie se atrevía a discutir.")
 			out.append("Y a veces, por las noches, el Soberano oye un susurro en el acero: «Tengo hambre». Cada año, un poco más alto.")
+			if f("aleixolo_done"):
+				out.append("El nuevo Repostero Real de la corte es un tal Aleixolo. Ha engordado doce kilos y no ha horneado ni una sola tarta. Nadie se atreve a despedirle.")
 		"pact":
 			out.append("La Madre Raíz se durmió aquella noche, tal y como prometió el Emisario. Los Moronguls se retiraron al sur.")
 			out.append("Una semana después, las banderas negras de la Torre ondeaban sobre la Catedral de Tortosa.")
@@ -139,6 +143,8 @@ func _slides(id: String) -> Array:
 		if cf != "":
 			out.append(cf)
 		out.append(_village_fate())
+		if f("aleixolo_done") and not f("player_dark"):
+			out.append("Dicen que en Tortosa hay una panadería nueva, regentada por un señor muy redondo con gorro de cocinero. El pan es buenísimo... cuando llega al mostrador, que es casi nunca.")
 		out.append(_player_fate(id))
 	out.append("Mientras tanto, en el sur, en lo alto de la Torre Negra, alguien anota un nombre en un libro muy antiguo: %s." % n)
 	return out
