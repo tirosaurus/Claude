@@ -326,6 +326,23 @@ func _sovereign_echo(id: String) -> bool:
 	return false
 
 
+## Recordatorio del arma del Soberano: qué ecos faltan (se muestra antes de entrar en el Corazón).
+func sovereign_reminder() -> void:
+	if not flag("ov_done") or flag("ov_end_chosen") or (flag("ov_e1") and flag("ov_e2")):
+		return
+	var missing: Array = []
+	if not flag("ov_e1"):
+		missing.append("el altar de la Catedral Vieja")
+	if not flag("ov_e2"):
+		missing.append("el Árbol Sagrado del Claro de la Savia")
+	begin()
+	Audio.sfx("dark", -10.0, 0.7)
+	await say(["El arma del Soberano vibra en tu mano. Una voz susurra:",
+		"«Aún no, heredero. Te faltan ecos. Llévame a %s antes de enfrentarte al Corazón.»" % " y a ".join(missing),
+		"(Ruta del Soberano: si entras en el Corazón y vences a la Madre Raíz sin los dos primeros ecos, no verás a Nhal'Zur.)"])
+	end()
+
+
 func _echo(lines: Array) -> void:
 	begin()
 	Audio.sfx("dark", -4.0, 0.6)

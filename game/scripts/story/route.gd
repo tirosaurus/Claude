@@ -10,6 +10,8 @@ func sign_text() -> Array:
 
 
 func on_map_ready(map_id: String) -> void:
+	if map_id == "senda_corazon":
+		await sovereign_reminder()
 	if flag("seen_" + map_id):
 		return
 	setf("seen_" + map_id)

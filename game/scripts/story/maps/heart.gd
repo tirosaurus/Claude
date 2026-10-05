@@ -300,7 +300,8 @@ func _final() -> void:
 	await say(["La Madre Raíz ocupa toda la caverna: un corazón monstruoso atravesado por raíces, con ojos que se abren y se cierran.",
 		"Cada latido os golpea en el pecho."])
 	if flag("ov_done") and not flag("ov_e3"):
-		setf("ov_e3")
+		if flag("ov_e1") and flag("ov_e2"):
+			setf("ov_e3")
 		Audio.sfx("dark", -4.0, 0.6)
 		await say(["El arma del Soberano vibra como un animal que huele la sangre.",
 			"«Aquí late. Debajo de la Madre Raíz, detrás del Velo. Nhal'Zur.»",
