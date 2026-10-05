@@ -132,6 +132,11 @@ func _build_scene() -> void:
 		i += 1
 
 
+## Nhal'Zur en la ruta de Vael (sin Overlord): el combate más duro del juego.
+const VAEL_HP := 21000
+const VAEL_ATK := 66
+
+
 ## En el Abismo de los Susurros cada piso hace a los enemigos más duros (y más generosos).
 func _abyss_mult() -> float:
 	if not str(GameState.battle_return.get("map", "")).begins_with("abismo"):
@@ -154,7 +159,12 @@ func _spawn_enemy(key: String, pos: Vector2) -> Node2D:
 		"res": int(d["res"] * sqrt(ab)), "spd": d["spd"] + (int(GameState.get_meta("abyss_floor", 0)) if ab > 1.0 else 0)}
 	if enc.get("vael", false) and key == "nhalzur":
 		# sin el arma Overlord, Nhal'Zur es un combate duro pero posible
-		b.max_stats["hp"] = int(9000 * dm[0])
+		b.max_stats["hp"] = int(VAEL_HP * dm[0])
+		b.max_stats["atk"] = int(VAEL_ATK * dm[1])
+		b.max_stats["mag"] = int(VAEL_ATK * 0.92 * dm[1])
+		b.max_stats["def"] = 42
+		b.max_stats["res"] = 42
+		b.max_stats["spd"] = 20
 		b.display_name = "Nhal'Zur, el Hambre asustada"
 	b.hp = b.max_hp()
 	b.home = pos
