@@ -335,7 +335,59 @@ func _echo(lines: Array) -> void:
 	end()
 
 
+# ------------------------------------------------------------ Piedras de retorno (Acto IV)
+## Al conseguir cada lágrima aparece una piedra rúnica que lleva al Claro de la Savia (y desde el Claro, de vuelta).
+const WAYSTONES := {
+	"minas": {"pos": Vector2(320, 120), "flag": "tear_stone", "name": "Minas de Khazgurim"},
+	"ruinas": {"pos": Vector2(340, 124), "flag": "tear_crystal", "name": "Ruinas de Cristal"},
+	"paso_sur": {"pos": Vector2(490, 200), "flag": "tear_blood", "name": "Paso del Sur"},
+}
+const CAMP_WAYSTONE := Vector2(360, 150)
+
+
+func place_waystone() -> void:
+	if world.props_by_id.has("waystone"):
+		return
+	var map := GameState.current_map
+	var pos := Vector2.INF
+	if WAYSTONES.has(map) and flag(WAYSTONES[map]["flag"]):
+		pos = WAYSTONES[map]["pos"]
+	elif map == "elf_camp" and flag("act4_started") and (flag("tear_stone") or flag("tear_crystal") or flag("tear_blood")):
+		pos = CAMP_WAYSTONE
+	if pos == Vector2.INF:
+		return
+	world.add_prop("rune_on", pos, "waystone", 1, {"col": [-6, -6, 12, 6],
+		"light": {"r": 56, "color": [0.55, 0.85, 1.0], "e": 0.9, "flicker": true, "oy": -10}})
+
+
+func _use_waystone() -> void:
+	begin()
+	var map := GameState.current_map
+	if map == "elf_camp":
+		var dests: Array = []
+		var opts: Array = []
+		for k in WAYSTONES:
+			if flag(WAYSTONES[k]["flag"]):
+				dests.append(k)
+				opts.append("Viajar a: " + str(WAYSTONES[k]["name"]))
+		opts.append("Quedarme en el Claro")
+		var i := await choose(opts, "La piedra de retorno zumba con luz azul.")
+		end()
+		if i < dests.size():
+			Audio.sfx("magic", -4.0)
+			Transition.go_to_map(dests[i], "from_waystone")
+		return
+	var j := await choose(["Viajar al Claro de la Savia", "Quedarme aquí"], "La piedra de retorno zumba con luz azul.")
+	end()
+	if j == 0:
+		Audio.sfx("magic", -4.0)
+		Transition.go_to_map("elf_camp", "from_waystone")
+
+
 func on_interact(id: String) -> void:
+	if id == "waystone":
+		await _use_waystone()
+		return
 	_track_secret(id)
 	if await _sovereign_echo(id):
 		return

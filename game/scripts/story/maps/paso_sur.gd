@@ -78,6 +78,8 @@ func _after_kraag() -> void:
 		"(Obtienes la Lágrima de Sangre. %d de 3.)" % (1 + int(flag("tear_stone")) + int(flag("tear_crystal")))])
 	setf("tear_blood")
 	Audio.sfx("magic", -4.0)
+	place_waystone()
+	await say(["Junto a ti, una piedra rúnica se enciende con luz azul. (Piedra de retorno: te lleva al Claro de la Savia cuando quieras.)"])
 	for c in ["cage1", "cage2", "cage3"]:
 		var node = world.props_by_id.get(c)
 		if node:

@@ -116,6 +116,8 @@ func _after_empress() -> void:
 	await say(["(Obtienes la Lágrima de Cristal. %d de 3.)" % (1 + int(flag("tear_stone")) + int(flag("tear_blood")))])
 	setf("tear_crystal")
 	Audio.sfx("magic", -4.0)
+	place_waystone()
+	await say(["Junto a ti, una piedra rúnica se enciende con luz azul. (Piedra de retorno: te lleva al Claro de la Savia cuando quieras.)"])
 	end()
 
 

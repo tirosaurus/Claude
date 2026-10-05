@@ -101,6 +101,7 @@ func _ready() -> void:
 
 	Audio.play_music(story.music_override() if story.music_override() != "" else str(data["music"]))
 	_show_banner(str(data["display"]))
+	story.place_waystone()
 	story.on_map_ready(map_id)
 
 
@@ -301,8 +302,9 @@ func remove_prop(pid: String) -> void:
 		interact_zones = interact_zones.filter(func(z): return z["id"] != pid)
 
 
-func add_prop(sprite_name: String, pos: Vector2, pid: String = "", frames: int = 1) -> Node2D:
+func add_prop(sprite_name: String, pos: Vector2, pid: String = "", frames: int = 1, extra: Dictionary = {}) -> Node2D:
 	var p := {"sprite": sprite_name, "x": pos.x, "y": pos.y, "frames": frames}
+	p.merge(extra)
 	if pid != "":
 		p["id"] = pid
 	_build_prop(p)

@@ -18,6 +18,7 @@ import ui  # noqa: E402
 import audio  # noqa: E402
 import songs  # noqa: E402
 import enemies2  # noqa: E402
+import props3  # noqa: E402
 import sfx2  # noqa: E402
 import icon  # noqa: E402
 
@@ -46,6 +47,7 @@ if __name__ == "__main__":
     props.build_all(OUT)
     props2.build_all(OUT)
     enemies2.build_all(OUT)
+    props3.build_all(OUT)
     maps.build_all(OUT)
     ui.build_all(OUT)
     ui.build_v2(OUT)

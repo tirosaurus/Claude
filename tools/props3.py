@@ -198,7 +198,18 @@ def choco_icon():
     return c
 
 
+def enemy_portraits(out):
+    """Retratos de diálogo (48x48) recortados de los propios sprites de combate, para que
+    Kraag y Selen se vean igual en la conversación que en la pelea."""
+    from PIL import Image
+    for name, src, box in (("kraag", "kraag", (22, 2, 74, 54)), ("selen", "emperatriz", (22, 0, 58, 36))):
+        sheet_im = Image.open(f"{out}/enemies/{src}.png").convert("RGBA")
+        crop = sheet_im.crop(box).resize((48, 48), Image.NEAREST)
+        crop.save(f"{out}/portraits/{name}.png")
+
+
 def build_all(out):
+    enemy_portraits(out)
     choco_icon().save(f"{out}/ui/it_choco.png")
     d = f"{out}/sprites"
     minecart().save(f"{d}/minecart.png")

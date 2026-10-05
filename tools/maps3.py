@@ -120,6 +120,7 @@ def minas():
     m.prop("chest", 300, 50, "chest_mina3")
     m.marker("from_montes", 288, 520)
     m.marker("worm", 288, 60)
+    m.marker("from_waystone", 320, 142)
     m.marker("dwarves", 488, 160)
     m.exit([16 * T, h * T - 8, 5 * T, 8], "montes", "from_mine")
     m.trigger("worm_zone", [15 * T, 9 * T, 7 * T, 8])
@@ -188,6 +189,7 @@ def ruinas():
     m.prop("statue", 288, 60, "empress_throne")
     m.marker("from_pantano", 288, 480)
     m.marker("empress", 288, 90)
+    m.marker("from_waystone", 340, 146)
     m.exit([16 * T, h * T - 8, 5 * T, 8], "pantano", "from_ruins")
     m.trigger("empress_zone", [11 * T, 11 * T, 15 * T, 8])
     return m
@@ -226,6 +228,7 @@ def paso_sur():
     m.battle_bg = "heart"
     m.marker("from_pantano", 24, 236)
     m.marker("kraag", 540, 250)
+    m.marker("from_waystone", 490, 222)
     m.exit([0, 14 * T, 8, 2 * T], "camino_paso", "from_east")
     m.trigger("kraag_zone", [430, 40, 16, 380])
     return m

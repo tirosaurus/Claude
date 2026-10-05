@@ -413,6 +413,7 @@ def elf_camp():
     m.decals += [flowers_decal(m, 180, 5, allowed="l"), sunbeam_decal(290, 220, 90, 50)]
     m.marker("from_deep", 20, 200)
     m.marker("from_heart", 280, 30)
+    m.marker("from_waystone", 360, 172)
     m.marker("ilvanis", 290, 176)
     m.marker("aelis", 200, 220)
     m.marker("brom", 360, 260)

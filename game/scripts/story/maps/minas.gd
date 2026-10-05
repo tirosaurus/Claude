@@ -66,6 +66,8 @@ func _after_worm() -> void:
 		"(Obtienes la Lágrima de Piedra. 1 de 3.)"])
 	setf("tear_stone")
 	Audio.sfx("magic", -4.0)
+	place_waystone()
+	await say(["Junto a ti, una piedra rúnica se enciende con luz azul. (Piedra de retorno: te lleva al Claro de la Savia cuando quieras.)"])
 	end()
 
 
