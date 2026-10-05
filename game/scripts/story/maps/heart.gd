@@ -128,7 +128,33 @@ func _aleixolo_eats_yara(al: Sprite2D) -> void:
 		"Una voz que no es la tuya te susurra que el mundo ya no merece ser salvado. Y tú... la escuchas.",
 		"(Te has vuelto oscur" + GameState.g("o", "a") + ". Ya no hay vuelta atrás.)"])
 	if has("kaelen"):
-		await say([K("{name}... tus ojos. ¿Qué te está pasando?")])
+		await _kaelen_breaks()
+
+
+## Kaelen ve morir a Yara. Se rompe, y lo que queda de él se lo traga la raíz.
+func _kaelen_breaks() -> void:
+	var kn = npc("kaelen")
+	await say([K("No... No, no, no. ¡YARA!"),
+		"Kaelen se lanza hacia donde estaba ella. Solo encuentra una mancha marrón en la tierra, todavía caliente.",
+		"Cae de rodillas. Araña el suelo con las manos hasta que le sangran los dedos.",
+		K("La conocíamos desde los cinco años, {name}. Desde los CINCO."),
+		K("Le tirábamos piedras al río. Nos curaba las rodillas. Nos regañaba por todo..."),
+		K("Y tú estabas a su lado. Estabas a su lado y no hiciste NADA."),
+		"Kaelen grita. No es un grito de rabia: es el sonido de algo que se rompe por dentro y ya no se puede arreglar."])
+	await wait(0.6)
+	Audio.sfx("dark", -2.0, 0.6)
+	await say(["Las raíces del suelo se mueven hacia él. Se le enroscan en los tobillos, en las muñecas, en el cuello.",
+		"Kaelen no las aparta. Las mira. Y las deja entrar.",
+		"La piel se le vuelve gris. Las venas, negras. Cuando levanta la cabeza, sus ojos son dos brasas violetas."])
+	setf("kaelen_dark")
+	setf("kaelen_corrupt")
+	Appearance.clear_cache()
+	if kn:
+		kn.sprite.texture = Appearance.member_sheet("kaelen")
+		shake(3.0, 0.4)
+	await say([K("...Ya no duele."), K("Qué curioso. Ya no duele nada."),
+		K("Vamos, {name}. Acabemos con esto. Y después... ya veremos qué queda en pie."),
+		"(Kaelen se ha corrompido.)"])
 
 
 func _after_aleixolo() -> void:
@@ -137,7 +163,7 @@ func _after_aleixolo() -> void:
 	if flag("player_dark"):
 		await say(["Aleixolo se derrite en un charco de chocolate humeante. No sientes nada.",
 			"Ni alegría, ni alivio. Solo hambre. Hambre de algo que no sabes nombrar.",
-			K("Ya está, {name}. Ya está... ¿verdad?") if has("kaelen") else "Nadie se atreve a hablarte."])
+			K("¿Eso es todo? Esperaba que gritara más.") if flag("kaelen_corrupt") and has("kaelen") else "Nadie se atreve a hablarte."])
 	else:
 		await say(["Aleixolo cae de culo con un «¡plof!» y el cucharón se le parte en dos.",
 			AL("¡Mi cucharón! Buaaa... Me voy a buscar trabajo honrado. En una panadería. O en dos."),
@@ -155,6 +181,14 @@ func _after_aleixolo() -> void:
 func _kaelen_event() -> void:
 	setf("kaelen_event")
 	begin()
+	if flag("kaelen_corrupt") and has("kaelen"):
+		await say(["El suelo tiembla. De las raíces brotan siervos: diez, veinte... demasiados.",
+			"Kaelen sonríe. Es una sonrisa que no le habías visto nunca.",
+			K("¿Contenerlos? No. Hoy no contengo a nadie."),
+			K("Hoy los rompo a todos.")])
+		setf("fought_horde")
+		await battle("horde", ["thrall", "brute", "thrall"], "heart", "boss", true)
+		return
 	if flag("kaelen_left"):
 		setf("kaelen_dark")
 		var kd = world.spawn_npc("kaelen", world.player.position + Vector2(0, -60), 0, 0, Appearance.tex("res://assets/chars/kaelen_dark.png"))
@@ -174,7 +208,7 @@ func _kaelen_event() -> void:
 		K("Son demasiados. Si nos quedamos, nos rodean."),
 		K("Idos. Yo los contengo en este paso. Es estrecho: puedo aguantar.")])
 	var opts := ["Ni hablar. Luchamos juntos.", "Confío en ti, Kaelen. Aguanta."]
-	var i := await choose(opts, Y("¡Kaelen, no!"))
+	var i := await choose(opts, Y("¡Kaelen, no!") if has("yara") else "Kaelen te mira, esperando tu respuesta.")
 	if i == 0:
 		setf("fought_horde")
 		GameState.change_kaelen_rivalry(-6)
@@ -249,7 +283,11 @@ func _after_kaelen_fight() -> void:
 func _after_horde() -> void:
 	begin()
 	setf("kaelen_resolved")
-	await say(["El último siervo cae. Estáis vivos. Todos.", K("¡Ja! ¿Lo veis? Juntos somos imparables.")])
+	if flag("kaelen_corrupt"):
+		await say(["El último siervo cae. Kaelen sigue golpeando el cuerpo mucho después de que deje de moverse.",
+			"Cuando por fin para, se limpia la savia de la cara y no dice nada. Tú tampoco."])
+	else:
+		await say(["El último siervo cae. Estáis vivos. Todos.", K("¡Ja! ¿Lo veis? Juntos somos imparables.")])
 	end()
 
 
@@ -269,6 +307,9 @@ func _final() -> void:
 			"(Tercer eco del Soberano: 3/3)" if flag("ov_e1") and flag("ov_e2") else "«Te faltan ecos, heredero. No estás preparad" + GameState.g("o", "a") + " para verle la cara.»"])
 		if flag("ov_e1") and flag("ov_e2"):
 			setf("ov_ready")
+	if flag("player_dark"):
+		await _final_dark()
+		return
 	var em = world.spawn_npc("emissary", world.player.position + Vector2(-50, -10), 2)
 	em.sprite.modulate.a = 0.0
 	var tw := create_tween()
@@ -297,6 +338,22 @@ func _final() -> void:
 	if has("yara") and GameState.corruption() >= 45:
 		await _yara_turns()
 	await say(["La Madre Raíz abre todos sus ojos a la vez.", "Es ahora o nunca."])
+	await battle("final", ["mother_root"], "heart", "final", true)
+
+
+## Si te has vuelto oscuro, la Torre ya no necesita negociar: el Emisario solo mira.
+func _final_dark() -> void:
+	var em = world.spawn_npc("emissary", world.player.position + Vector2(-90, -40), 2)
+	em.sprite.modulate.a = 0.0
+	var tw := create_tween()
+	tw.tween_property(em.sprite, "modulate:a", 0.75, 1.2)
+	await tw.finished
+	await say(["Entre las raíces, en la sombra, hay una figura encapuchada. El Emisario.",
+		"Esta vez no se acerca. No ofrece ningún trato. No dice ni una palabra.",
+		"Solo se cruza de brazos y observa. Como quien mira una partida que ya sabe cómo termina."])
+	if flag("kaelen_corrupt") and has("kaelen"):
+		await say([K("Que mire. Que mire bien.")])
+	await say(["La Madre Raíz abre todos sus ojos a la vez. Y por un instante, te reconoce."])
 	await battle("final", ["mother_root"], "heart", "final", true)
 
 

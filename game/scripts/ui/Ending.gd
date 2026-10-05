@@ -135,6 +135,8 @@ func _slides(id: String) -> Array:
 			out.append("El bosque se inclinó ante su nuevo señor.")
 			out.append("Las raíces negras cubrieron Tortosa en una sola noche. Nadie gritó: ya no quedaba nadie que pudiera gritar.")
 			out.append("En el Corazón del Bosque late ahora un corazón nuevo. Tiene tu cara. Tiene tu voz.")
+			if f("kaelen_corrupt"):
+				out.append("A tu derecha camina siempre un caballero de piel gris y ojos violetas. Nunca habla de Yara. Nunca habla de nada.")
 			out.append("Y cada noche, al sur, la Torre Negra observa... y sonríe.")
 		"withered":
 			out.append("La Semilla se marchitó en tus manos. Sin corazón que la sostuviera, la luz se apagó.")
