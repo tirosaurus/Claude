@@ -629,8 +629,8 @@
     8,
     32
    ],
-   "to": "pantano",
-   "spawn": "from_pass"
+   "to": "camino_paso",
+   "spawn": "from_east"
   }
  ],
  "triggers": [

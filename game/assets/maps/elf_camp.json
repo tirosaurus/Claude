@@ -518,8 +518,8 @@
     8,
     36
    ],
-   "to": "montes",
-   "spawn": "from_camp",
+   "to": "sendero_montes",
+   "spawn": "from_west",
    "requires": "act4_started",
    "blocked": "Un sendero de piedra sube hacia los montes. Ilvanis quiere hablar antes de que partáis."
   },
@@ -530,8 +530,8 @@
     36,
     8
    ],
-   "to": "pantano",
-   "spawn": "from_camp",
+   "to": "sendero_pantano",
+   "spawn": "from_north",
    "requires": "act4_started",
    "blocked": "Hacia el sur huele a ciénaga. Ilvanis quiere hablar antes de que partáis."
   },
@@ -542,8 +542,8 @@
     36,
     8
    ],
-   "to": "heart",
-   "spawn": "from_camp",
+   "to": "senda_corazon",
+   "spawn": "from_south",
    "requires": "ready_for_heart",
    "blocked": "Ilvanis quiere hablar contigo antes de que os adentréis en el Corazón."
   }

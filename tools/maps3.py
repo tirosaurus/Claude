@@ -71,13 +71,25 @@ def montes():
     m.prop("sign", 330, 200, "sign_montes")
     m.prop("campfire", 150, 240, "campfire", light={"r": 90, "color": [1, 0.7, 0.35], "e": 1.0, "flicker": True, "oy": -8})
     m.prop("chest", 580, 380, "chest_montes1")
+    # campamento enano junto a la mina
+    m.prop("tent_blue", 400, 168)
+    m.prop("tent_red", 560, 170)
+    m.prop("forge", 600, 120, "dwarf_forge", light={"r": 80, "color": [1, 0.6, 0.3], "e": 1.0, "flicker": True, "oy": -10})
+    m.prop("anvil", 570, 128)
+    m.prop("barrel", 430, 120)
+    m.prop("barrel", 444, 124)
+    m.prop("crate", 520, 124)
+    m.marker("hilda", 420, 196)
+    m.marker("torbin", 590, 200)
+    m.marker("bori", 360, 140)
+    m.marker("kazrik", 520, 70)
     m.encounters = {"rate": 30, "table": [["golem"], ["salamandra", "salamandra"], ["boar", "salamandra"],
                                           ["bat", "bat", "salamandra"], ["golem", "bat"]]}
     m.battle_bg = "forest"
     m.marker("from_camp", 24, 200)
     m.marker("from_mine", 488, 80)
     m.marker("durgan", 470, 96)
-    m.exit([0, 188, 8, 36], "elf_camp", "from_montes")
+    m.exit([0, 188, 8, 36], "sendero_montes", "from_east")
     m.exit([27 * T, 0, 7 * T, 40], "minas", "from_montes")
     return m
 
@@ -145,9 +157,9 @@ def pantano():
     m.marker("from_camp", 328, 20)
     m.marker("from_ruins", 24, 256)
     m.marker("from_pass", W * T - 24, 256)
-    m.exit([20 * T, 0, 2 * T, 8], "elf_camp", "from_pantano")
+    m.exit([20 * T, 0, 2 * T, 8], "sendero_pantano", "from_south")
     m.exit([0, 15 * T, 8, 2 * T], "ruinas", "from_pantano")
-    m.exit([W * T - 8, 15 * T, 8, 2 * T], "paso_sur", "from_pantano", requires="tear_crystal",
+    m.exit([W * T - 8, 15 * T, 8, 2 * T], "camino_paso", "from_west", requires="tear_crystal",
            blocked="Una niebla densa cubre el camino del este. Selen dice que antes debéis visitar sus ruinas.")
     return m
 
@@ -155,7 +167,7 @@ def pantano():
 # ------------------------------------------------------------ Ruinas de Cristal
 def ruinas():
     w, h = 36, 32
-    rooms = [(15, 25, 21, 30), (6, 18, 30, 21), (3, 10, 10, 18), (26, 10, 33, 18), (16, 13, 20, 18),
+    rooms = [(15, 25, 21, 30), (17, 19, 19, 26), (6, 18, 30, 21), (3, 10, 10, 18), (26, 10, 33, 18), (16, 13, 20, 18), (17, 8, 19, 14),
              (11, 2, 25, 10)]
     g = dungeon(w, h, rooms, range(16, 21))
     m = Map("ruinas", to_rows(g), True, "Ruinas de Cristal", "deep", modulate=[0.55, 0.7, 0.8])
@@ -172,7 +184,7 @@ def ruinas():
     m.prop("mirror_off", 288, 250, "mirror3")
     m.prop("chest", 70, 280, "chest_ruina1")
     m.prop("chest", 520, 280, "chest_ruina2")
-    m.prop("chest", 220, 50, "chest_ruina3")
+    m.prop("chest", 220, 84, "chest_ruina3")
     m.prop("statue", 288, 60, "empress_throne")
     m.marker("from_pantano", 288, 480)
     m.marker("empress", 288, 90)
@@ -214,9 +226,250 @@ def paso_sur():
     m.battle_bg = "heart"
     m.marker("from_pantano", 24, 236)
     m.marker("kraag", 540, 250)
-    m.exit([0, 14 * T, 8, 2 * T], "pantano", "from_pass")
+    m.exit([0, 14 * T, 8, 2 * T], "camino_paso", "from_east")
     m.trigger("kraag_zone", [440, 150, 12, 200])
     return m
 
 
-MAPS = (montes, minas, pantano, ruinas, paso_sur)
+# ------------------------------------------------------------ Rutas entre zonas (para que el viaje no sea instantáneo)
+def _solidify(m, chars):
+    for ty in range(m.h):
+        tx = 0
+        while tx < m.w:
+            if m.grid[ty][tx] in chars:
+                st = tx
+                while tx < m.w and m.grid[ty][tx] in chars:
+                    tx += 1
+                m.extra_solids.append([st * T, ty * T, (tx - st) * T, T])
+            else:
+                tx += 1
+
+
+def _route(mid, display, music, modulate, horizontal, length, ground_a, ground_b, wall, trees_a, trees_b,
+           encounters, bg, seed, chests):
+    rng = random.Random(seed)
+    across = 22
+    W, H = (length, across) if horizontal else (across, length)
+    m = Map(mid, [wall * W] * H, False, display, music, modulate=modulate)
+    c = across / 2.0
+    off = 0.0
+    centers = []
+    for k in range(length):
+        off += rng.uniform(-0.9, 0.9)
+        off = max(-5.5, min(5.5, off * 0.96))
+        if k < 4 or k > length - 5:
+            off *= 0.6
+        centers.append(c + off)
+        half = 2.6 + (1.2 if (k // 9) % 2 == 0 else 0)
+        for j in range(across):
+            if abs(j + 0.5 - (c + off)) < half:
+                x, y = (k, j) if horizontal else (j, k)
+                m.grid[y][x] = ground_a if k < length * (0.45 + rng.uniform(-0.05, 0.05)) else ground_b
+    # bolsillos laterales con cofre
+    pockets = []
+    for n, frac in enumerate(chests):
+        k = int(length * frac)
+        side = 1 if n % 2 == 0 else -1
+        cc = int(centers[k])
+        for dk in range(-2, 3):
+            for dj in range(0, 6):
+                j = cc + side * (3 + dj)
+                if 1 < j < across - 2:
+                    x, y = (k + dk, j) if horizontal else (j, k + dk)
+                    m.grid[y][x] = ground_a if k < length / 2 else ground_b
+        j = cc + side * 7
+        pockets.append(((k * T + 8, j * T + 12) if horizontal else (j * T + 8, k * T + 12)))
+    if wall in "fx":
+        _solidify(m, wall)
+    # árboles/rocas en el borde del camino
+    for ty in range(m.h):
+        for tx in range(m.w):
+            if m.grid[ty][tx] != wall:
+                continue
+            near = any(0 <= ty + dy < m.h and 0 <= tx + dx < m.w and m.grid[ty + dy][tx + dx] != wall
+                       for dx in (-1, 0, 1) for dy in (-1, 0, 1, 2))
+            if near and rng.random() < 0.55:
+                kk = tx if horizontal else ty
+                pool = trees_a if kk < length / 2 else trees_b
+                m.prop(rng.choice(pool), tx * T + 8, ty * T + 14, col=False)
+    for i, (x, y) in enumerate(pockets):
+        m.prop("chest", x, y, "chest_%s%d" % (mid, i + 1))
+    k = length // 2
+    cx = int(centers[k])
+    fx_, fy_ = ((k * T + 8, int(centers[k] * T) + 20) if horizontal else (int(centers[k] * T) + 8, k * T + 8))
+    m.prop("campfire", fx_, fy_, "campfire", light={"r": 90, "color": [1, 0.7, 0.35], "e": 1.0, "flicker": True, "oy": -8})
+    m.encounters = encounters
+    m.battle_bg = bg
+    if horizontal:
+        y0 = int(centers[0] * T)
+        y1 = int(centers[-1] * T)
+        m.marker("from_west", 24, y0 + 8)
+        m.marker("from_east", W * T - 24, y1 + 8)
+        m.marker("mid", fx_, fy_ - 24)
+    else:
+        x0 = int(centers[0] * T)
+        x1 = int(centers[-1] * T)
+        m.marker("from_north", x0 + 8, 24)
+        m.marker("from_south", x1 + 8, H * T - 24)
+        m.marker("mid", fx_ + 24, fy_)
+    m._ends = (int(centers[0] * T), int(centers[-1] * T))
+    return m
+
+
+def sendero_montes():
+    m = _route("sendero_montes", "Sendero de los Pinos Altos", "mountain", [0.9, 0.95, 1.0], True, 64, "l", "k", "f",
+               ["pine", "pine2", "oak"], ["pine", "pine2", "rock_big"],
+               {"rate": 26, "table": [["boar", "boar"], ["wisp", "boar"], ["salamandra"], ["golem"], ["bat", "bat", "salamandra"]]},
+               "forest", 61, [0.25, 0.75])
+    a, b = m._ends
+    m.exit([0, a - 24, 8, 48], "elf_camp", "from_montes")
+    m.exit([m.w * T - 8, b - 24, 8, 48], "montes", "from_camp")
+    m.prop("sign", 140, a + 30, "sign_route")
+    return m
+
+
+def sendero_pantano():
+    m = _route("sendero_pantano", "Bajada de las Ciénagas", "swamp", [0.8, 0.88, 0.8], False, 60, "l", "b", "f",
+               ["oak", "oak2", "pine"], ["dead_tree", "dead_tree2", "dark_tree"],
+               {"rate": 26, "table": [["wisp", "wisp"], ["boar", "root"], ["lodo"], ["spectre", "wisp"], ["lodo", "wisp"]]},
+               "forest", 62, [0.3, 0.7])
+    a, b = m._ends
+    m.exit([a - 24, 0, 48, 8], "elf_camp", "from_pantano")
+    m.exit([b - 24, m.h * T - 8, 48, 8], "pantano", "from_camp")
+    m.prop("sign", a + 40, 120, "sign_route")
+    return m
+
+
+def camino_paso():
+    m = _route("camino_paso", "Camino de las Cenizas", "war", [0.9, 0.78, 0.7], True, 64, "b", "q", "K",
+               ["dead_tree", "dead_tree2"], ["dead_tree", "rock", "rock_big"],
+               {"rate": 24, "table": [["lodo", "wisp"], ["soldado"], ["soldado", "thrall"], ["salamandra", "soldado"], ["brute"]]},
+               "heart", 63, [0.35, 0.8])
+    a, b = m._ends
+    m.exit([0, a - 24, 8, 48], "pantano", "from_pass")
+    m.exit([m.w * T - 8, b - 24, 8, 48], "paso_sur", "from_pantano")
+    for x in (520, 760):
+        m.prop("war_banner", x, int(b) - 30)
+    m.prop("sign", 140, a + 30, "sign_route")
+    return m
+
+
+def senda_corazon():
+    m = _route("senda_corazon", "Senda de las Raíces", "heart", [0.7, 0.62, 0.8], False, 60, "l", "v", "x",
+               ["oak", "dark_tree", "pine2"], ["corrupt_tree", "corrupt_tree2", "thorns"],
+               {"rate": 28, "table": [["root", "root"], ["thrall", "larva"], ["spectre", "bat"], ["brute"], ["root", "larva", "larva"]]},
+               "heart", 64, [0.3, 0.7])
+    a, b = m._ends
+    m.exit([a - 24, m.h * T - 8, 48, 8], "elf_camp", "from_heart")
+    m.exit([b - 24, 0, 48, 8], "heart", "from_camp")
+    m.prop("sign", a + 40, m.h * T - 120, "sign_route")
+    return m
+
+
+# ------------------------------------------------------------ Abismo de los Susurros (post-juego)
+def abyss_stairs_decal(x, y, glow=(150, 90, 220)):
+    def f(c):
+        c.rect(x - 2, y - 2, 36, 28, (20, 12, 30))
+        for k in range(6):
+            shade = 1 - k / 6.0
+            c.rect(x, y + k * 4, 32, 3, mix((8, 4, 12), (110, 90, 130), shade))
+        c.ellipse(x + 16, y + 26, 18, 4, glow)
+    return f
+
+
+def _abyss_layout(seed):
+    rng = random.Random(seed)
+    w, h = 36, 30
+    rooms = [(15, 23, 21, 28)]          # sala de entrada abajo
+    cx, cy = 18, 25
+    for k in range(7):
+        rw, rh = rng.randint(5, 8), rng.randint(5, 7)
+        x0 = max(2, min(w - rw - 3, cx + rng.randint(-12, 12) - rw // 2))
+        y0 = max(2, min(h - rh - 4, cy - rng.randint(5, 10)))
+        if k % 3 == 2:
+            y0 = max(2, min(h - rh - 4, cy + rng.randint(-3, 3)))
+        rooms.append((x0, y0, x0 + rw, y0 + rh))
+        # pasillo en L: el tramo horizontal tiene 4 filas (las 2 de arriba se vuelven pared)
+        nx, ny = x0 + rw // 2, y0 + rh // 2 + 1
+        for xx in range(min(cx, nx) - 1, max(cx, nx) + 2):
+            rooms.append((xx, cy - 3, xx, cy))
+        for yy in range(min(cy, ny) - 3, max(cy, ny) + 1):
+            rooms.append((nx - 1, yy, nx + 1, yy))
+        cx, cy = nx, ny
+    return w, h, rooms
+
+
+def _walkable(g, x, y):
+    return 0 <= y < len(g) and 0 <= x < len(g[0]) and g[y][x] == "."
+
+
+def _reach(g, start):
+    seen = {start}
+    st = [start]
+    while st:
+        x, y = st.pop()
+        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            n = (x + dx, y + dy)
+            if n not in seen and _walkable(g, *n):
+                seen.add(n)
+                st.append(n)
+    return seen
+
+
+def _abyss_floor(mid, seed, style, tint):
+    # busca una semilla cuyo piso sea totalmente transitable (escalera y cofres alcanzables)
+    for tries in range(200):
+        w, h, rooms = _abyss_layout(seed + tries * 7919)
+        g = dungeon(w, h, rooms, range(16, 21))
+        big = [r for r in rooms[1:] if r[2] - r[0] >= 4 and r[3] - r[1] >= 4]
+        if len(big) < 5:
+            continue
+        last = big[-1]
+        reach = _reach(g, (18, 27))
+        sx_t, sy_t = (last[0] + last[2]) // 2, last[3] - 1
+        spots = [(r[0] + 1, r[3] - 1) for r in big[:-1]][:7]
+        if (sx_t, sy_t) in reach and all(sp in reach for sp in spots):
+            break
+    rng = random.Random(seed)
+    m = Map(mid, to_rows(g), True, "Abismo de los Susurros", "deep", modulate=tint)
+    m.style = style
+    m.battle_bg = "crypt"
+    m.encounters = {"rate": 22, "table": [["golem", "salamandra"], ["soldado", "soldado", "wisp"], ["custodian"], ["brute", "spectre"],
+                                          ["lodo", "lodo", "salamandra"], ["boar", "boar", "golem"], ["spectre", "spectre", "wisp", "wisp"],
+                                          ["soldado", "golem"]]}
+    sx, sy = sx_t * T + 8, sy_t * T + 8
+    m.decals.append(abyss_stairs_decal(sx - 16, sy - 14))
+    m.exit([sx - 14, sy - 12, 28, 18], "abismo_next", "from_above")
+    m.marker("stairs", sx, sy + 20)
+    for i, (tx, ty) in enumerate(spots):
+        m.prop("chest", tx * T + 8, ty * T + 12, "chest_ab%d" % i)
+    for i, r in enumerate(big[:-1]):
+        m.prop("crystal" if i % 2 else "mushroom", (r[2] - 1) * T + 8, (r[3] - 1) * T + 12, col=False,
+               light={"r": 50, "color": [0.7, 0.45, 1.0], "e": 0.8, "flicker": True, "oy": -10})
+    for k in range(10):
+        r = rng.choice(big)
+        tx, ty = rng.randint(r[0] + 1, r[2] - 1), r[3] - 1
+        if (tx, ty) in reach:
+            m.prop("bones", tx * T + 8, ty * T + 8, col=False)
+    m.marker("from_above", 18 * T, 27 * T)
+    m.exit([16 * T, h * T - 8, 5 * T, 8], "cave", "from_abyss")
+    return m
+
+
+def abismo_a():
+    return _abyss_floor("abismo_a", 101, "crypt", [0.5, 0.4, 0.7])
+
+
+def abismo_b():
+    return _abyss_floor("abismo_b", 202, "ruin", [0.45, 0.5, 0.7])
+
+
+def abismo_c():
+    return _abyss_floor("abismo_c", 303, "mine", [0.55, 0.38, 0.55])
+
+
+def abismo_d():
+    return _abyss_floor("abismo_d", 404, "crypt", [0.42, 0.35, 0.6])
+
+
+MAPS = (montes, minas, pantano, ruinas, paso_sur, sendero_montes, sendero_pantano, camino_paso, senda_corazon, abismo_a, abismo_b, abismo_c, abismo_d)

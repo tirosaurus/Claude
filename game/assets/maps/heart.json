@@ -722,8 +722,8 @@
     32,
     10
    ],
-   "to": "elf_camp",
-   "spawn": "from_heart"
+   "to": "senda_corazon",
+   "spawn": "from_north"
   }
  ],
  "triggers": [

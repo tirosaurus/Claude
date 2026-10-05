@@ -401,8 +401,11 @@ func heal_all() -> void:
 ## Devuelve una lista de {level, learned: [[miembro, habilidad]]}
 func add_xp(amount: int) -> Array:
 	var result: Array = []
+	if level >= DB.MAX_LEVEL:
+		xp = 0
+		return result
 	xp += amount
-	while xp >= DB.xp_to_next(level):
+	while level < DB.MAX_LEVEL and xp >= DB.xp_to_next(level):
 		xp -= DB.xp_to_next(level)
 		var before := {}
 		for id in party:
@@ -416,7 +419,29 @@ func add_xp(amount: int) -> Array:
 		level_restore()
 		result.append({"level": level, "learned": learned})
 		leveled_up.emit(level)
+	if level >= DB.MAX_LEVEL:
+		xp = 0
 	return result
+
+
+## ¿Tiene el grupo (inventario o equipado) este objeto?
+func owns(eid: String) -> bool:
+	if item_count(eid) > 0:
+		return true
+	for m in equipment:
+		for slot in equipment[m]:
+			if equipment[m][slot] == eid:
+				return true
+	return false
+
+
+func missing_legendaries() -> Array:
+	return DB.LEGENDARIES.filter(func(e): return not owns(e))
+
+
+## Ruta de Vael: todos los legendarios y sin haber tocado nunca el arma Overlord.
+func vael_worthy() -> bool:
+	return missing_legendaries().is_empty() and not has_flag("ov_done")
 
 
 func needs_branch_choice() -> bool:

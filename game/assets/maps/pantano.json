@@ -601,8 +601,8 @@
     32,
     8
    ],
-   "to": "elf_camp",
-   "spawn": "from_pantano"
+   "to": "sendero_pantano",
+   "spawn": "from_south"
   },
   {
    "rect": [
@@ -621,8 +621,8 @@
     8,
     32
    ],
-   "to": "paso_sur",
-   "spawn": "from_pantano",
+   "to": "camino_paso",
+   "spawn": "from_west",
    "requires": "tear_crystal",
    "blocked": "Una niebla densa cubre el camino del este. Selen dice que antes debéis visitar sus ruinas."
   }

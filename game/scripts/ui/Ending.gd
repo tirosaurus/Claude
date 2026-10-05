@@ -73,6 +73,8 @@ func _kaelen_heroic_death() -> bool:
 
 func _ending() -> Array:
 	# [id, categoría, título]
+	if f("ending_vael"):
+		return ["vael", "Final supremo", "Vael, el Dios Protector"]
 	if f("ending_sealed"):
 		return ["sealed", "Final secreto verdadero", "El Velo sellado"]
 	if f("ending_sovereign"):
@@ -98,6 +100,18 @@ func _slides(id: String) -> Array:
 	var n := GameState.player_name()
 	var out: Array = []
 	match id:
+		"vael":
+			if f("vael_guardian"):
+				out.append("%s se quedó en el Corazón del Bosque, convertid%s en luz. Desde entonces, el Velo no ha vuelto a abrirse ni un milímetro." % [n, GameState.g("o", "a")])
+				out.append("Los elfos lo llaman «el Guardián». Los niños de Tortosa, simplemente, «Vael». Cada primavera le dejan pan recién hecho junto a la piedra santa.")
+			else:
+				out.append("%s volvió a Tortosa caminando, con la ropa rota y los ojos llenos de luz. Su madre le esperaba en la puerta con la cena caliente." % n)
+				out.append("Nadie en el pueblo sabe que la persona que ayuda a Nil en la herrería es un dios. Y así está bien.")
+			out.append("Sin Nhal'Zur, la Torre Negra se derrumbó. Los Moronguls volvieron al sur, recordando de pronto quiénes habían sido.")
+			if f("aleixolo_done") and not f("player_dark"):
+				out.append("Aleixolo abrió una panadería en Tortosa. Es el único negocio del mundo protegido por un dios. El dios va todas las mañanas a por bollos.")
+			out.append("Has conseguido el final más difícil de Vaelmoor.")
+			out.append("Y un último secreto, para tu próxima vida: «Aquel acero dormía en lo más pequeño. Cama, armario, cama y cofre. Pregunta a tu madre por el pan. Mira tres veces el pozo de la plaza. Y antes del primer lobo, toca la piedra santa.»")
 		"sealed":
 			out.append("El Velo se cerró con el alma de Vael, el Primer Soberano. Nhal'Zur volvió al hambre sin fondo de la que había salido.")
 			out.append("Sin su señor, la Torre Negra se derrumbó en una sola noche. Los Moronguls regresaron al sur, confusos, como quien despierta de un sueño.")
@@ -236,7 +250,7 @@ func _player_fate(id: String) -> String:
 
 func _run() -> void:
 	var e := _ending()
-	_good = e[0] in ["best", "good", "sacrifice", "sealed"]
+	_good = e[0] in ["best", "good", "sacrifice", "sealed", "vael"]
 	GameState.set_meta("ending_id", e[0])
 	Audio.play_music("ending_good" if _good else "ending_bad", 1.5)
 	_bg.texture = load("res://assets/bg/ending_dawn.png") if _good else load("res://assets/bg/title.png")

@@ -1,0 +1,1119 @@
+{
+ "id": "camino_paso",
+ "display": "Camino de las Cenizas",
+ "music": "war",
+ "interior": false,
+ "size": [
+  1024,
+  352
+ ],
+ "ground": "res://assets/maps/camino_paso.png",
+ "solids": [
+  [
+   0,
+   0,
+   1024,
+   16
+  ],
+  [
+   0,
+   16,
+   1024,
+   16
+  ],
+  [
+   0,
+   32,
+   1024,
+   16
+  ],
+  [
+   0,
+   48,
+   336,
+   16
+  ],
+  [
+   352,
+   48,
+   432,
+   16
+  ],
+  [
+   864,
+   48,
+   160,
+   16
+  ],
+  [
+   0,
+   64,
+   288,
+   16
+  ],
+  [
+   432,
+   64,
+   272,
+   16
+  ],
+  [
+   720,
+   64,
+   64,
+   16
+  ],
+  [
+   864,
+   64,
+   160,
+   16
+  ],
+  [
+   0,
+   80,
+   288,
+   16
+  ],
+  [
+   432,
+   80,
+   160,
+   16
+  ],
+  [
+   608,
+   80,
+   32,
+   16
+  ],
+  [
+   720,
+   80,
+   64,
+   16
+  ],
+  [
+   864,
+   80,
+   160,
+   16
+  ],
+  [
+   0,
+   96,
+   256,
+   16
+  ],
+  [
+   448,
+   96,
+   48,
+   16
+  ],
+  [
+   560,
+   96,
+   16,
+   16
+  ],
+  [
+   736,
+   96,
+   48,
+   16
+  ],
+  [
+   864,
+   96,
+   160,
+   16
+  ],
+  [
+   32,
+   112,
+   48,
+   16
+  ],
+  [
+   96,
+   112,
+   32,
+   16
+  ],
+  [
+   144,
+   112,
+   64,
+   16
+  ],
+  [
+   896,
+   112,
+   96,
+   16
+  ],
+  [
+   1008,
+   112,
+   16,
+   16
+  ],
+  [
+   928,
+   128,
+   48,
+   16
+  ],
+  [
+   1008,
+   128,
+   16,
+   16
+  ],
+  [
+   272,
+   176,
+   16,
+   16
+  ],
+  [
+   432,
+   176,
+   16,
+   16
+  ],
+  [
+   496,
+   176,
+   64,
+   16
+  ],
+  [
+   240,
+   192,
+   80,
+   16
+  ],
+  [
+   400,
+   192,
+   176,
+   16
+  ],
+  [
+   656,
+   192,
+   16,
+   16
+  ],
+  [
+   688,
+   192,
+   80,
+   16
+  ],
+  [
+   144,
+   208,
+   176,
+   16
+  ],
+  [
+   400,
+   208,
+   400,
+   16
+  ],
+  [
+   144,
+   224,
+   176,
+   16
+  ],
+  [
+   400,
+   224,
+   464,
+   16
+  ],
+  [
+   880,
+   224,
+   16,
+   16
+  ],
+  [
+   1008,
+   224,
+   16,
+   16
+  ],
+  [
+   0,
+   240,
+   112,
+   16
+  ],
+  [
+   128,
+   240,
+   192,
+   16
+  ],
+  [
+   400,
+   240,
+   512,
+   16
+  ],
+  [
+   992,
+   240,
+   32,
+   16
+  ],
+  [
+   0,
+   256,
+   320,
+   16
+  ],
+  [
+   400,
+   256,
+   544,
+   16
+  ],
+  [
+   960,
+   256,
+   64,
+   16
+  ],
+  [
+   0,
+   272,
+   1024,
+   16
+  ],
+  [
+   0,
+   288,
+   1024,
+   16
+  ],
+  [
+   0,
+   304,
+   1024,
+   16
+  ],
+  [
+   0,
+   320,
+   1024,
+   16
+  ],
+  [
+   0,
+   336,
+   1024,
+   16
+  ]
+ ],
+ "props": [
+  {
+   "sprite": "dead_tree",
+   "x": 344,
+   "y": 30
+  },
+  {
+   "sprite": "rock",
+   "x": 808,
+   "y": 30
+  },
+  {
+   "sprite": "rock_big",
+   "x": 856,
+   "y": 30
+  },
+  {
+   "sprite": "rock",
+   "x": 872,
+   "y": 30
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 296,
+   "y": 46
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 312,
+   "y": 46
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 344,
+   "y": 46
+  },
+  {
+   "sprite": "dead_tree2",
+   "x": 360,
+   "y": 46
+  },
+  {
+   "sprite": "dead_tree2",
+   "x": 376,
+   "y": 46
+  },
+  {
+   "sprite": "dead_tree2",
+   "x": 408,
+   "y": 46
+  },
+  {
+   "sprite": "dead_tree2",
+   "x": 424,
+   "y": 46
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 440,
+   "y": 46
+  },
+  {
+   "sprite": "rock",
+   "x": 696,
+   "y": 46
+  },
+  {
+   "sprite": "rock_big",
+   "x": 776,
+   "y": 46
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 792,
+   "y": 46
+  },
+  {
+   "sprite": "rock",
+   "x": 840,
+   "y": 46
+  },
+  {
+   "sprite": "rock_big",
+   "x": 872,
+   "y": 46
+  },
+  {
+   "sprite": "dead_tree2",
+   "x": 280,
+   "y": 62
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 312,
+   "y": 62
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 360,
+   "y": 62
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 408,
+   "y": 62
+  },
+  {
+   "sprite": "rock",
+   "x": 600,
+   "y": 62
+  },
+  {
+   "sprite": "rock",
+   "x": 616,
+   "y": 62
+  },
+  {
+   "sprite": "rock_big",
+   "x": 648,
+   "y": 62
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 680,
+   "y": 62
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 712,
+   "y": 62
+  },
+  {
+   "sprite": "rock",
+   "x": 728,
+   "y": 62
+  },
+  {
+   "sprite": "dead_tree2",
+   "x": 248,
+   "y": 78
+  },
+  {
+   "sprite": "dead_tree2",
+   "x": 264,
+   "y": 78
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 280,
+   "y": 78
+  },
+  {
+   "sprite": "dead_tree2",
+   "x": 440,
+   "y": 78
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 488,
+   "y": 78
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 504,
+   "y": 78
+  },
+  {
+   "sprite": "rock",
+   "x": 584,
+   "y": 78
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 600,
+   "y": 78
+  },
+  {
+   "sprite": "rock_big",
+   "x": 616,
+   "y": 78
+  },
+  {
+   "sprite": "rock_big",
+   "x": 632,
+   "y": 78
+  },
+  {
+   "sprite": "rock",
+   "x": 696,
+   "y": 78
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 728,
+   "y": 78
+  },
+  {
+   "sprite": "rock_big",
+   "x": 744,
+   "y": 78
+  },
+  {
+   "sprite": "rock_big",
+   "x": 776,
+   "y": 78
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 872,
+   "y": 78
+  },
+  {
+   "sprite": "dead_tree2",
+   "x": 8,
+   "y": 94
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 40,
+   "y": 94
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 120,
+   "y": 94
+  },
+  {
+   "sprite": "dead_tree2",
+   "x": 232,
+   "y": 94
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 264,
+   "y": 94
+  },
+  {
+   "sprite": "dead_tree2",
+   "x": 280,
+   "y": 94
+  },
+  {
+   "sprite": "dead_tree2",
+   "x": 488,
+   "y": 94
+  },
+  {
+   "sprite": "dead_tree2",
+   "x": 504,
+   "y": 94
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 552,
+   "y": 94
+  },
+  {
+   "sprite": "rock_big",
+   "x": 584,
+   "y": 94
+  },
+  {
+   "sprite": "rock",
+   "x": 616,
+   "y": 94
+  },
+  {
+   "sprite": "rock",
+   "x": 760,
+   "y": 94
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 904,
+   "y": 94
+  },
+  {
+   "sprite": "rock",
+   "x": 1000,
+   "y": 94
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 8,
+   "y": 110
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 72,
+   "y": 110
+  },
+  {
+   "sprite": "dead_tree2",
+   "x": 88,
+   "y": 110
+  },
+  {
+   "sprite": "dead_tree2",
+   "x": 104,
+   "y": 110
+  },
+  {
+   "sprite": "dead_tree2",
+   "x": 136,
+   "y": 110
+  },
+  {
+   "sprite": "dead_tree2",
+   "x": 152,
+   "y": 110
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 168,
+   "y": 110
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 184,
+   "y": 110
+  },
+  {
+   "sprite": "dead_tree2",
+   "x": 216,
+   "y": 110
+  },
+  {
+   "sprite": "dead_tree2",
+   "x": 488,
+   "y": 110
+  },
+  {
+   "sprite": "rock",
+   "x": 568,
+   "y": 110
+  },
+  {
+   "sprite": "rock_big",
+   "x": 744,
+   "y": 110
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 760,
+   "y": 110
+  },
+  {
+   "sprite": "rock_big",
+   "x": 776,
+   "y": 110
+  },
+  {
+   "sprite": "rock_big",
+   "x": 872,
+   "y": 110
+  },
+  {
+   "sprite": "rock_big",
+   "x": 904,
+   "y": 110
+  },
+  {
+   "sprite": "rock",
+   "x": 920,
+   "y": 110
+  },
+  {
+   "sprite": "rock_big",
+   "x": 936,
+   "y": 110
+  },
+  {
+   "sprite": "rock_big",
+   "x": 968,
+   "y": 110
+  },
+  {
+   "sprite": "dead_tree2",
+   "x": 40,
+   "y": 126
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 72,
+   "y": 126
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 104,
+   "y": 126
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 184,
+   "y": 126
+  },
+  {
+   "sprite": "rock_big",
+   "x": 936,
+   "y": 126
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 1016,
+   "y": 142
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 440,
+   "y": 190
+  },
+  {
+   "sprite": "rock_big",
+   "x": 520,
+   "y": 190
+  },
+  {
+   "sprite": "rock_big",
+   "x": 552,
+   "y": 190
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 248,
+   "y": 206
+  },
+  {
+   "sprite": "dead_tree2",
+   "x": 264,
+   "y": 206
+  },
+  {
+   "sprite": "dead_tree2",
+   "x": 408,
+   "y": 206
+  },
+  {
+   "sprite": "dead_tree2",
+   "x": 424,
+   "y": 206
+  },
+  {
+   "sprite": "dead_tree2",
+   "x": 440,
+   "y": 206
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 456,
+   "y": 206
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 488,
+   "y": 206
+  },
+  {
+   "sprite": "dead_tree2",
+   "x": 504,
+   "y": 206
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 552,
+   "y": 206
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 696,
+   "y": 206
+  },
+  {
+   "sprite": "dead_tree2",
+   "x": 152,
+   "y": 222
+  },
+  {
+   "sprite": "dead_tree2",
+   "x": 168,
+   "y": 222
+  },
+  {
+   "sprite": "dead_tree2",
+   "x": 184,
+   "y": 222
+  },
+  {
+   "sprite": "dead_tree2",
+   "x": 232,
+   "y": 222
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 248,
+   "y": 222
+  },
+  {
+   "sprite": "rock_big",
+   "x": 568,
+   "y": 222
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 584,
+   "y": 222
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 600,
+   "y": 222
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 616,
+   "y": 222
+  },
+  {
+   "sprite": "rock_big",
+   "x": 632,
+   "y": 222
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 648,
+   "y": 222
+  },
+  {
+   "sprite": "rock_big",
+   "x": 776,
+   "y": 222
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 792,
+   "y": 222
+  },
+  {
+   "sprite": "dead_tree2",
+   "x": 312,
+   "y": 238
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 792,
+   "y": 238
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 808,
+   "y": 238
+  },
+  {
+   "sprite": "rock_big",
+   "x": 824,
+   "y": 238
+  },
+  {
+   "sprite": "rock_big",
+   "x": 1016,
+   "y": 238
+  },
+  {
+   "sprite": "dead_tree2",
+   "x": 40,
+   "y": 254
+  },
+  {
+   "sprite": "dead_tree2",
+   "x": 56,
+   "y": 254
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 88,
+   "y": 254
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 104,
+   "y": 254
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 136,
+   "y": 254
+  },
+  {
+   "sprite": "dead_tree2",
+   "x": 152,
+   "y": 254
+  },
+  {
+   "sprite": "rock",
+   "x": 872,
+   "y": 254
+  },
+  {
+   "sprite": "rock",
+   "x": 1000,
+   "y": 254
+  },
+  {
+   "sprite": "rock",
+   "x": 1016,
+   "y": 254
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 104,
+   "y": 270
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 136,
+   "y": 270
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 408,
+   "y": 270
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 904,
+   "y": 270
+  },
+  {
+   "sprite": "rock",
+   "x": 920,
+   "y": 270
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 1000,
+   "y": 270
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 328,
+   "y": 286
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 408,
+   "y": 286
+  },
+  {
+   "sprite": "dead_tree",
+   "x": 936,
+   "y": 286
+  },
+  {
+   "sprite": "rock",
+   "x": 968,
+   "y": 286
+  },
+  {
+   "sprite": "chest",
+   "x": 360,
+   "y": 252,
+   "id": "chest_camino_paso1",
+   "col": [
+    -8,
+    -9,
+    16,
+    9
+   ]
+  },
+  {
+   "sprite": "chest",
+   "x": 824,
+   "y": 76,
+   "id": "chest_camino_paso2",
+   "col": [
+    -8,
+    -9,
+    16,
+    9
+   ]
+  },
+  {
+   "sprite": "campfire",
+   "x": 520,
+   "y": 151,
+   "id": "campfire",
+   "col": [
+    -9,
+    -8,
+    18,
+    8
+   ],
+   "frames": 3,
+   "light": {
+    "r": 90,
+    "color": [
+     1,
+     0.7,
+     0.35
+    ],
+    "e": 1.0,
+    "flicker": true,
+    "oy": -8
+   }
+  },
+  {
+   "sprite": "war_banner",
+   "x": 520,
+   "y": 152
+  },
+  {
+   "sprite": "war_banner",
+   "x": 760,
+   "y": 152
+  },
+  {
+   "sprite": "sign",
+   "x": 140,
+   "y": 205,
+   "id": "sign_route",
+   "col": [
+    -3,
+    -4,
+    6,
+    4
+   ]
+  }
+ ],
+ "markers": {
+  "from_west": [
+   24,
+   183
+  ],
+  "from_east": [
+   1000,
+   190
+  ],
+  "mid": [
+   520,
+   127
+  ]
+ },
+ "exits": [
+  {
+   "rect": [
+    0,
+    151,
+    8,
+    48
+   ],
+   "to": "pantano",
+   "spawn": "from_pass"
+  },
+  {
+   "rect": [
+    1016,
+    158,
+    8,
+    48
+   ],
+   "to": "paso_sur",
+   "spawn": "from_pantano"
+  }
+ ],
+ "triggers": [],
+ "lights": [],
+ "modulate": [
+  0.9,
+  0.78,
+  0.7
+ ],
+ "encounters": {
+  "rate": 24,
+  "table": [
+   [
+    "lodo",
+    "wisp"
+   ],
+   [
+    "soldado"
+   ],
+   [
+    "soldado",
+    "thrall"
+   ],
+   [
+    "salamandra",
+    "soldado"
+   ],
+   [
+    "brute"
+   ]
+  ]
+ },
+ "battle_bg": "heart"
+}

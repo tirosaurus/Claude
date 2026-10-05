@@ -405,6 +405,18 @@ const EQUIP := {
 	"manto_estrellas": {"rarity": "legendary", "lvl": 8, "name": "Manto de las Estrellas", "slot": "body", "weight": "cloth", "look": "robe_sage", "price": 0,
 		"stats": {"mag": 12, "mp": 25, "res": 8, "def": 4},
 		"lore": "Túnica de los astrólogos del Imperio de Cristal, bordada con mapas de cielos que ya no existen."},
+	"egida_vael": {"rarity": "legendary", "lvl": 15, "name": "Égida de Vael", "slot": "shield", "tier": 3, "look": "aegis", "price": 0,
+		"stats": {"def": 24, "res": 14, "hp": 40},
+		"lore": "El escudo del Primer Soberano antes de forjar su alma en acero. Aún huele a campanas y a lluvia."},
+	"yelmo_vael": {"rarity": "legendary", "lvl": 15, "name": "Yelmo de Vael", "slot": "head", "weight": "light", "look": "helm_gold", "price": 0,
+		"stats": {"def": 10, "res": 10, "hp": 40, "spd": 3},
+		"lore": "Dicen que quien lo lleva ve el Velo como una tela fina... y los ojos que miran desde el otro lado."},
+	"sello_vael": {"rarity": "legendary", "lvl": 15, "name": "Sello de Vael", "slot": "ring", "price": 0,
+		"stats": {"atk": 12, "mag": 12, "hp": 40, "mp": 30, "spd": 3},
+		"lore": "El anillo con que Vael selló el primer pacto. La piedra cambia de color según quién lo merezca."},
+	"manto_vael": {"rarity": "legendary", "lvl": 15, "name": "Manto de Vael", "slot": "body", "weight": "light", "look": "robe_sage", "price": 0,
+		"stats": {"def": 16, "res": 16, "mag": 10, "atk": 10, "hp": 60, "mp": 30},
+		"lore": "Tejido con hilos del propio Velo. Abriga como una promesa cumplida."},
 	"anillo_velo": {"rarity": "legendary", "lvl": 8, "name": "Anillo del Velo", "slot": "ring", "price": 0,
 		"stats": {"hp": 30, "mp": 20, "atk": 6, "mag": 6, "spd": 2},
 		"lore": "Un fragmento del propio Velo engarzado en plata. Quien lo lleva oye susurros del otro lado."},
@@ -502,6 +514,10 @@ const CHESTS := {
 	"chest_cave1": {"armadura_mithril": 1, "pocion_mayor": 2}, "chest_cave2": {"anillo_velo": 1, "eter": 2},
 	"chest_cave3": {"pocion_mayor": 3, "pluma": 1, "gold": 300}, "chest_cave4": {"aurora": 1, "muralla_tortosa": 1},
 	"chest_cave5": {"eter": 3, "pluma": 2, "gold": 800},
+	"chest_sendero_montes1": {"pocion": 3, "gold": 120}, "chest_sendero_montes2": {"eter": 2, "capucha_sombra": 1},
+	"chest_sendero_pantano1": {"antidoto": 3, "pocion_mayor": 1}, "chest_sendero_pantano2": {"gold": 180, "flor_luna_item": 1},
+	"chest_camino_paso1": {"bomba": 3, "pocion_mayor": 1}, "chest_camino_paso2": {"gold": 250, "eter": 2},
+	"chest_senda_corazon1": {"pluma": 1, "pocion_mayor": 2}, "chest_senda_corazon2": {"eter": 3, "gold": 200},
 	"chest_montes1": {"pocion_mayor": 2, "gold": 200}, "chest_mina1": {"eter": 2, "pocion_mayor": 1}, "chest_mina2": {"gold": 400, "pluma": 1},
 	"chest_mina3": {"rompemontanas": 1, "gold": 300}, "chest_pantano1": {"antidoto": 3, "eter": 2},
 	"chest_ruina1": {"manto_estrellas": 1}, "chest_ruina2": {"pocion_mayor": 2, "pluma": 1}, "chest_ruina3": {"lagrimas_selen": 1, "gold": 300},
@@ -553,6 +569,9 @@ const ENEMIES := {
 	"kraag": {"name": "General Kraag", "sprite": "enemies/kraag", "frames": 2, "scale": 1.35, "hp": 1600, "atk": 24, "def": 15, "mag": 10, "res": 12, "spd": 10,
 		"xp": 850, "gold": 500, "weak": ["light"], "resist": ["dark", "phys"], "ai": [["e_martillo", 2], ["e_hachazo", 3], ["e_rugido", 1], ["e_invocar", 1]],
 		"boss": true, "summon": "soldado", "summon_msg": "¡Kraag llama a su guardia!"},
+	"heraldo": {"name": "Heraldo de Vael", "sprite": "enemies/custodian", "frames": 2, "scale": 1.5, "hp": 950, "atk": 17, "def": 13, "mag": 17, "res": 13, "spd": 11,
+		"xp": 900, "gold": 0, "weak": ["dark"], "resist": ["light", "ice"], "ai": [["e_puño_cristal", 3], ["e_haz", 2], ["e_rayo_cristal", 2], ["e_escudo", 1]],
+		"boss": true, "tint": [1.25, 1.05, 0.55]},
 	"nhalzur": {"name": "Nhal'Zur, el Hambre bajo el Mundo", "sprite": "enemies/nhalzur", "frames": 2, "scale": 1.15, "hp": 800000, "atk": 25, "def": 20, "mag": 23, "res": 20, "spd": 13,
 		"xp": 0, "gold": 0, "weak": ["light"], "resist": ["dark", "nature", "ice"], "ai": [["e_velo", 3], ["e_hambre", 2], ["e_garra", 3], ["e_mirada", 1]], "boss": true},
 	"aleixolo": {"name": "Aleixolo, el Glotón", "sprite": "enemies/aleixolo", "frames": 2, "scale": 1.5, "hp": 2400, "atk": 23, "def": 12, "mag": 21, "res": 10, "spd": 10,
@@ -561,6 +580,14 @@ const ENEMIES := {
 	"mother_root": {"name": "Madre Raíz", "sprite": "enemies/mother_root", "frames": 2, "scale": 1.25, "hp": 1500, "atk": 22, "def": 11, "mag": 20, "res": 13, "spd": 9,
 		"xp": 0, "gold": 0, "weak": ["fire", "light"], "resist": ["dark", "nature"], "ai": [["e_raices", 3], ["e_latido", 2], ["e_escupir", 2]], "boss": true},
 }
+
+
+const MAX_LEVEL := 12
+const LEGENDARIES := ["aurora", "rompemontanas", "susurro_ilvane", "lagrimas_selen", "baculo_pacto", "muralla_tortosa",
+	"corona_anciana", "coraza_olvidado", "manto_estrellas", "anillo_velo",
+	"egida_vael", "yelmo_vael", "sello_vael", "manto_vael"]
+## Objetos que solo aparecen en el Abismo de los Susurros
+const VAEL_SET := ["egida_vael", "yelmo_vael", "sello_vael", "manto_vael"]
 
 
 static func xp_to_next(level: int) -> int:

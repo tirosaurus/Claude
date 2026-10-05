@@ -630,9 +630,109 @@
     16,
     9
    ]
+  },
+  {
+   "sprite": "tent_blue",
+   "x": 400,
+   "y": 168,
+   "col": [
+    -20,
+    -18,
+    40,
+    18
+   ]
+  },
+  {
+   "sprite": "tent_red",
+   "x": 560,
+   "y": 170,
+   "col": [
+    -20,
+    -18,
+    40,
+    18
+   ]
+  },
+  {
+   "sprite": "forge",
+   "x": 600,
+   "y": 120,
+   "id": "dwarf_forge",
+   "frames": 3,
+   "light": {
+    "r": 80,
+    "color": [
+     1,
+     0.6,
+     0.3
+    ],
+    "e": 1.0,
+    "flicker": true,
+    "oy": -10
+   }
+  },
+  {
+   "sprite": "anvil",
+   "x": 570,
+   "y": 128,
+   "col": [
+    -8,
+    -6,
+    16,
+    6
+   ]
+  },
+  {
+   "sprite": "barrel",
+   "x": 430,
+   "y": 120,
+   "col": [
+    -6,
+    -8,
+    12,
+    8
+   ]
+  },
+  {
+   "sprite": "barrel",
+   "x": 444,
+   "y": 124,
+   "col": [
+    -6,
+    -8,
+    12,
+    8
+   ]
+  },
+  {
+   "sprite": "crate",
+   "x": 520,
+   "y": 124,
+   "col": [
+    -7,
+    -10,
+    14,
+    10
+   ]
   }
  ],
  "markers": {
+  "hilda": [
+   420,
+   196
+  ],
+  "torbin": [
+   590,
+   200
+  ],
+  "bori": [
+   360,
+   140
+  ],
+  "kazrik": [
+   520,
+   70
+  ],
   "from_camp": [
    24,
    200
@@ -654,8 +754,8 @@
     8,
     36
    ],
-   "to": "elf_camp",
-   "spawn": "from_montes"
+   "to": "sendero_montes",
+   "spawn": "from_east"
   },
   {
    "rect": [

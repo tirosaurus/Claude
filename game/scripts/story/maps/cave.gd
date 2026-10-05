@@ -46,6 +46,32 @@ func on_interact(id: String) -> void:
 	await super.on_interact(id)
 
 
+func exit_requirement(to: String, default_req: String) -> String:
+	if to.begins_with("abismo"):
+		return "" if flag("won_cave_guardian") and GameState.level >= DB.MAX_LEVEL else "abyss_open"
+	return default_req
+
+
+func exit_blocked_message(to: String, default_msg: String) -> String:
+	if to.begins_with("abismo"):
+		if not flag("won_cave_guardian"):
+			return "Unas escaleras bajan hacia una oscuridad que susurra. El guardián del fondo te impide acercarte."
+		return "Los susurros te rechazan: «Vuelve cuando hayas alcanzado tu máximo poder». (Necesitas nivel %d. Tienes nivel %d.)" % [DB.MAX_LEVEL, GameState.level]
+	return default_msg
+
+
+func before_exit(to: String) -> bool:
+	if to.begins_with("abismo"):
+		GameState.set_meta("abyss_floor", 1)
+		GameState.set_meta("abyss_opened", [])
+		GameState.set_meta("abyss_banner_floor", 0)
+		for k in range(1, 11):
+			GameState.set_meta("abyss_chests_%d" % k, [])
+		Transition.go_to_map(["abismo_a", "abismo_b", "abismo_c", "abismo_d"].pick_random(), "from_above", true)
+		return false
+	return true
+
+
 func interact_lines(id: String) -> Array:
 	if id == "statue_broken":
 		return ["Una estatua sin rostro. En su base, tres nombres: Ermengol, Thrain, Selen."]

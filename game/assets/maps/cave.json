@@ -922,6 +922,10 @@
   }
  ],
  "markers": {
+  "from_abyss": [
+   380,
+   140
+  ],
   "from_deep": [
    280,
    490
@@ -932,6 +936,18 @@
   ]
  },
  "exits": [
+  {
+   "rect": [
+    366,
+    98,
+    28,
+    18
+   ],
+   "to": "abismo_a",
+   "spawn": "from_above",
+   "requires": "abyss_open",
+   "blocked": "Unas escaleras bajan hacia una oscuridad que susurra tu nombre."
+  },
   {
    "rect": [
     240,

@@ -324,6 +324,9 @@ func _after_final() -> void:
 	if flag("ov_ready"):
 		await _nhalzur()
 		return
+	if GameState.vael_worthy() and not flag("player_dark"):
+		await _vael()
+		return
 	await say(["La Madre Raíz se estremece por última vez. Sus ojos se apagan uno a uno.",
 		"Las raíces se agrietan. Por las grietas se cuela, por primera vez, un rayo de luz verde.",
 		"La Semilla late con fuerza. Sabe que ha llegado su momento."])
@@ -372,6 +375,45 @@ func _after_final() -> void:
 	_go_ending()
 
 
+# ------------------------------------------------------------ Ruta de Vael (todos los legendarios, sin Overlord)
+func _vael() -> void:
+	setf("vael_route")
+	Audio.stop_music(1.0)
+	await say(["La Madre Raíz se estremece por última vez... y en lugar de morir, se abre como una flor podrida.",
+		"Detrás no hay tierra. Hay un desgarrón en el aire, negro y rojo: el Velo.",
+		"Entonces tu equipo empieza a brillar. Las catorce reliquias legendarias cantan a la vez, cada una con una nota distinta."])
+	await world.set_tint(Color(1.25, 1.15, 0.8), 1.0)
+	await say(["Una figura de luz aparece a tu lado. Lleva una corona sencilla y te mira con una sonrisa cansada.",
+		"«Soy Vael. El Primer Soberano. Hace mil años encerré a Nhal'Zur y, para hacerlo, forjé mi alma en un arma de odio.»",
+		"«Tú has hecho lo que yo no supe: reunir el legado de todos los pueblos sin tocar ese acero maldito.»",
+		"«No necesitas mi arma, heredero. Necesitas mi nombre.»",
+		"La luz de Vael entra en tu pecho. Por un momento, recuerdas mil años que no son tuyos.",
+		"(Te has convertido en Vael, el Dios Héroe.)"])
+	var em = world.spawn_npc("emissary", world.player.position + Vector2(-40, -30), 2)
+	await say([{"who": "emissary", "text": "¿Vael? No... ¡NO! ¡Tú estabas encerrado en el acero!"},
+		"El Emisario se deshace en humo y huye hacia el desgarrón. Del Velo sale una cabeza coronada de cristal negro.",
+		"«NHAL'ZUR», dice el hambre. Y por primera vez en mil años, suena asustada."])
+	world.remove_npc("emissary")
+	if has("yara"):
+		await say([Y("{name}... estás brillando. ¿Eres tú?"), P("Somos los dos. Y vamos a terminar esto.")])
+	end()
+	await battle("nhalzur", ["nhalzur"], "heart", "soberano", true, {"vael": true})
+
+
+func _after_vael() -> void:
+	begin()
+	await say(["Nhal'Zur grita. Pero esta vez no hay odio que lo alimente: solo luz, y la luz no se puede comer.",
+		"El Velo se cierra despacio, como una herida que por fin cicatriza.",
+		"«Gracias», susurra Vael dentro de ti. «Ya puedo descansar. Pero alguien tiene que vigilar la puerta.»"])
+	var i := await choose(["Quedarme como guardián del Velo.", "Volver a casa... y vigilar desde allí."], "La luz espera tu respuesta.")
+	setf("vael_guardian" if i == 0 else "vael_home")
+	setf("ending_vael")
+	setf("ov_end_chosen")
+	await say(["La Semilla echa raíces sola. El Corazón del Bosque vuelve a latir, verde y limpio."])
+	end()
+	_go_ending()
+
+
 # ------------------------------------------------------------ Ruta del Soberano
 func _nhalzur() -> void:
 	Audio.stop_music(1.0)
@@ -395,6 +437,9 @@ func _nhalzur() -> void:
 
 
 func _after_nhalzur() -> void:
+	if flag("vael_route"):
+		await _after_vael()
+		return
 	begin()
 	await say(["Nhal'Zur se retuerce. Sus ojos se apagan uno a uno, y su grito hace temblar el mundo entero.",
 		"El desgarrón del Velo empieza a cerrarse... pero no del todo. Algo lo mantiene abierto: el arma que llevas.",

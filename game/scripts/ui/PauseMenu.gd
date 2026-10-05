@@ -113,7 +113,8 @@ func _show_party() -> void:
 			r.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 			panel.add_child(r)
 		y += 62
-	var xp_l := UIKit.label("Experiencia: %d / %d para el nivel %d" % [GameState.xp, DB.xp_to_next(GameState.level), GameState.level + 1], 13, Color(0.4, 0.3, 0.2))
+	var xp_txt := "Nivel máximo alcanzado" if GameState.level >= DB.MAX_LEVEL else "Experiencia: %d / %d para el nivel %d" % [GameState.xp, DB.xp_to_next(GameState.level), GameState.level + 1]
+	var xp_l := UIKit.label(xp_txt, 13, Color(0.4, 0.3, 0.2))
 	xp_l.position = Vector2(12, 300)
 	panel.add_child(xp_l)
 

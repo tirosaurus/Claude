@@ -360,6 +360,11 @@ def cave():
     m.prop("chest", 200, 44, "chest_cave4")
     m.prop("chest", 350, 44, "chest_cave5")
     m.prop("statue_broken", 276, 40)
+    import maps3
+    m.decals.append(maps3.abyss_stairs_decal(364, 96))
+    m.marker("from_abyss", 380, 140)
+    m.exit([366, 98, 28, 18], "abismo_a", "from_above", requires="abyss_open",
+           blocked="Unas escaleras bajan hacia una oscuridad que susurra tu nombre.")
     m.marker("from_deep", 280, 490)
     m.marker("guardian", 280, 120)
     m.exit([15 * T, h * T - 8, 5 * T, 8], "forest_deep", "from_cave")
@@ -417,11 +422,11 @@ def elf_camp():
     m.exit([0, 188, 8, 36], "forest_deep", "from_camp")
     m.marker("from_montes", Wt * T - 24, 200)
     m.marker("from_pantano", 280, Ht * T - 24)
-    m.exit([Wt * T - 8, 188, 8, 36], "montes", "from_camp", requires="act4_started",
+    m.exit([Wt * T - 8, 188, 8, 36], "sendero_montes", "from_west", requires="act4_started",
            blocked="Un sendero de piedra sube hacia los montes. Ilvanis quiere hablar antes de que partáis.")
-    m.exit([270, Ht * T - 8, 36, 8], "pantano", "from_camp", requires="act4_started",
+    m.exit([270, Ht * T - 8, 36, 8], "sendero_pantano", "from_north", requires="act4_started",
            blocked="Hacia el sur huele a ciénaga. Ilvanis quiere hablar antes de que partáis.")
-    m.exit([270, 0, 36, 8], "heart", "from_camp", requires="ready_for_heart",
+    m.exit([270, 0, 36, 8], "senda_corazon", "from_south", requires="ready_for_heart",
            blocked="Ilvanis quiere hablar contigo antes de que os adentréis en el Corazón.")
     return m
 
@@ -471,7 +476,7 @@ def heart():
     m.marker("from_camp", 272, 680)
     m.marker("kaelen_spot", 150, 470)
     m.marker("final_spot", 272, 160)
-    m.exit([256, 694, 32, 10], "elf_camp", "from_heart")
+    m.exit([256, 694, 32, 10], "senda_corazon", "from_north")
     m.trigger("kaelen_zone", [96, 400, 96, 12])
     m.trigger("final_zone", [180, 186, 184, 12])
     m.trigger("aleixolo_zone", [196, 600, 160, 12])

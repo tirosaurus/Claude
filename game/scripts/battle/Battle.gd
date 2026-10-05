@@ -132,6 +132,13 @@ func _build_scene() -> void:
 		i += 1
 
 
+## En el Abismo de los Susurros cada piso hace a los enemigos más duros (y más generosos).
+func _abyss_mult() -> float:
+	if not str(GameState.battle_return.get("map", "")).begins_with("abismo"):
+		return 1.0
+	return 1.0 + 0.25 * float(int(GameState.get_meta("abyss_floor", 1)))
+
+
 func _spawn_enemy(key: String, pos: Vector2) -> Node2D:
 	var d: Dictionary = DB.ENEMIES[key]
 	var b := BattlerScript.new()
@@ -141,8 +148,14 @@ func _spawn_enemy(key: String, pos: Vector2) -> Node2D:
 	b.data = d
 	b.display_name = str(d["name"])
 	var dm: Array = GameState.diff_mults()
-	b.max_stats = {"hp": int(d["hp"] * dm[0]), "mp": 99, "atk": d["atk"] * dm[1], "def": d["def"], "mag": d["mag"] * dm[1],
-		"res": d["res"], "spd": d["spd"]}
+	var ab := _abyss_mult()
+	b.max_stats = {"hp": int(d["hp"] * dm[0] * ab), "mp": 99, "atk": int(d["atk"] * dm[1] * sqrt(ab) * 1.15) if ab > 1.0 else d["atk"] * dm[1],
+		"def": int(d["def"] * sqrt(ab)), "mag": int(d["mag"] * dm[1] * sqrt(ab) * 1.15) if ab > 1.0 else d["mag"] * dm[1],
+		"res": int(d["res"] * sqrt(ab)), "spd": d["spd"] + (int(GameState.get_meta("abyss_floor", 0)) if ab > 1.0 else 0)}
+	if enc.get("vael", false) and key == "nhalzur":
+		# sin el arma Overlord, Nhal'Zur es un combate duro pero posible
+		b.max_stats["hp"] = int(9000 * dm[0])
+		b.display_name = "Nhal'Zur, el Hambre asustada"
 	b.hp = b.max_hp()
 	b.home = pos
 	b.position = pos
@@ -1774,8 +1787,8 @@ func _victory() -> void:
 	var gold_total := 0
 	var drops: Array = []
 	for e in enemies:
-		xp_total += int(e.data.get("xp", 0) * GameState.diff_mults()[2])
-		gold_total += int(e.data.get("gold", 0) * GameState.diff_mults()[2])
+		xp_total += int(e.data.get("xp", 0) * GameState.diff_mults()[2] * _abyss_mult())
+		gold_total += int(e.data.get("gold", 0) * GameState.diff_mults()[2] * _abyss_mult())
 		for dpair in e.data.get("drops", []):
 			if randf() < float(dpair[1]):
 				drops.append(dpair[0])

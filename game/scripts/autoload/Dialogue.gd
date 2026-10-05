@@ -51,6 +51,9 @@ var _visible_f := 0.0
 var _blip_counter := 0
 var _pitch := 1.0
 var _ignore_frame := 0
+var _choice_open_ms := 0
+var _choice_armed := false
+const CHOICE_LOCK_MS := 700
 var _t := 0.0
 
 
@@ -171,6 +174,10 @@ func choose(options: Array, prompt = null) -> int:
 	_choice_index = 0
 	_choosing = true
 	_ignore_frame = Engine.get_process_frames() + 1
+	# Las pulsaciones de A que llegan justo al aparecer las opciones (A, A, A rápido) no cuentan:
+	# hay que esperar un momento y después la primera A solo «arma» la elección.
+	_choice_open_ms = Time.get_ticks_msec()
+	_choice_armed = false
 	_update_choice()
 	var idx: int = await _chosen
 	_choosing = false
@@ -249,6 +256,19 @@ func _show_line(line, wait_input: bool) -> void:
 	_next.visible = false
 
 
+## Antes de CHOICE_LOCK_MS la A se ignora; después, la primera A arma y la segunda elige
+## (si ya has movido el cursor, basta una: está claro que estás eligiendo a propósito).
+func _choice_accept_ok() -> bool:
+	if Time.get_ticks_msec() - _choice_open_ms < CHOICE_LOCK_MS:
+		return false
+	if _choice_armed:
+		return true
+	_choice_armed = true
+	Audio.sfx("select", -10.0, 1.3)
+	_update_choice()
+	return false
+
+
 ## Tocar/clicar directamente una opción: el primer toque la marca, el segundo la elige.
 func _input(event: InputEvent) -> void:
 	if not _choosing:
@@ -268,7 +288,8 @@ func _input(event: InputEvent) -> void:
 		if l.visible and l.get_global_rect().grow_individual(24, 3, 8, 3).has_point(pos):
 			get_viewport().set_input_as_handled()
 			if k == _choice_index:
-				_chosen.emit(_choice_index)
+				if Time.get_ticks_msec() - _choice_open_ms >= CHOICE_LOCK_MS:
+					_chosen.emit(_choice_index)
 			else:
 				_choice_index = k
 				Audio.sfx("select", -14.0)
@@ -303,13 +324,15 @@ func _process(delta: float) -> void:
 	if _choosing:
 		if (Input.is_action_just_pressed("move_up") or Input.is_action_just_pressed("ui_up")) and TouchControls.nav_gate():
 			_choice_index = (_choice_index - 1 + _choice_labels.size()) % _choice_labels.size()
+			_choice_armed = true
 			Audio.sfx("select", -14.0)
 			_update_choice()
 		elif (Input.is_action_just_pressed("move_down") or Input.is_action_just_pressed("ui_down")) and TouchControls.nav_gate():
 			_choice_index = (_choice_index + 1) % _choice_labels.size()
+			_choice_armed = true
 			Audio.sfx("select", -14.0)
 			_update_choice()
-		elif pressed:
+		elif pressed and _choice_accept_ok():
 			_chosen.emit(_choice_index)
 		return
 	if _waiting and pressed:
@@ -320,5 +343,6 @@ func _process(delta: float) -> void:
 func _update_choice() -> void:
 	for i in _choice_labels.size():
 		var l := _choice_labels[i]
-		l.add_theme_color_override("font_color", Color(0.55, 0.2, 0.12) if i == _choice_index else TEXT_COLOR)
+		var hi := Color(0.85, 0.22, 0.08) if _choice_armed else Color(0.55, 0.2, 0.12)
+		l.add_theme_color_override("font_color", hi if i == _choice_index else TEXT_COLOR)
 	_choice_cursor.position = Vector2(10, 16 + _choice_index * 24)
