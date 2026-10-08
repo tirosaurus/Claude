@@ -27,6 +27,10 @@ func _ready() -> void:
 	_music_b = AudioStreamPlayer.new()
 	for p in [_music_a, _music_b]:
 		p.volume_db = -80.0
+		if OS.has_feature("web"):
+			# En Safari/iPhone el modo «sample» del audio web no para bien las pistas largas y
+			# acaba superponiendo músicas: la música va por el mezclador normal de Godot.
+			p.playback_type = AudioServer.PLAYBACK_TYPE_STREAM
 		add_child(p)
 	_current = _music_a
 	for i in 8:
