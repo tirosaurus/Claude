@@ -108,7 +108,18 @@ func _ready() -> void:
 	_name.text_submitted.connect(func(_t):
 		_row = 1
 		_refresh())
-	_name.grab_focus()
+	if _web_touch():
+		# En el navegador del móvil (sobre todo iPhone) el teclado de Godot se cierra tras cada letra:
+		# se usa la ventana de texto del propio navegador.
+		_name.editable = false
+		_name.focus_mode = Control.FOCUS_NONE
+		_name.placeholder_text = "Toca para escribir"
+		_name.gui_input.connect(func(ev):
+			if (ev is InputEventScreenTouch or ev is InputEventMouseButton) and ev.pressed:
+				_row = 0
+				_ask_name.call_deferred())
+	else:
+		_name.grab_focus()
 	_refresh()
 	Audio.play_music("title", 0.5)
 
@@ -155,6 +166,8 @@ func _refresh() -> void:
 			"Difícil: enemigos más duros y agresivos. Para veteranos de los JRPG."][int(app.get("difficulty", 1))]
 	_preview.texture = Appearance.sheet(app)
 	_portrait.texture = Appearance.portrait(app)
+	if _web_touch():
+		return
 	if _row == 0:
 		if not _name.has_focus():
 			_name.grab_focus()
@@ -215,11 +228,29 @@ func _process(delta: float) -> void:
 		_change(key, -1)
 	elif key != "name" and key != "start" and Input.is_action_just_pressed("ui_right"):
 		_change(key, 1)
+	elif key == "name" and _web_touch() and Input.is_action_just_pressed("ui_accept"):
+		_ask_name()
 	elif key != "name" and Input.is_action_just_pressed("ui_accept"):
 		if key == "start":
 			_on_start()
 		else:
 			_change(key, 1)
+
+
+func _web_touch() -> bool:
+	return OS.has_feature("web") and (DisplayServer.is_touchscreen_available() or OS.has_feature("web_ios")
+		or OS.has_feature("web_android"))
+
+
+func _ask_name() -> void:
+	var cur := JSON.stringify(_name.text)
+	var r = JavaScriptBridge.eval("(function(){var n = window.prompt('¿Cómo te llamas?', %s); return n === null ? '' : n;})()" % cur, true)
+	var t := str(r if r != null else "").strip_edges().substr(0, 14)
+	if t != "":
+		_name.text = t
+		_row = 1
+		Audio.sfx("confirm", -10.0)
+	_refresh()
 
 
 func _on_start() -> void:

@@ -95,10 +95,28 @@ func _load(path: String, loop: bool) -> AudioStream:
 	return stream
 
 
+var _music_tw: Tween
+
+
+## Corta el fundido en curso. Sin esto, dos cambios de música seguidos (frecuentes en móviles
+## lentos) dejaban tweens pisándose y una pista vieja sonando a la vez que la nueva.
+func _kill_music_tween() -> void:
+	if _music_tw and _music_tw.is_valid():
+		_music_tw.kill()
+	_music_tw = null
+
+
+func _stop_others(keep: AudioStreamPlayer) -> void:
+	for p in [_music_a, _music_b]:
+		if p != keep:
+			p.stop()
+
+
 func play_music(track: String, fade: float = 0.8) -> void:
 	if track == _current_name:
 		return
 	_current_name = track
+	_kill_music_tween()
 	var old := _current
 	var nxt := _music_b if _current == _music_a else _music_a
 	var loop := track != "victory"
@@ -107,22 +125,27 @@ func play_music(track: String, fade: float = 0.8) -> void:
 		stream = _load(MUSIC_DIR + track + ".wav", loop)
 	if stream == null:
 		return
+	nxt.stop()
 	nxt.stream = stream
 	nxt.volume_db = -40.0
 	nxt.play()
 	var tw := create_tween().set_parallel(true)
 	tw.tween_property(nxt, "volume_db", music_volume_db, fade)
-	tw.tween_property(old, "volume_db", -60.0, fade)
-	tw.chain().tween_callback(old.stop)
+	if old.playing:
+		tw.tween_property(old, "volume_db", -60.0, fade)
+	tw.chain().tween_callback(_stop_others.bind(nxt))
+	_music_tw = tw
 	_current = nxt
 
 
 func stop_music(fade: float = 0.8) -> void:
 	_current_name = ""
+	_kill_music_tween()
 	var p := _current
 	var tw := create_tween()
 	tw.tween_property(p, "volume_db", -60.0, fade)
-	tw.tween_callback(p.stop)
+	tw.tween_callback(_stop_others.bind(null))
+	_music_tw = tw
 
 
 func sfx(sound: String, volume_db: float = -4.0, pitch: float = 1.0) -> void:
