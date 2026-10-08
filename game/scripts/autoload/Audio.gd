@@ -115,6 +115,9 @@ func _stop_others(keep: AudioStreamPlayer) -> void:
 func play_music(track: String, fade: float = 0.8) -> void:
 	if track == _current_name:
 		return
+	if OS.has_feature("web"):
+		_play_music_web(track, fade)
+		return
 	_current_name = track
 	_kill_music_tween()
 	var old := _current
@@ -138,9 +141,34 @@ func play_music(track: String, fade: float = 0.8) -> void:
 	_current = nxt
 
 
+## Navegador (sobre todo Safari en iPhone): el audio web de Godot 4.3 da problemas al cruzar
+## dos reproductores o cambiar la pista de uno que suena, y quedaban músicas superpuestas.
+## Aquí solo hay UN reproductor: se para del todo, se cambia la pista y entra con un fundido.
+func _play_music_web(track: String, fade: float) -> void:
+	var loop := track != "victory"
+	var stream := _load(MUSIC_DIR + track + ".ogg", loop)
+	if stream == null:
+		stream = _load(MUSIC_DIR + track + ".wav", loop)
+	if stream == null:
+		return
+	_current_name = track
+	_kill_music_tween()
+	_music_b.stop()
+	_music_b.stream = null
+	_music_a.stop()
+	_music_a.stream = stream
+	_music_a.volume_db = -30.0
+	_music_a.play()
+	_current = _music_a
+	_music_tw = create_tween()
+	_music_tw.tween_property(_music_a, "volume_db", music_volume_db, maxf(0.2, fade * 0.6))
+
+
 func stop_music(fade: float = 0.8) -> void:
 	_current_name = ""
 	_kill_music_tween()
+	if OS.has_feature("web"):
+		_music_b.stop()
 	var p := _current
 	var tw := create_tween()
 	tw.tween_property(p, "volume_db", -60.0, fade)
