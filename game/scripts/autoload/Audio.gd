@@ -36,6 +36,8 @@ func _ready() -> void:
 	for i in 8:
 		var s := AudioStreamPlayer.new()
 		s.volume_db = -4.0
+		if OS.has_feature("web"):
+			s.playback_type = AudioServer.PLAYBACK_TYPE_STREAM
 		add_child(s)
 		_sfx_pool.append(s)
 	load_settings()
