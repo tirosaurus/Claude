@@ -52,6 +52,18 @@ void battle_flash_and_go(void) {
 }
 
 void battle_ex(const char* id, const char* const* enemies, int n, const char* bg, const char* music, int boss, int vael, int weaken) {
+#ifdef AUTOTEST
+	{
+		extern void at_battle(const char* id);
+		at_battle(id);
+		strcpy(G.current_map, W.m->id);
+		G.has_load_pos = 1; G.load_x = ent_x(PLAYER); G.load_y = ent_y(PLAYER);
+		W.cutscene = 1;
+		g_trans_busy = 1;
+		scene_request(SC_WORLD);
+		block_forever();
+	}
+#endif
 	memset(&g_enc, 0, sizeof g_enc);
 	strncpy(g_enc.id, id ? id : "", 23);
 	g_enc.n = n;
@@ -86,6 +98,9 @@ static int menu_begin(void) { g_menu_open = 1; g_paused = 1; return task_set_pau
 static void menu_end(int old) { g_paused = 0; g_menu_open = 0; task_set_pausable(old); }
 
 void open_save(void) {
+#ifdef AUTOTEST
+	return;
+#endif
 	int o = menu_begin();
 	save_ui(1, ent_x(PLAYER), ent_y(PLAYER));
 	menu_end(o);
@@ -110,6 +125,10 @@ void rest_and_save(const char* title) {
 
 void open_shop(const char* id) {
 	begin();
+#ifdef AUTOTEST
+	end();
+	return;
+#endif
 	int o = menu_begin();
 	shop_ui(id);
 	menu_end(o);

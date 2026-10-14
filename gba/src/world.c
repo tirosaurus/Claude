@@ -446,6 +446,9 @@ void world_scene(void* arg) {
 	extern void place_waystone(void);
 	place_waystone();
 	story_start_map_ready();
+#ifdef AUTOTEST
+	{ extern void at_world_ready(void); at_world_ready(); }
+#endif
 	g_trans_busy = 1;
 	if (fade_level() > 0) {
 		// fundido de entrada sin bloquear la lógica del mapa

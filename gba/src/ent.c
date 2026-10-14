@@ -716,6 +716,7 @@ static int story_busy(void) {
 	for (int i = 0; i < 6; ++i) if (calls[i].fn) return 1;
 	return 0;
 }
+int story_is_busy(void) { return story_busy(); }
 
 // ------------------------------------------------------------------ salidas y zonas
 static u8 exit_inside[16], trig_inside[32], trig_wait[32];

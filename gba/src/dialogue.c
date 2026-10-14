@@ -185,7 +185,16 @@ static void show_line(const Line* ln, int wait_input) {
 int g_dlg_next_x, g_dlg_next_y, g_dlg_next_on;
 int g_choice_cur_on, g_choice_cur_x, g_choice_cur_y;
 
+#ifdef AUTOTEST
+extern int at_answer(int n, const char* first);
+#endif
 void say_lines(const Line* lines, int n) {
+#ifdef AUTOTEST
+	(void)lines; (void)n;
+	frame_wait();
+	g_dialog_close_frame = g_frame;
+	return;
+#endif
 	g_dialog_active = 1;
 	for (int i = 0; i < n; ++i) show_line(&lines[i], 1);
 	ui_clear();
@@ -196,6 +205,11 @@ void say_lines(const Line* lines, int n) {
 
 // ------------------------------------------------------------------ elecciones
 int choose_opts(const char* const* opts, int n, const Line* prompt) {
+#ifdef AUTOTEST
+	(void)prompt;
+	frame_wait();
+	return at_answer(n, dfmt(opts[0]));
+#endif
 	g_dialog_active = 1;
 	if (prompt) show_line(prompt, 0);
 	else ui_clear();

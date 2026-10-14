@@ -273,6 +273,9 @@ void ending_scene(void* arg) {
 	ui_sprites_reset();
 	g_ui_free_pal = PAL_UI_DARK;
 	EndingInfo e = ending();
+#ifdef AUTOTEST
+	{ extern void at_ending(const char* id); at_ending(e.id); }
+#endif
 	build_slides(e.id);
 	int good = !strcmp(e.id, "best") || !strcmp(e.id, "good") || !strcmp(e.id, "sacrifice") || !strcmp(e.id, "sealed") || !strcmp(e.id, "vael");
 	meta_set_s("ending_id", e.id);
