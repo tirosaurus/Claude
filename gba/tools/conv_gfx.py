@@ -422,6 +422,7 @@ SCENE_SPRITES = [
     ("soldado_042", "enemies/soldado.png", 2, 0.42, True),
     ("larva_09", "enemies/larva.png", 2, 0.9, False),
     ("brute_075", "enemies/brute.png", 2, 0.75, False),
+    ("thorn_wall", "sprites/thorn_wall.png", 1, 1.0, False),
 ]
 
 

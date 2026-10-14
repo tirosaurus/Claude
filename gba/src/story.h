@@ -3,6 +3,7 @@
 #include "dialogue.h"
 #include "audio.h"
 #include "scene.h"
+#include <stdio.h>
 
 #define begin story_begin
 #define end story_end
@@ -38,3 +39,5 @@ void goto_world(const char* map, const char* spawn, float fade);   // cambia de 
 void fade_npc(const char* id, float t);                            // desvanece y elimina
 #define IS(a, b) (!strcmp((a), (b)))
 void story_call(void (*fn)(const char*), const char* arg);
+void tint_tween(Ent* e, int r, int g, int b, float t);              // bloquea
+void go_ending(void);                                              // no vuelve

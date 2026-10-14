@@ -567,6 +567,10 @@ static void draw_one(Ent* e, int camx, int camy) {
 	if (e->alpha == 0) return;
 	if (e->kind == ENT_SPRITE) {
 		const MetaSprite* ms = e->ms;
+		if (e->scale && e->scale != 256) {
+			ms_draw_scaled(ms, e->tile, e->pal, x, y, 2, key, e->flip, semi, e->scale, e->scale);
+			return;
+		}
 		for (int i = 0; i < ms->npieces; ++i) {
 			const ObjPiece* p = &ms->pieces[i];
 			static const u8 pw[3][4] = {{8, 16, 32, 64}, {16, 32, 32, 64}, {8, 8, 16, 32}};

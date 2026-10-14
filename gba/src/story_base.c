@@ -386,3 +386,23 @@ void fade_npc(const char* id, float t) {
 	wait(t);
 	remove_npc(id);
 }
+
+void tint_tween(Ent* e, int r, int g, int b, float t) {
+	if (!e) return;
+	int r0 = e->tr, g0 = e->tg, b0 = e->tb;
+	int n = (int)(t * 60);
+	if (n < 1) n = 1;
+	for (int i = 1; i <= n; ++i) {
+		ent_set_tint(e, r0 + (r - r0) * i / n, g0 + (g - g0) * i / n, b0 + (b - b0) * i / n);
+		frame_wait();
+	}
+}
+
+void go_ending(void) {
+	music_stop(1.5f);
+	wait(0.5f);
+	g_trans_busy = 1;
+	fade_out(1.4f);
+	scene_request(SC_ENDING);
+	block_forever();
+}
