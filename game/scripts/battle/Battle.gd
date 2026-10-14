@@ -133,8 +133,8 @@ func _build_scene() -> void:
 
 
 ## Nhal'Zur en la ruta de Vael (sin Overlord): el combate más duro del juego.
-const VAEL_HP := 21000
-const VAEL_ATK := 66
+const VAEL_HP := 18500
+const VAEL_ATK := 58
 
 
 ## En el Abismo de los Susurros cada piso hace a los enemigos más duros (y más generosos).
@@ -163,7 +163,7 @@ func _spawn_enemy(key: String, pos: Vector2) -> Node2D:
 		b.max_stats["atk"] = int(VAEL_ATK * dm[1])
 		b.max_stats["mag"] = int(VAEL_ATK * 0.92 * dm[1])
 		b.max_stats["def"] = 42
-		b.max_stats["res"] = 42
+		b.max_stats["res"] = 30
 		b.max_stats["spd"] = 20
 		b.display_name = "Nhal'Zur, el Hambre asustada"
 	b.hp = b.max_hp()

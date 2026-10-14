@@ -490,8 +490,27 @@ func _nhalzur() -> void:
 		"El arma del Soberano grita en tu mano: «¡AHORA, HEREDERO! ¡TERMINA LO QUE EMPEZAMOS!»"])
 	if has("yara"):
 		await say([Y("{name}... ¿Qué es eso? ¿Qué es esa arma?"), P("Luego te lo explico. Si hay un luego.")])
+	_overlord_back_in_hand()
 	end()
 	await battle("nhalzur", ["nhalzur"], "heart", "soberano", true)
+
+
+## Contra Nhal'Zur (Ruta del Soberano) hace falta el arma: si el jugador se la quitó, vuelve sola.
+func _overlord_back_in_hand() -> void:
+	var w := GameState.equipped("player", "weapon")
+	if w.begins_with("overlord_"):
+		return
+	var kind: String = str(DB.CLASSES[GameState.player_data["class"]]["weapon"]) if DB.CLASSES.has(str(GameState.player_data.get("class", ""))) else "sword"
+	var eid := "overlord_" + kind
+	if GameState.item_count(eid) <= 0:
+		for k in ["sword", "axe", "daggers", "staff", "bow"]:
+			if GameState.item_count("overlord_" + k) > 0:
+				eid = "overlord_" + k
+				break
+	if GameState.item_count(eid) <= 0:
+		GameState.add_item(eid)
+	GameState.equip("player", "weapon", eid)
+	Appearance.clear_cache()
 
 
 func _after_nhalzur() -> void:
