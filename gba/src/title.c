@@ -210,6 +210,14 @@ void title_scene(void* a) {
 #ifdef START_PARTY
 			join_party(M_KAELEN); join_party(M_YARA);
 #endif
+#ifdef START_BATTLE
+			memset(&g_enc, 0, sizeof g_enc);
+			strcpy(g_enc.enemies[0], START_BATTLE); strcpy(g_enc.enemies[1], START_BATTLE); g_enc.n = 2;
+			strcpy(g_enc.bg, "forest"); g_enc.can_flee = 1;
+			strcpy(g_enc.ret_map, START_MAP); strcpy(g_enc.ret_spawn, START_SPAWN);
+			scene_request(SC_BATTLE);
+			return;
+#endif
 			scene_request(SC_WORLD);
 			return;
 		}
