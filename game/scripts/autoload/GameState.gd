@@ -387,7 +387,7 @@ func difficulty() -> int:
 
 ## Multiplicadores de enemigos según dificultad: [vida, ataque/magia, experiencia/oro]
 func diff_mults() -> Array:
-	return [[0.7, 0.75, 1.25], [0.85, 0.87, 1.1], [1.15, 1.1, 1.0]][clampi(difficulty(), 0, 2)]
+	return [[0.7, 0.75, 1.25], [0.85, 0.87, 1.1], [1.3, 1.18, 1.0]][clampi(difficulty(), 0, 2)]
 
 
 func heal_all() -> void:

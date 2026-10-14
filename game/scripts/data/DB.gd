@@ -574,10 +574,10 @@ const ENEMIES := {
 		"boss": true, "tint": [1.25, 1.05, 0.55]},
 	"nhalzur": {"name": "Nhal'Zur, el Hambre bajo el Mundo", "sprite": "enemies/nhalzur", "frames": 2, "scale": 1.15, "hp": 800000, "atk": 25, "def": 20, "mag": 23, "res": 20, "spd": 13,
 		"xp": 0, "gold": 0, "weak": ["light"], "resist": ["dark", "nature", "ice"], "ai": [["e_velo", 3], ["e_hambre", 2], ["e_garra", 3], ["e_mirada", 1]], "boss": true},
-	"aleixolo": {"name": "Aleixolo, el Glotón", "sprite": "enemies/aleixolo", "frames": 2, "scale": 1.5, "hp": 2400, "atk": 23, "def": 12, "mag": 21, "res": 10, "spd": 10,
+	"aleixolo": {"name": "Aleixolo, el Glotón", "sprite": "enemies/aleixolo", "frames": 2, "scale": 1.5, "hp": 3000, "atk": 26, "def": 13, "mag": 24, "res": 10, "spd": 10,
 		"xp": 600, "gold": 400, "weak": ["fire"], "resist": ["dark"], "ai": [["e_rayo_choco", 3], ["e_comer", 3], ["e_panzazo", 2], ["e_bombon", 2]],
 		"boss": true, "drops": [["pocion_mayor", 1.0]]},
-	"mother_root": {"name": "Madre Raíz", "sprite": "enemies/mother_root", "frames": 2, "scale": 1.25, "hp": 2300, "atk": 27, "def": 12, "mag": 25, "res": 13, "spd": 9,
+	"mother_root": {"name": "Madre Raíz", "sprite": "enemies/mother_root", "frames": 2, "scale": 1.25, "hp": 3000, "atk": 29, "def": 13, "mag": 27, "res": 13, "spd": 9,
 		"xp": 0, "gold": 0, "weak": ["fire", "light"], "resist": ["dark", "nature"], "ai": [["e_raices", 3], ["e_latido", 2], ["e_escupir", 2]], "boss": true},
 }
 
