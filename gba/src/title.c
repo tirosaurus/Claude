@@ -213,6 +213,9 @@ void title_scene(void* a) {
 #ifdef START_FLAGS
 			{ static const char* const FL[] = {START_FLAGS}; for (unsigned i = 0; i < sizeof FL / sizeof FL[0]; ++i) setf(FL[i]); }
 #endif
+#ifdef START_CLASS
+			choose_class(START_CLASS); G.level = 8;
+#endif
 #ifdef START_TOD
 			meta_set_s("tod", START_TOD);
 #endif

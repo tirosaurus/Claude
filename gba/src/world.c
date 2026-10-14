@@ -458,6 +458,7 @@ void world_scene(void* arg) {
 	}
 	g_trans_busy = 0;
 	while (!scene_requested()) {
+		if (g_menu_open) { frame_wait(); continue; }
 		world_tick();
 		world_render();
 		frame_wait();

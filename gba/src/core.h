@@ -33,6 +33,8 @@ extern u8 g_paused;              // pausa de las tareas "pausables" (menú de pa
 typedef void (*TaskFn)(void* arg);
 enum { TASK_PAUSABLE = 1, TASK_BIG = 2 };
 int task_spawn(TaskFn fn, void* arg, int flags);
+int task_set_pausable(int on);   // de la tarea actual; devuelve el valor anterior
+extern u8 g_menu_open;           // un guion tiene abierto un menú: el mundo ni se actualiza ni se dibuja
 int task_alive(int id);
 void task_kill(int id);
 int task_current(void);

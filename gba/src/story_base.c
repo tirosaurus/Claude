@@ -81,10 +81,14 @@ void battle(const char* id, const char* const* enemies, int n, const char* bg, c
 extern void save_ui(int save_mode, int x, int y);
 extern void shop_ui(const char* id);
 
+// los menús se abren desde la tarea del guion: no puede pausarse a sí misma
+static int menu_begin(void) { g_menu_open = 1; g_paused = 1; return task_set_pausable(0); }
+static void menu_end(int old) { g_paused = 0; g_menu_open = 0; task_set_pausable(old); }
+
 void open_save(void) {
-	g_paused = 1;
+	int o = menu_begin();
 	save_ui(1, ent_x(PLAYER), ent_y(PLAYER));
-	g_paused = 0;
+	menu_end(o);
 }
 
 void rest_and_save(const char* title) {
@@ -106,9 +110,9 @@ void rest_and_save(const char* title) {
 
 void open_shop(const char* id) {
 	begin();
-	g_paused = 1;
+	int o = menu_begin();
 	shop_ui(id);
-	g_paused = 0;
+	menu_end(o);
 	end();
 }
 

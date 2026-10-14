@@ -99,6 +99,20 @@ def convert(mid):
     H, W = ground.shape[:2]
     cw, ch = (W + 7) // 8, (H + 7) // 8
     props = [dict(p) for p in data["props"]]
+    # las casas solo chocaban por la franja de abajo y se podía caminar tras medio tejado: más volumen
+    for p in props:
+        if str(p.get("sprite", "")).startswith("house") and p.get("col"):
+            c = list(p["col"])
+            bottom = max(c[1] + c[3], -2)   # hasta la base: si no, el personaje queda oculto tras la fachada
+            c[1] = min(c[1], -56)
+            c[3] = bottom - c[1]
+            p["col"] = c
+            # la puerta queda dentro del nuevo bloque: bajar la salida hasta el borde inferior
+            x0, y0, x1, y1 = p["x"] + c[0], p["y"] + c[1], p["x"] + c[0] + c[2], p["y"] + c[1] + c[3]
+            for e in data.get("exits", []):
+                r = e["rect"]
+                if r[0] < x1 and r[0] + r[2] > x0 and r[1] < y1 and r[1] + r[3] > y0:
+                    e["rect"] = [r[0], y1 - 3, r[2], 10]
     if mid in WAYSTONE:
         wp = dict(WAYSTONE_PROP)
         wp["x"], wp["y"] = WAYSTONE[mid]

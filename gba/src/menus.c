@@ -412,29 +412,38 @@ static void talent_ui(void) {
 		ui_panel(NP_PANEL, PAL_UI_LIGHT, 0, 0, 30, 20);
 		ui_text(8, 4, sfmt("Talentos · %s", cl->name), UC_LIGHT_TITLE, -1);
 		ui_text_right(8, 4, 224, sfmt("Puntos: %d", skill_points()), UC_LIGHT_HI2, -1);
-		static const char* const HDR[3] = {"Nivel I", "Nivel II (3 pts)", "Nivel III (6 pts)"};
-		for (int t = 0; t < 3; ++t) ui_text(8 + t * 76, 16, HDR[t], UC_LIGHT_HINT, -1);
+		static const char* const HDR[3] = {"Nivel I", "Nivel II · 3 pts", "Nivel III · 6 pts"};
+		for (int t = 0; t < 3; ++t) ui_text_center(t * 80, 13, 80, HDR[t], UC_LIGHT_HINT, -1);
 		for (int rr = 0; rr < 3; ++rr)
 			for (int t = 0; t < 3; ++t) {
 				int ni = grid[rr][t];
-				int tx = 1 + t * 9 + (t ? 1 : 0) * 0, ty = 4 + rr * 4;
-				tx = 1 + t * 10 - (t == 2 ? 1 : 0);
-				if (ni < 0) { ui_button(tx, ty, 9, 4, "", 2, 0, 0); continue; }
+				int tx, ty = 3 + rr * 3;
+				tx = t * 10;
+				if (ni < 0) { ui_button(tx, ty, 10, 3, "", 2, 0, 0); continue; }
 				const TreeNode* n = &cl->tree[ni];
 				int rank = G.tree[ni];
 				const char* reason = talent_block_reason(ni);
 				int sel = rr == r && t == col;
-				ui_button(tx, ty, 9, 4, "", sel ? 1 : 0, 0, 0);
+				ui_button(tx, ty, 10, 3, "", sel ? 1 : 0, 0, 0);
 				int tc = rank > 0 ? UC_BTN_GOLD : (!reason[0] ? UC_BTN_TEXT : UC_BTN_DIS);
-				ui_text(tx * 8 + 20, ty * 8 + 4, n->name, tc, UC_BTN_OUT);
-				ui_text(tx * 8 + 20, ty * 8 + 16, sfmt("%d/%d", rank, n->max), tc, UC_BTN_OUT);
+				{
+					char nm[40];
+					snprintf(nm, sizeof nm, "%s", n->name);
+					int len = strlen(nm);
+					if (text_width(nm) > 56) {
+						while (len > 0 && text_width_n(nm, len) > 50) { len--; while (len > 0 && (nm[len] & 0xC0) == 0x80) len--; }
+						strcpy(nm + len, "…");
+					}
+					ui_text(tx * 8 + 21, ty * 8 + 1, nm, tc, UC_BTN_OUT);
+				}
+				ui_text(tx * 8 + 21, ty * 8 + 12, sfmt("%d/%d", rank, n->max), tc, UC_BTN_OUT);
 				const char* ic;
 				if (n->skill >= 0) {
 					static const char* const EL[8] = {"", "el_fire", "el_ice", "el_bolt", "el_light", "el_dark", "el_nature", "el_phys"};
 					int el = g_skills[n->skill].el;
 					ic = el ? EL[el] : "cmd_skill";
 				} else ic = n->perk ? "st_rage" : "cmd_defend";
-				mspr_icon(tx * 8 + 3, ty * 8 + 8, ic);
+				mspr_icon(tx * 8 + 3, ty * 8 + 4, ic);
 			}
 		int ni = grid[r][col];
 		if (ni >= 0) {
@@ -442,11 +451,11 @@ static void talent_ui(void) {
 			const char* txt;
 			if (n->skill >= 0) {
 				const SkillDef* sk = &g_skills[n->skill];
-				txt = sfmt("%s — %s (%d PM)", sk->name, sk->desc, sk->mp);
-			} else txt = sfmt("%s — %s", n->name, n->desc);
+				txt = sfmt("%s (%d PM): %s", n->name, sk->mp, sk->desc);
+			} else txt = sfmt("%s: %s", n->name, n->desc);
 			const char* reason = talent_block_reason(ni);
 			txt = reason[0] ? sfmt("%s\n[%s]", txt, reason) : sfmt("%s\nPulsa A para aprender.", txt);
-			ui_text_wrapped(8, 118, 224, 10, txt, UC_LIGHT_TEXT, -1, 4);
+			ui_text_wrapped(8, 102, 224, 10, txt, UC_LIGHT_TEXT, -1, 5);
 		}
 		for (;;) {
 			mwait();

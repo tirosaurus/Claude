@@ -90,6 +90,13 @@ void task_kill(int id) {
 	if (id >= 0 && id < MAX_TASKS && id != cur) tasks[id].alive = 0;
 }
 int task_current(void) { return cur; }
+int task_set_pausable(int on) {
+	if (cur < 0) return 0;
+	int old = tasks[cur].flags & TASK_PAUSABLE;
+	if (on) tasks[cur].flags |= TASK_PAUSABLE; else tasks[cur].flags &= ~TASK_PAUSABLE;
+	return old;
+}
+u8 g_menu_open;
 
 void task_kill_all(void) {
 	for (int i = 0; i < MAX_TASKS; ++i) if (i != cur) tasks[i].alive = 0;
