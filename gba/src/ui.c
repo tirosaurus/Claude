@@ -9,14 +9,20 @@ static u8 hashed[UI_TILES] EWRAM_BSS;
 static u16 htab[1024] EWRAM_BSS;           // tabla de dispersión contenido -> tile (0 vacío)
 static u16 cell_tile[32 * 20] EWRAM_BSS;
 static u8 cell_pal[32 * 20] EWRAM_BSS;
+// borrado diferido: la celda se vacía en el próximo volcado salvo que se vuelva a dibujar antes
+static u8 stale[32 * 20] EWRAM_BSS;
+static u8 any_stale;
+static inline int cell_empty(int i) { return stale[i] || !cell_tile[i]; }
 static int free_hint = 1;
 // doble búfer: el mapa se escribe en una copia y se vuelca en el retrazado vertical; los tiles que se
 // liberan o que ya están en pantalla no se reutilizan ni se reescriben hasta el siguiente volcado
 static u16 sb_shadow[32 * 20] EWRAM_BSS;
 static u8 sb_dirty;
-static u8 held[UI_TILES] EWRAM_BSS, fresh[UI_TILES] EWRAM_BSS;
-static u16 held_list[UI_TILES] EWRAM_BSS, fresh_list[UI_TILES] EWRAM_BSS;
-static int nheld, nfresh;
+static u8 held[UI_TILES] EWRAM_BSS;
+static u16 held_list[UI_TILES] EWRAM_BSS;
+static int nheld;
+static int npend;
+IWRAM_CODE void ui_commit(void);
 static int last_cell = -1;
 static volatile u32* last_ptr;
 
@@ -29,28 +35,49 @@ IWRAM_CODE static u32 thash(const u32* d, int pal) {
 }
 
 static u16 hslot[UI_TILES] EWRAM_BSS;
+#define TOMB 0xFFFF
+static int ntomb;
+static void hash_rebuild(void);
+// borrado perezoso: se deja una marca y la tabla se reconstruye cuando hay demasiadas
 IWRAM_CODE static void hash_remove(int t) {
 	if (!hashed[t]) return;
-	// borrado con reinserción del grupo siguiente (sondeo lineal)
-	int i = hslot[t];
-	htab[i] = 0;
+	htab[hslot[t]] = TOMB;
 	hashed[t] = 0;
-	for (int k = (i + 1) & 1023; htab[k]; k = (k + 1) & 1023) {
-		int u = htab[k];
-		htab[k] = 0;
-		volatile u32* p = CHARBLOCK(0) + u * 8;
+	if (++ntomb > 384) hash_rebuild();
+}
+static void hash_rebuild(void) {
+	memset(htab, 0, sizeof htab);
+	ntomb = 0;
+	for (int t = 1; t < UI_TILES; ++t) {
+		if (!hashed[t]) continue;
+		volatile u32* p = CHARBLOCK(0) + t * 8;
 		u32 d[8];
 		for (int q = 0; q < 8; ++q) d[q] = p[q];
-		int j = thash(d, hashed[u] - 1) & 1023;
+		int j = thash(d, hashed[t] - 1) & 1023;
 		while (htab[j]) j = (j + 1) & 1023;
-		htab[j] = u;
-		hslot[u] = j;
+		htab[j] = t;
+		hslot[t] = j;
 	}
 }
 
 static void release_held(void) {
-	for (int i = 0; i < nheld; ++i) held[held_list[i]] = 0;
+	for (int i = 0; i < nheld; ++i) {
+		int t = held_list[i];
+		held[t] = 0;
+		if (!refc[t]) hash_remove(t);   // seguía en la tabla por si se reutilizaba este fotograma
+	}
 	nheld = 0;
+}
+
+// sin tiles libres: esperar al retrazado y volcar ya, para no pisar tiles que se ven en pantalla
+static void resolve_stale(void);
+static void flip_now(void) {
+	resolve_stale();
+	while (REG_VCOUNT >= 160) {}
+	while (REG_VCOUNT < 160) {}
+	dma_copy32(SCREENBLOCK(UI_SB), sb_shadow, sizeof sb_shadow / 4);
+	sb_dirty = 0;
+	release_held();
 }
 
 IWRAM_CODE static int tile_new(void) {
@@ -60,31 +87,30 @@ IWRAM_CODE static int tile_new(void) {
 			if (t >= UI_TILES) t -= UI_TILES - 1;
 			if (!refc[t] && !held[t]) {
 				free_hint = t + 1 >= UI_TILES ? 1 : t + 1;
-				if (!fresh[t]) { fresh[t] = 1; fresh_list[nfresh++] = t; }
 				return t;
 			}
 		}
-		release_held();   // sin hueco: aceptar algún parpadeo antes que quedarse sin tiles
+		flip_now();
 	}
 	return 0;
 }
 
 void ui_vblank(void) {
+	if (npend) ui_commit();
+	resolve_stale();
 	if (sb_dirty) {
 		dma_copy32(SCREENBLOCK(UI_SB), sb_shadow, sizeof sb_shadow / 4);
 		sb_dirty = 0;
 	}
 	release_held();
-	for (int i = 0; i < nfresh; ++i) fresh[fresh_list[i]] = 0;
-	nfresh = 0;
 }
 
 IWRAM_CODE static void tile_unref(int t) {
 	last_cell = -1;
 	if (t <= 0) return;
 	if (refc[t] && --refc[t] == 0) {
-		hash_remove(t);
 		if (!held[t]) { held[t] = 1; held_list[nheld++] = t; }
+		else if (!hashed[t]) {}
 	}
 }
 
@@ -96,11 +122,12 @@ IWRAM_CODE static int tile_shared(const u32* d, int pal) {
 		int i = (idx + probe) & 1023;
 		int t = htab[i];
 		if (!t) break;
+		if (t == TOMB) continue;
 		if (hashed[t] == pal + 1) {
 			volatile u32* p = tptr(t);
 			int same = 1;
 			for (int k = 0; k < 8; ++k) if (p[k] != d[k]) { same = 0; break; }
-			if (same) { refc[t]++; return t; }
+			if (same) { refc[t]++; return t; }   // también resucita tiles retenidos con este contenido
 		}
 	}
 	int t = tile_new();
@@ -111,7 +138,7 @@ IWRAM_CODE static int tile_shared(const u32* d, int pal) {
 	hashed[t] = pal + 1;
 	for (int probe = 0; probe < 1024; ++probe) {
 		int i = (idx + probe) & 1023;
-		if (!htab[i]) { htab[i] = t; hslot[t] = i; break; }
+		if (!htab[i] || htab[i] == TOMB) { if (htab[i] == TOMB) ntomb--; htab[i] = t; hslot[t] = i; break; }
 	}
 	return t;
 }
@@ -120,6 +147,8 @@ IWRAM_CODE static void cell_set(int x, int y, int t, int pal) {
 	last_cell = -1;
 	if ((unsigned)x >= 32 || (unsigned)y >= 20) { tile_unref(t); return; }
 	int i = y * 32 + x;
+	stale[i] = 0;
+	if (cell_tile[i] == t && cell_pal[i] == pal) { tile_unref(t); return; }   // mismo contenido: nada que hacer
 	tile_unref(cell_tile[i]);
 	cell_tile[i] = t;
 	cell_pal[i] = pal;
@@ -127,22 +156,43 @@ IWRAM_CODE static void cell_set(int x, int y, int t, int pal) {
 	sb_dirty = 1;
 }
 
-// tile propio y escribible para la celda
+static void resolve_stale(void) {
+	if (!any_stale) return;
+	any_stale = 0;
+	for (int i = 0; i < 32 * 20; ++i) if (stale[i]) cell_set(i & 31, i >> 5, 0, 0);
+}
+
+// Escritura de píxeles: se compone la celda en RAM y al terminar cada operación se busca un tile
+// con el mismo contenido (o se crea). Así redibujar lo mismo no gasta tiles nuevos ni parpadea.
+#define PEND 36
+static u32 pend_data[PEND][8] EWRAM_BSS;
+static s16 pend_cell[PEND];
+static s8 pend_slot[32 * 20] EWRAM_BSS;
+
+IWRAM_CODE void ui_commit(void) {
+	int n = npend;
+	npend = 0;
+	last_cell = -1;
+	for (int k = 0; k < n; ++k) {
+		int i = pend_cell[k];
+		pend_slot[i] = -1;
+		int t = tile_shared(pend_data[k], cell_pal[i]);
+		if (t) cell_set(i & 31, i >> 5, t, cell_pal[i]);
+	}
+	last_cell = -1;
+}
+
 IWRAM_CODE static volatile u32* cell_private(int x, int y) {
 	int i = y * 32 + x;
-	int t = cell_tile[i];
-	if (t && refc[t] == 1 && !hashed[t] && fresh[t]) return tptr(t);
-	int nt = tile_new();
-	if (!nt) return 0;
-	volatile u32* d = tptr(nt);
-	if (t) { volatile u32* s = tptr(t); for (int k = 0; k < 8; ++k) d[k] = s[k]; }
-	else for (int k = 0; k < 8; ++k) d[k] = 0;
-	refc[nt] = 1;
-	hashed[nt] = 0;
-	tile_unref(t);
-	cell_tile[i] = nt;
-	sb_shadow[i] = nt | (cell_pal[i] << 12);
-	sb_dirty = 1;
+	if (pend_slot[i] >= 0) return pend_data[pend_slot[i]];
+	if (npend >= PEND) ui_commit();
+	int k = npend++;
+	pend_slot[i] = k;
+	pend_cell[k] = i;
+	int t = stale[i] ? 0 : cell_tile[i];
+	u32* d = pend_data[k];
+	if (t) { volatile u32* s = tptr(t); for (int q = 0; q < 8; ++q) d[q] = s[q]; }
+	else for (int q = 0; q < 8; ++q) d[q] = 0;
 	return d;
 }
 
@@ -163,13 +213,17 @@ void ui_init(void) {
 	memset(refc, 0, sizeof refc);
 	memset(hashed, 0, sizeof hashed);
 	memset(htab, 0, sizeof htab);
+	ntomb = 0;
 	memset(cell_tile, 0, sizeof cell_tile);
 	memset(cell_pal, 0, sizeof cell_pal);
 	for (int i = 0; i < 32 * 32; ++i) SCREENBLOCK(UI_SB)[i] = 0;
 	memset(sb_shadow, 0, sizeof sb_shadow);
+	memset(pend_slot, -1, sizeof pend_slot);
+	memset(stale, 0, sizeof stale);
+	any_stale = 0;
+	npend = 0;
 	memset(held, 0, sizeof held);
-	memset(fresh, 0, sizeof fresh);
-	nheld = nfresh = 0;
+	nheld = 0;
 	sb_dirty = 0;
 	for (int k = 0; k < 8; ++k) tptr(0)[k] = 0;
 	refc[0] = 0xFFFF;
@@ -180,9 +234,13 @@ void ui_init(void) {
 }
 
 void ui_clear_rect(int tx, int ty, int tw, int th) {
+	ui_commit();
 	for (int y = ty; y < ty + th; ++y)
 		for (int x = tx; x < tx + tw; ++x)
-			if ((unsigned)x < 32 && (unsigned)y < 20) cell_set(x, y, 0, 0);
+			if ((unsigned)x < 32 && (unsigned)y < 20) {
+				int i = y * 32 + x;
+				if (cell_tile[i]) { stale[i] = 1; any_stale = 1; }
+			}
 }
 
 void ui_clear(void) { ui_clear_rect(0, 0, 32, 20); }
@@ -197,12 +255,31 @@ static int np_src(int p, int size, int srcsize, int margin) {
 	return margin + (p - margin) * sinner / inner;
 }
 
-IWRAM_CODE void ui_panel(int np, int pal, int tx, int ty, int tw, int th) {
+// tabla de np_src sin divisiones por píxel
+static void np_table(u8* out, int size, int srcsize, int margin) {
+	if (size > 256) size = 256;
+	int inner = size - 2 * margin, sinner = srcsize - 2 * margin;
+	int acc = 0, v = margin;
+	for (int p = 0; p < size; ++p) {
+		if (p < margin) out[p] = p;
+		else if (p >= size - margin) out[p] = srcsize - (size - p);
+		else if (inner <= 0 || sinner <= 0) out[p] = margin;
+		else {
+			out[p] = v;
+			acc += sinner;
+			while (acc >= inner) { acc -= inner; v++; }
+		}
+	}
+}
+IWRAM_CODE static void ui_panel_(int np, int pal, int tx, int ty, int tw, int th);
+void ui_panel(int np, int pal, int tx, int ty, int tw, int th) { ui_panel_(np, pal, tx, ty, tw, th); }
+IWRAM_CODE static void ui_panel_(int np, int pal, int tx, int ty, int tw, int th) {
+	ui_commit();
 	const NineSrc* n = &g_nine[np];
 	int W = tw * 8, Hh = th * 8;
 	static u8 sxs[256], sys_[256];
-	for (int x = 0; x < W && x < 256; ++x) sxs[x] = np_src(x, W, n->w, n->margin);
-	for (int y = 0; y < Hh && y < 256; ++y) sys_[y] = np_src(y, Hh, n->h, n->margin);
+	np_table(sxs, W, n->w, n->margin);
+	np_table(sys_, Hh, n->h, n->margin);
 	// filas de la fuente uniformes en su zona central (relleno rápido)
 	static s16 rowfill[64];
 	for (int y = 0; y < n->h && y < 64; ++y) {
@@ -211,6 +288,13 @@ IWRAM_CODE void ui_panel(int np, int pal, int tx, int ty, int tw, int th) {
 		for (int x = n->margin; x < n->w - n->margin; ++x) if (rs[x] != v) { uni = 0; break; }
 		rowfill[y] = uni ? v : -1;
 	}
+	// copia de la fuente en RAM rápida (la ROM es lenta para lecturas sueltas)
+	u8 src[48 * 48];
+	int ssz = n->w * n->h;
+	if (ssz > (int)sizeof src) ssz = sizeof src;
+	for (int i = 0; i < ssz; ++i) src[i] = n->px[i];
+	u32 prev[8];
+	int prev_t = -1;
 	for (int cy = 0; cy < th; ++cy) {
 		for (int cx = 0; cx < tw; ++cx) {
 			u32 d[8];
@@ -218,19 +302,29 @@ IWRAM_CODE void ui_panel(int np, int pal, int tx, int ty, int tw, int th) {
 			for (int r = 0; r < 8; ++r) {
 				int sy = sys_[cy * 8 + r];
 				if (center && rowfill[sy] >= 0) { d[r] = (u32)(rowfill[sy] & 15) * 0x11111111u; continue; }
-				const u8* row_src = n->px + sy * n->w;
+				const u8* row_src = src + sy * n->w;
 				const u8* sx = sxs + cx * 8;
 				u32 row = 0;
 				for (int c = 0; c < 8; ++c) row |= (u32)(row_src[sx[c]] & 15) << (c * 4);
 				d[r] = row;
 			}
-			int t = tile_shared(d, pal);
+			int t;
+			if (prev_t > 0 && d[0] == prev[0] && d[1] == prev[1] && d[2] == prev[2] && d[3] == prev[3] && d[4] == prev[4] &&
+				d[5] == prev[5] && d[6] == prev[6] && d[7] == prev[7]) {
+				t = prev_t;
+				refc[t]++;
+			} else {
+				t = tile_shared(d, pal);
+				for (int k = 0; k < 8; ++k) prev[k] = d[k];
+				prev_t = t;
+			}
 			cell_set(tx + cx, ty + cy, t, pal);
 		}
 	}
 }
 
 void ui_fill(int tx, int ty, int tw, int th, int pal, int color) {
+	ui_commit();
 	u32 v = (color & 15) * 0x11111111u;
 	u32 d[8] = {v, v, v, v, v, v, v, v};
 	for (int y = ty; y < ty + th; ++y)
@@ -247,7 +341,7 @@ void ui_pset(int x, int y, int color) {
 		last_ptr[r] = (last_ptr[r] & ~(15u << (c * 4))) | ((u32)(color & 15) << (c * 4));
 		return;
 	}
-	if (!cell_tile[cy * 32 + cx]) {
+	if (cell_empty(cy * 32 + cx)) {
 		if (g_ui_free_pal < 0) return;          // solo sobre ventanas
 		cell_pal[cy * 32 + cx] = g_ui_free_pal;
 	}
@@ -266,6 +360,7 @@ void ui_fill_px(int x, int y, int w, int h, int color) {
 			int n = w - i < 24 ? w - i : 24;
 			row_mask(x + i, y + j, (1u << n) - 1, color);
 		}
+	ui_commit();
 }
 
 // ------------------------------------------------------------------ texto
@@ -315,7 +410,7 @@ static void exp_init(void) {
 IWRAM_CODE static volatile u32* cell_ptr(int cx, int cy) {
 	int ci = cy * 32 + cx;
 	if (ci == last_cell) return last_ptr;
-	if (!cell_tile[ci]) {
+	if (cell_empty(ci)) {
 		if (g_ui_free_pal < 0) return 0;
 		cell_pal[ci] = g_ui_free_pal;
 	}
@@ -343,6 +438,29 @@ IWRAM_CODE static void row_mask(int x, int y, u32 bits, int color) {
 		cx++;
 	}
 }
+// contorno y relleno de una fila en una sola pasada (bits relativos a x)
+IWRAM_CODE static void row_mask2(int x, int y, u32 ob, int ocol, u32 fb, int fcol) {
+	u32 all = ob | fb;
+	if (!all || y < 0 || y >= 160) return;
+	if (!exp_ready) exp_init();
+	if (x < 0) { if (x <= -24) return; ob >>= -x; fb >>= -x; all >>= -x; x = 0; }
+	u32 ov = (ocol & 15) * 0x11111111u, fv = (fcol & 15) * 0x11111111u;
+	int cx = x >> 3, o = x & 7;
+	u64 bo = (u64)ob << o, bf = (u64)fb << o;
+	int cy = y >> 3, r = y & 7;
+	while (bo | bf) {
+		u32 by_o = (u32)bo & 0xFF, by_f = (u32)bf & 0xFF;
+		if ((by_o | by_f) && cx < 30) {
+			volatile u32* t = cell_ptr(cx, cy);
+			if (t) {
+				u32 mo = EXP[by_o], mf = EXP[by_f];
+				t[r] = (t[r] & ~(mo | mf)) | (ov & mo) | (fv & mf);
+			}
+		}
+		bo >>= 8; bf >>= 8;
+		cx++;
+	}
+}
 IWRAM_CODE static int draw_glyph_fast(int x, int y, int gi, int color, int outline, int italic) {
 	if (!exp_ready) exp_init();
 	const u16* rows = g_font.rows + gi * g_font.height;
@@ -356,8 +474,9 @@ IWRAM_CODE static int draw_glyph_fast(int x, int y, int gi, int color, int outli
 			u32 dil = R | (R << 1) | (R >> 1);
 			u32 ol = dil & ~(c << 1);
 			int sh = italic && r < 6 ? 1 : 0;
-			row_mask(x - 1 + sh, y + r, ol, outline);
+			row_mask2(x - 1 + sh, y + r, ol, outline, c << 1, color);
 		}
+		return g_font.adv[gi];
 	}
 	for (int r = 0; r < H; ++r) {
 		int sh = italic && r < 6 ? 1 : 0;
@@ -394,7 +513,11 @@ static int draw_glyph(int x, int y, int code, int color, int outline, int italic
 	return g_font.adv[gi];
 }
 
+static int ui_text_n_(int x, int y, const char* s, int nbytes, int color, int outline, int italic);
 int ui_text_n(int x, int y, const char* s, int nbytes, int color, int outline, int italic) {
+	return ui_text_n_(x, y, s, nbytes, color, outline, italic);
+}
+static int ui_text_n_(int x, int y, const char* s, int nbytes, int color, int outline, int italic) {
 	int x0 = x;
 	const char* end = s + nbytes;
 	while (*s && s < end) {
@@ -402,6 +525,7 @@ int ui_text_n(int x, int y, const char* s, int nbytes, int color, int outline, i
 		if (c == '\n') { x = x0; y += 12; continue; }
 		x += draw_glyph(x, y, c, color, outline, italic);
 	}
+	if (pset_fn == ui_pset) ui_commit();
 	return x - x0;
 }
 int text_to_tiles(u32* tiles, int wc, int hc, int x, int y, const char* s, int color, int outline) {
@@ -464,6 +588,7 @@ int ui_text_wrapped(int x, int y, int maxw, int line_h, const char* s, int color
 }
 
 void ui_portrait_buf(const u32* tiles, const u16* pal, int tx, int ty) {
+	ui_commit();
 	last_cell = -1;
 	bgpal_load(PAL_PORTRAIT, pal, 0);
 	for (int y = 0; y < 6; ++y)
@@ -476,6 +601,7 @@ void ui_portrait_buf(const u32* tiles, const u16* pal, int tx, int ty) {
 			refc[t] = 1;
 			hashed[t] = 0;
 			int i = (ty + y) * 32 + tx + x;
+			stale[i] = 0;
 			tile_unref(cell_tile[i]);
 			cell_tile[i] = t;
 			cell_pal[i] = PAL_PORTRAIT;

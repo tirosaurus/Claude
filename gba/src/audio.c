@@ -30,8 +30,8 @@ static SfxVoice sv[N_SFX];
 static const char* cur_name;
 static s32 music_master = 0;        // Q8
 
-static const s8 idx_tab[16] = {-1, -1, -1, -1, 2, 4, 6, 8, -1, -1, -1, -1, 2, 4, 6, 8};
-static const u16 step_tab[89] = {7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 19, 21, 23, 25, 28, 31, 34, 37, 41, 45, 50, 55, 60, 66, 73,
+static s8 idx_tab[16] __attribute__((section(".iwram.tab"))) = {-1, -1, -1, -1, 2, 4, 6, 8, -1, -1, -1, -1, 2, 4, 6, 8};
+static u16 step_tab[89] __attribute__((section(".iwram.tab"))) = {7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 19, 21, 23, 25, 28, 31, 34, 37, 41, 45, 50, 55, 60, 66, 73,
 	80, 88, 97, 107, 118, 130, 143, 157, 173, 190, 209, 230, 253, 279, 307, 337, 371, 408, 449, 494, 544, 598, 658, 724, 796, 876,
 	963, 1060, 1166, 1282, 1411, 1552, 1707, 1878, 2066, 2272, 2499, 2749, 3024, 3327, 3660, 4026, 4428, 4871, 5358, 5894, 6484,
 	7132, 7845, 8630, 9493, 10442, 11487, 12635, 13899, 15289, 16818, 18500, 20350, 22385, 24623, 27086, 29794, 32767};
@@ -46,29 +46,39 @@ IWRAM_CODE static void mix(s8* out) {
 		s32 pred = m->pred, index = m->index;
 		u32 pos = m->pos;
 		s32 vol = m->vol;
-		for (int i = 0; i < SPF; ++i) {
-			if (pos >= t->nsamples) {
+		s32 gain = (vol >> 8) * music_master >> 8;
+		const u8* data = t->data;
+		u32 nsamp = t->nsamples;
+		int i = 0;
+		while (i < SPF) {
+			if (pos >= nsamp) {
 				if (!t->loop) { m->active = 0; break; }
 				pos = 0; pred = t->pred0; index = t->idx0;
 			}
-			int code = (t->data[pos >> 1] >> ((pos & 1) << 2)) & 15;
-			int step = step_tab[index];
-			int vd = step >> 3;
-			if (code & 4) vd += step;
-			if (code & 2) vd += step >> 1;
-			if (code & 1) vd += step >> 2;
-			pred += (code & 8) ? -vd : vd;
-			if (pred > 32767) pred = 32767; else if (pred < -32768) pred = -32768;
-			index += idx_tab[code];
-			if (index < 0) index = 0; else if (index > 88) index = 88;
-			++pos;
-			acc[i] += (pred * ((vol >> 8) * music_master >> 8)) >> 16;
+			// tramo sin fin de pista ni cambio de volumen: bucle compacto
+			int n = SPF - i;
+			if ((u32)n > nsamp - pos) n = nsamp - pos;
+			if (m->step && n > 16) n = 16;
+			for (int k = 0; k < n; ++k, ++i, ++pos) {
+				int code = (data[pos >> 1] >> ((pos & 1) << 2)) & 15;
+				int step = step_tab[index];
+				int vd = step >> 3;
+				if (code & 4) vd += step;
+				if (code & 2) vd += step >> 1;
+				if (code & 1) vd += step >> 2;
+				pred += (code & 8) ? -vd : vd;
+				if (pred > 32767) pred = 32767; else if (pred < -32768) pred = -32768;
+				index += idx_tab[code];
+				if (index < 0) index = 0; else if (index > 88) index = 88;
+				acc[i] += (pred * gain) >> 16;
+			}
 			if (m->step) {
-				vol += m->step;
+				vol += m->step * n;
 				if ((m->step > 0 && vol >= m->target) || (m->step < 0 && vol <= m->target)) {
 					vol = m->target; m->step = 0;
 					if (vol <= 0) { m->active = 0; break; }
 				}
+				gain = (vol >> 8) * music_master >> 8;
 			}
 		}
 		m->pred = pred; m->index = index; m->pos = pos; m->vol = vol;
@@ -92,7 +102,9 @@ IWRAM_CODE static void mix(s8* out) {
 	}
 }
 
+volatile u32 g_vbl_count;
 IWRAM_CODE void isr_vblank(void) {
+	g_vbl_count++;
 	REG_DMA1CNT = 0;
 	REG_DMA1SAD = (u32)mixbuf[mixcur];
 	REG_DMA1CNT = 0xB6400000;     // activar, repetir, 32 bits, inicio por FIFO, destino fijo

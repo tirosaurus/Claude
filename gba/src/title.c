@@ -325,24 +325,39 @@ void name_entry(char* name, int maxlen) {
 	strncpy(buf, name, sizeof buf - 1);
 	buf[31] = 0;
 	int r = 0, c = 0, redraw = 1;
+	int pr = -1, pc = -1;            // tecla resaltada antes (para redibujar solo lo que cambia)
+	char shown[32] = "\x01";
+	const NineSrc* np = &g_nine[NP_PANEL];
+	int bg = np->px[(np->h / 2) * np->w + np->w / 2];
+	const NineSrc* npd = &g_nine[NP_PANEL_DARK];
+	int bgd = npd->px[(npd->h / 2) * npd->w + npd->w / 2];
+	ui_panel(NP_PANEL, PAL_UI_LIGHT, 2, 1, 26, 18);
+	ui_text_center(16, 12, 208, "¿Cómo te llamas?", UC_LIGHT_TITLE, -1);
+	ui_panel(NP_PANEL_DARK, PAL_UI_DARK, 6, 4, 18, 2);
 	for (;;) {
 		if (redraw) {
-			ui_panel(NP_PANEL, PAL_UI_LIGHT, 2, 1, 26, 18);
-			ui_text_center(16, 12, 208, "¿Cómo te llamas?", UC_LIGHT_TITLE, -1);
-			ui_panel(NP_PANEL_DARK, PAL_UI_DARK, 6, 4, 18, 2);
-			ui_text_center(48, 36, 144, sfmt("%s_", buf), UC_DARK_TEXT, -1);
+			if (strcmp(shown, buf)) {
+				ui_fill_px(52, 36, 136, 11, bgd);
+				ui_text_center(48, 36, 144, sfmt("%s_", buf), UC_DARK_TEXT, -1);
+				strcpy(shown, buf);
+			}
 			for (int row = 0; row < 7; ++row)
 				for (int col = 0; col < 10; ++col) {
+					int sel = row == r && col == c, was = row == pr && col == pc;
+					if (pr >= 0 && !sel && !was) continue;
 					char k[5];
 					key_cell(row, col, k);
 					int x = 40 + col * 16, y = 52 + row * 12;
-					int col_c = (row == r && col == c) ? UC_LIGHT_ARM : UC_LIGHT_TEXT;
-					if (k[0] == ' ' && !k[1]) ui_text(x, y, (row == r && col == c) ? "_" : "·", col_c, -1);
+					if (pr >= 0) ui_fill_px(x - 1, y - 1, 14, 12, bg);
+					int col_c = sel ? UC_LIGHT_ARM : UC_LIGHT_TEXT;
+					if (k[0] == ' ' && !k[1]) ui_text(x, y, sel ? "_" : "·", col_c, -1);
 					else ui_text(x, y, k, col_c, -1);
 				}
 			int ok_sel = r == 7;
+			ui_fill_px(44, 137, 160, 12, bg);
 			ui_text(48, 138, ok_sel && c < 5 ? "> Borrar" : "  Borrar", ok_sel && c < 5 ? UC_LIGHT_ARM : UC_LIGHT_TEXT, -1);
 			ui_text(132, 138, ok_sel && c >= 5 ? "> Aceptar" : "  Aceptar", ok_sel && c >= 5 ? UC_LIGHT_ARM : UC_LIGHT_TEXT, -1);
+			pr = r; pc = c;
 			redraw = 0;
 		}
 		ui_wait();

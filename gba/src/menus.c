@@ -6,7 +6,7 @@
 #include "scene.h"
 #include "dialogue.h"
 #include <stdio.h>
-u32 g_dbg_t[4];
+
 
 extern void options_ui(void);
 extern int save_ui_run(int save_mode, int px, int py);
@@ -405,46 +405,51 @@ static void talent_ui(void) {
 		int t = cl->tree[i].tier;
 		if (t >= 1 && t <= 3 && cnt[t] < 3) grid[cnt[t]++][t - 1] = i;
 	}
-	int r = 0, col = 0;
+	int r = 0, col = 0, pr = -1, pc = -1, full = 1;
+	int bg = panel_bg(NP_PANEL);
 	for (;;) {
-		mspr_clear();
-		ui_clear();
-		ui_panel(NP_PANEL, PAL_UI_LIGHT, 0, 0, 30, 20);
-		ui_text(8, 4, sfmt("Talentos · %s", cl->name), UC_LIGHT_TITLE, -1);
-		ui_text_right(8, 4, 224, sfmt("Puntos: %d", skill_points()), UC_LIGHT_HI2, -1);
-		static const char* const HDR[3] = {"Nivel I", "Nivel II · 3 pts", "Nivel III · 6 pts"};
-		for (int t = 0; t < 3; ++t) ui_text_center(t * 80, 13, 80, HDR[t], UC_LIGHT_HINT, -1);
+		if (full) {
+			mspr_clear();
+			ui_clear();
+			ui_panel(NP_PANEL, PAL_UI_LIGHT, 0, 0, 30, 20);
+			ui_text(8, 4, sfmt("Talentos · %s", cl->name), UC_LIGHT_TITLE, -1);
+			ui_text_right(8, 4, 224, sfmt("Puntos: %d", skill_points()), UC_LIGHT_HI2, -1);
+			static const char* const HDR[3] = {"Nivel I", "Nivel II · 3 pts", "Nivel III · 6 pts"};
+			for (int t = 0; t < 3; ++t) ui_text_center(t * 80, 13, 80, HDR[t], UC_LIGHT_HINT, -1);
+		}
 		for (int rr = 0; rr < 3; ++rr)
 			for (int t = 0; t < 3; ++t) {
+				int sel = rr == r && t == col;
+				// al mover el cursor solo cambian la casilla de antes y la nueva
+				if (!full && !sel && !(rr == pr && t == pc)) continue;
 				int ni = grid[rr][t];
-				int tx, ty = 3 + rr * 3;
-				tx = t * 10;
+				int tx = t * 10, ty = 3 + rr * 3;
 				if (ni < 0) { ui_button(tx, ty, 10, 3, "", 2, 0, 0); continue; }
 				const TreeNode* n = &cl->tree[ni];
 				int rank = G.tree[ni];
 				const char* reason = talent_block_reason(ni);
-				int sel = rr == r && t == col;
 				ui_button(tx, ty, 10, 3, "", sel ? 1 : 0, 0, 0);
 				int tc = rank > 0 ? UC_BTN_GOLD : (!reason[0] ? UC_BTN_TEXT : UC_BTN_DIS);
-				{
-					char nm[40];
-					snprintf(nm, sizeof nm, "%s", n->name);
-					int len = strlen(nm);
-					if (text_width(nm) > 56) {
-						while (len > 0 && text_width_n(nm, len) > 50) { len--; while (len > 0 && (nm[len] & 0xC0) == 0x80) len--; }
-						strcpy(nm + len, "…");
-					}
-					ui_text(tx * 8 + 21, ty * 8 + 1, nm, tc, UC_BTN_OUT);
+				char nm[40];
+				snprintf(nm, sizeof nm, "%s", n->name);
+				int len = strlen(nm);
+				if (text_width(nm) > 56) {
+					while (len > 0 && text_width_n(nm, len) > 50) { len--; while (len > 0 && (nm[len] & 0xC0) == 0x80) len--; }
+					strcpy(nm + len, "…");
 				}
+				ui_text(tx * 8 + 21, ty * 8 + 1, nm, tc, UC_BTN_OUT);
 				ui_text(tx * 8 + 21, ty * 8 + 12, sfmt("%d/%d", rank, n->max), tc, UC_BTN_OUT);
-				const char* ic;
-				if (n->skill >= 0) {
-					static const char* const EL[8] = {"", "el_fire", "el_ice", "el_bolt", "el_light", "el_dark", "el_nature", "el_phys"};
-					int el = g_skills[n->skill].el;
-					ic = el ? EL[el] : "cmd_skill";
-				} else ic = n->perk ? "st_rage" : "cmd_defend";
-				mspr_icon(tx * 8 + 3, ty * 8 + 4, ic);
+				if (full) {
+					const char* ic;
+					if (n->skill >= 0) {
+						static const char* const EL[8] = {"", "el_fire", "el_ice", "el_bolt", "el_light", "el_dark", "el_nature", "el_phys"};
+						int el = g_skills[n->skill].el;
+						ic = el ? EL[el] : "cmd_skill";
+					} else ic = n->perk ? "st_rage" : "cmd_defend";
+					mspr_icon(tx * 8 + 3, ty * 8 + 4, ic);
+				}
 			}
+		if (!full) ui_fill_px(6, 100, 228, 54, bg);
 		int ni = grid[r][col];
 		if (ni >= 0) {
 			const TreeNode* n = &cl->tree[ni];
@@ -457,6 +462,7 @@ static void talent_ui(void) {
 			txt = reason[0] ? sfmt("%s\n[%s]", txt, reason) : sfmt("%s\nPulsa A para aprender.", txt);
 			ui_text_wrapped(8, 102, 224, 10, txt, UC_LIGHT_TEXT, -1, 5);
 		}
+		pr = r; pc = col; full = 0;
 		for (;;) {
 			mwait();
 			int redraw = 1;
@@ -468,6 +474,7 @@ static void talent_ui(void) {
 			else if (key_hit(KEY_A) && grid[r][col] >= 0) {
 				if (learn_talent(grid[r][col])) sfx("levelup", -8, 1);
 				else sfx("cancel", -8, 1);
+				full = 1;   // cambian rangos, bloqueos y puntos
 			} else redraw = 0;
 			if (redraw) { if (!key_hit(KEY_A)) sfx("select", -16, 1); break; }
 		}

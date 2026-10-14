@@ -50,3 +50,4 @@ void ms_draw(const MetaSprite* ms, int tile, int pal, int x, int y, int prio, u3
 void ms_draw_scaled(const MetaSprite* ms, int tile, int pal, int x, int y, int prio, u32 key, int flip, int semi, int sx256, int sy256);
 void ui_frame_sprites(void);
 void ui_vblank(void);
+void ui_commit(void);
