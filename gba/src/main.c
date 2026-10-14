@@ -48,6 +48,7 @@ int main(void) {
 		while (task_alive(id) && g_scene_next < 0) {
 			vsync();
 			gfx_vblank();
+			ui_vblank();
 			input_poll();
 			g_frame++;
 			sched_run();

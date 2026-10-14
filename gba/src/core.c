@@ -39,7 +39,7 @@ float randf_range(float a, float b) { return a + (b - a) * randf(); }
 
 // ------------------------------------------------------------------ tareas
 extern void ctx_switch(u32* save, u32* load);
-#define MAX_TASKS 12
+#define MAX_TASKS 10
 #define BIG_STACK 6144
 #define SMALL_STACK 2048
 #define N_BIG 4

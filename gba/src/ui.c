@@ -10,6 +10,13 @@ static u16 htab[1024] EWRAM_BSS;           // tabla de dispersión contenido -> 
 static u16 cell_tile[32 * 20] EWRAM_BSS;
 static u8 cell_pal[32 * 20] EWRAM_BSS;
 static int free_hint = 1;
+// doble búfer: el mapa se escribe en una copia y se vuelca en el retrazado vertical; los tiles que se
+// liberan o que ya están en pantalla no se reutilizan ni se reescriben hasta el siguiente volcado
+static u16 sb_shadow[32 * 20] EWRAM_BSS;
+static u8 sb_dirty;
+static u8 held[UI_TILES] EWRAM_BSS, fresh[UI_TILES] EWRAM_BSS;
+static u16 held_list[UI_TILES] EWRAM_BSS, fresh_list[UI_TILES] EWRAM_BSS;
+static int nheld, nfresh;
 static int last_cell = -1;
 static volatile u32* last_ptr;
 
@@ -41,19 +48,44 @@ IWRAM_CODE static void hash_remove(int t) {
 	}
 }
 
+static void release_held(void) {
+	for (int i = 0; i < nheld; ++i) held[held_list[i]] = 0;
+	nheld = 0;
+}
+
 IWRAM_CODE static int tile_new(void) {
-	for (int k = 0; k < UI_TILES - 1; ++k) {
-		int t = free_hint + k;
-		if (t >= UI_TILES) t -= UI_TILES - 1;
-		if (!refc[t]) { free_hint = t + 1 >= UI_TILES ? 1 : t + 1; return t; }
+	for (int pass = 0; pass < 2; ++pass) {
+		for (int k = 0; k < UI_TILES - 1; ++k) {
+			int t = free_hint + k;
+			if (t >= UI_TILES) t -= UI_TILES - 1;
+			if (!refc[t] && !held[t]) {
+				free_hint = t + 1 >= UI_TILES ? 1 : t + 1;
+				if (!fresh[t]) { fresh[t] = 1; fresh_list[nfresh++] = t; }
+				return t;
+			}
+		}
+		release_held();   // sin hueco: aceptar algún parpadeo antes que quedarse sin tiles
 	}
 	return 0;
+}
+
+void ui_vblank(void) {
+	if (sb_dirty) {
+		dma_copy32(SCREENBLOCK(UI_SB), sb_shadow, sizeof sb_shadow / 4);
+		sb_dirty = 0;
+	}
+	release_held();
+	for (int i = 0; i < nfresh; ++i) fresh[fresh_list[i]] = 0;
+	nfresh = 0;
 }
 
 IWRAM_CODE static void tile_unref(int t) {
 	last_cell = -1;
 	if (t <= 0) return;
-	if (refc[t] && --refc[t] == 0) hash_remove(t);
+	if (refc[t] && --refc[t] == 0) {
+		hash_remove(t);
+		if (!held[t]) { held[t] = 1; held_list[nheld++] = t; }
+	}
 }
 
 // tile compartido para este contenido (crea si no existe)
@@ -91,14 +123,15 @@ IWRAM_CODE static void cell_set(int x, int y, int t, int pal) {
 	tile_unref(cell_tile[i]);
 	cell_tile[i] = t;
 	cell_pal[i] = pal;
-	SCREENBLOCK(UI_SB)[i] = t | (pal << 12);
+	sb_shadow[i] = t | (pal << 12);
+	sb_dirty = 1;
 }
 
 // tile propio y escribible para la celda
 IWRAM_CODE static volatile u32* cell_private(int x, int y) {
 	int i = y * 32 + x;
 	int t = cell_tile[i];
-	if (t && refc[t] == 1 && !hashed[t]) return tptr(t);
+	if (t && refc[t] == 1 && !hashed[t] && fresh[t]) return tptr(t);
 	int nt = tile_new();
 	if (!nt) return 0;
 	volatile u32* d = tptr(nt);
@@ -108,7 +141,8 @@ IWRAM_CODE static volatile u32* cell_private(int x, int y) {
 	hashed[nt] = 0;
 	tile_unref(t);
 	cell_tile[i] = nt;
-	SCREENBLOCK(UI_SB)[i] = nt | (cell_pal[i] << 12);
+	sb_shadow[i] = nt | (cell_pal[i] << 12);
+	sb_dirty = 1;
 	return d;
 }
 
@@ -132,6 +166,11 @@ void ui_init(void) {
 	memset(cell_tile, 0, sizeof cell_tile);
 	memset(cell_pal, 0, sizeof cell_pal);
 	for (int i = 0; i < 32 * 32; ++i) SCREENBLOCK(UI_SB)[i] = 0;
+	memset(sb_shadow, 0, sizeof sb_shadow);
+	memset(held, 0, sizeof held);
+	memset(fresh, 0, sizeof fresh);
+	nheld = nfresh = 0;
+	sb_dirty = 0;
 	for (int k = 0; k < 8; ++k) tptr(0)[k] = 0;
 	refc[0] = 0xFFFF;
 	free_hint = 1;
@@ -440,7 +479,8 @@ void ui_portrait_buf(const u32* tiles, const u16* pal, int tx, int ty) {
 			tile_unref(cell_tile[i]);
 			cell_tile[i] = t;
 			cell_pal[i] = PAL_PORTRAIT;
-			SCREENBLOCK(UI_SB)[i] = t | (PAL_PORTRAIT << 12);
+			sb_shadow[i] = t | (PAL_PORTRAIT << 12);
+			sb_dirty = 1;
 		}
 }
 void ui_portrait(const Portrait* p, int tx, int ty) { ui_portrait_buf(p->tiles, p->pal, tx, ty); }

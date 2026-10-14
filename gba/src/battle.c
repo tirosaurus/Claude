@@ -398,6 +398,30 @@ static void battler_draw(Battler* b, int idx) {
 
 static int enemy_half_w(Battler* b) { return b->ms ? b->ms->w / 2 : 16; }
 
+// marcador del turno: triángulo dorado con contorno, 8x8
+static int turn_tile = -1, turn_pal = -1;
+static void turn_marker_init(void) {
+	static const char* const ROWS[8] = {
+		"1111111.", "1222221.", "1233321.", ".12321..", ".12221..", "..121...", "..111...", "...1....",
+	};
+	static u16 pal[16];
+	pal[1] = (3) | (2 << 5) | (4 << 10);            // contorno
+	pal[2] = (31) | (24 << 5) | (6 << 10);          // dorado
+	pal[3] = (31) | (31 << 5) | (22 << 10);         // brillo
+	turn_tile = objt_alloc(1);
+	if (turn_tile < 0) return;
+	volatile u32* d = objt_ptr(turn_tile);
+	for (int y = 0; y < 8; ++y) {
+		u32 row = 0;
+		for (int x = 0; x < 8; ++x) {
+			char c = ROWS[y][x];
+			if (c >= '1' && c <= '3') row |= (u32)(c - '0') << (x * 4);
+		}
+		d[y] = row;
+	}
+	turn_pal = objpal_get(pal, 256, 256, 256, 0);
+}
+
 static void battle_render(void) {
 	t_total += 1.0f / 60;
 	if (shake_n > 0) {
@@ -426,7 +450,10 @@ static void battle_render(void) {
 	int bob = (int)(sinf_fast(t_total * 8) * 2);
 	for (int i = 0; i < nhands; ++i) ui_cursor(hand_x[i] + (hand_flip[i] ? -bob : bob), hand_y[i], CUR_HAND, hand_flip[i]);
 	if (actor && (state == ST_COMMAND || state == ST_SUB || state == ST_TARGET))
-		ui_cursor((int)actor->x - 9, (int)actor->y - 26 + (int)(sinf_fast(t_total * 6) * 2), CUR_ARROW2, 0);
+		if (turn_tile >= 0) {
+			int ay = (int)actor->y - 22 + (int)(sinf_fast(t_total * 5) * 1.5f);
+			oam_push(0x00000100, obj_a0(ay, OBJ_SQUARE, 0), obj_a1((int)actor->x - 4, 0, 0), obj_a2(turn_tile, 0, turn_pal));
+		}
 	floats_draw();
 	particles_update();
 	particles_render(0, 0, 0x10000000);
@@ -1636,6 +1663,7 @@ void battle_scene(void* arg) {
 	particles_init();
 	float_init();
 	float_palslot = -1;
+	turn_marker_init();
 	memcpy(snapshot, G.members, sizeof snapshot);
 	over = busy = 0;
 	victory_pending = defeat_pending = 0;
