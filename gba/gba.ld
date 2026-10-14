@@ -4,7 +4,7 @@ OUTPUT_ARCH(arm)
 ENTRY(_start)
 MEMORY {
   rom   (rx)  : ORIGIN = 0x08000000, LENGTH = 32M
-  iwram (rwx) : ORIGIN = 0x03000000, LENGTH = 32K - 0x200
+  iwram (rwx) : ORIGIN = 0x03000000, LENGTH = 0x6000
   ewram (rwx) : ORIGIN = 0x02000000, LENGTH = 256K
 }
 SECTIONS {

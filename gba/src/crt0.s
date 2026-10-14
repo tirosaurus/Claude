@@ -18,7 +18,7 @@ rom_start:
     ldr     sp, =0x03007FA0
     mov     r0, #0x1F           @ modo sistema
     msr     cpsr_c, r0
-    ldr     sp, =0x03007F00
+    ldr     sp, =0x03007C00
     @ copiar .iwram/.data
     ldr     r0, =__data_lma
     ldr     r1, =__iwram_start
@@ -56,7 +56,7 @@ rom_start:
     bx      r0
 5:  b       5b
 
-@ Manejador mínimo: reconoce VBlank y avisa a la BIOS (para VBlankIntrWait).
+@ Manejador: reconoce la interrupción, avisa a la BIOS (VBlankIntrWait) y en VBlank llama al mezclador de audio.
     .arm
     .align 2
 irq_handler:
@@ -68,5 +68,12 @@ irq_handler:
     ldrh    r3, [r2]
     orr     r3, r3, r0
     strh    r3, [r2]
+    tst     r0, #1
+    bxeq    lr
+    stmfd   sp!, {lr}
+    ldr     r0, =isr_vblank
+    mov     lr, pc
+    bx      r0
+    ldmfd   sp!, {lr}
     bx      lr
     .pool

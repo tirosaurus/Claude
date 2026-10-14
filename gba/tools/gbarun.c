@@ -77,6 +77,12 @@ int main(int argc, char** argv) {
 			char path[512]; snprintf(path, sizeof path, "%s%s.png", argv[3], b);
 			save_png(path, buf, w, h);
 			printf("captura %s (frame %d)\n", path, frame);
+		} else if (!strcmp(a, "mem")) {
+			unsigned addr = 0, len = 0;
+			sscanf(line, "%*d %*s %x %u", &addr, &len);
+			printf("mem %08x:", addr);
+			for (unsigned i = 0; i < len; ++i) printf(" %02x", core->busRead8(core, addr + i));
+			printf("\n");
 		} else if (!strcmp(a, "end")) {
 			break;
 		} else {

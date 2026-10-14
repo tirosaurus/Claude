@@ -1,15 +1,8 @@
 // Registros y utilidades de la Game Boy Advance (sin dependencias externas).
 #pragma once
-#include <stdint.h>
+#include "mapdata.h"
 
-typedef uint8_t u8;
-typedef uint16_t u16;
-typedef uint32_t u32;
-typedef int8_t s8;
-typedef int16_t s16;
-typedef int32_t s32;
-
-#define IWRAM_CODE __attribute__((section(".iwram"), long_call))
+#define IWRAM_CODE __attribute__((section(".iwram"), long_call, target("arm")))
 #define EWRAM_DATA __attribute__((section(".ewram")))
 
 #define REG_DISPCNT   (*(volatile u16*)0x04000000)
@@ -28,6 +21,27 @@ typedef int32_t s32;
 #define REG_BLDCNT    (*(volatile u16*)0x04000050)
 #define REG_BLDALPHA  (*(volatile u16*)0x04000052)
 #define REG_BLDY      (*(volatile u16*)0x04000054)
+#define REG_WIN0H     (*(volatile u16*)0x04000040)
+#define REG_WIN1H     (*(volatile u16*)0x04000042)
+#define REG_WIN0V     (*(volatile u16*)0x04000044)
+#define REG_WIN1V     (*(volatile u16*)0x04000046)
+#define REG_WININ     (*(volatile u16*)0x04000048)
+#define REG_WINOUT    (*(volatile u16*)0x0400004A)
+#define REG_MOSAIC    (*(volatile u16*)0x0400004C)
+#define REG_SOUNDCNT_L (*(volatile u16*)0x04000080)
+#define REG_SOUNDCNT_H (*(volatile u16*)0x04000082)
+#define REG_SOUNDCNT_X (*(volatile u16*)0x04000084)
+#define REG_SOUNDBIAS  (*(volatile u16*)0x04000088)
+#define REG_FIFO_A     (*(volatile u32*)0x040000A0)
+#define REG_FIFO_B     (*(volatile u32*)0x040000A4)
+#define REG_DMA1SAD   (*(volatile u32*)0x040000BC)
+#define REG_DMA1DAD   (*(volatile u32*)0x040000C0)
+#define REG_DMA1CNT   (*(volatile u32*)0x040000C4)
+#define REG_DMA1CNT_H (*(volatile u16*)0x040000C6)
+#define REG_TM0CNT_L  (*(volatile u16*)0x04000100)
+#define REG_TM0CNT_H  (*(volatile u16*)0x04000102)
+#define REG_TM1CNT_L  (*(volatile u16*)0x04000104)
+#define REG_TM1CNT_H  (*(volatile u16*)0x04000106)
 #define REG_KEYINPUT  (*(volatile u16*)0x04000130)
 #define REG_IE        (*(volatile u16*)0x04000200)
 #define REG_IF        (*(volatile u16*)0x04000202)
@@ -89,8 +103,4 @@ static inline void vsync(void) {
 	__asm__ volatile("swi 0x05" ::: "r0", "r1", "r2", "r3", "memory");
 }
 
-// Entrada
-extern u16 g_keys, g_keys_prev;
-static inline void keys_poll(void) { g_keys_prev = g_keys; g_keys = ~REG_KEYINPUT & 0x03FF; }
-static inline int key_held(u16 k) { return (g_keys & k) != 0; }
-static inline int key_hit(u16 k) { return (g_keys & ~g_keys_prev & k) != 0; }
+#define SRAM ((volatile u8*)0x0E000000)
