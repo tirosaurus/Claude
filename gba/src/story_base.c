@@ -368,3 +368,21 @@ void story_start_map_ready(void) {
 	story_calls_reset();
 	story_call(map_ready_task, "");
 }
+
+void goto_world(const char* map, const char* spawn, float fade) {
+	strcpy(G.current_map, map);
+	strcpy(G.current_spawn, spawn);
+	G.has_load_pos = 0;
+	g_trans_busy = 0;
+	if (fade > 0) fade_out(fade);
+	scene_request(SC_WORLD);
+	block_forever();
+}
+
+void fade_npc(const char* id, float t) {
+	Ent* e = npc(id);
+	if (!e) return;
+	ent_fade(e, 0, t);
+	wait(t);
+	remove_npc(id);
+}

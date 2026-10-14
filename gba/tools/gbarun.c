@@ -83,6 +83,10 @@ int main(int argc, char** argv) {
 			printf("mem %08x:", addr);
 			for (unsigned i = 0; i < len; ++i) printf(" %02x", core->busRead8(core, addr + i));
 			printf("\n");
+		} else if (!strcmp(a, "pc")) {
+			int32_t pc = 0, lr = 0, sp = 0;
+			core->readRegister(core, "pc", &pc); core->readRegister(core, "lr", &lr); core->readRegister(core, "sp", &sp);
+			printf("pc %08x lr %08x sp %08x\n", pc, lr, sp);
 		} else if (!strcmp(a, "end")) {
 			break;
 		} else {

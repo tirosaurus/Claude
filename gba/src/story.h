@@ -4,8 +4,10 @@
 #include "audio.h"
 #include "scene.h"
 
-void begin(void);
-void end(void);
+#define begin story_begin
+#define end story_end
+void story_begin(void);
+void story_end(void);
 static inline void wait(float s) { wait_sec(s); }
 static inline int has(int m) { return in_party(m); }
 void join(int m);
@@ -27,3 +29,12 @@ int companion_banter(const char* id, LineBuf* out);
 void echo_lines(const Line* lines, int n);
 void track_secret(const char* id);
 void flag_add(const char* key, int delta);   // contador entero en metadatos
+
+// atajos para los guiones de mapa
+static inline int tod_is(const char* t) { return !strcmp(meta_s("tod", "day"), t); }
+static inline int spawn_is(const char* s) { return !strcmp(G.current_spawn, s); }
+static inline void tod_set(const char* t) { meta_set_s("tod", t); }
+void goto_world(const char* map, const char* spawn, float fade);   // cambia de mapa sin animación de puerta; no vuelve
+void fade_npc(const char* id, float t);                            // desvanece y elimina
+#define IS(a, b) (!strcmp((a), (b)))
+void story_call(void (*fn)(const char*), const char* arg);
