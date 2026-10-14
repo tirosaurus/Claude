@@ -21,6 +21,10 @@ build/vaelmoor.elf: $(OBJ) gba.ld
 assets:
 	cd tools && python3 conv_db.py && python3 conv_gfx.py && python3 conv_audio.py && python3 conv_maps.py
 
+# las opciones de depuración (DEFS) solo afectan a title.c: recompilarlo cuando cambian
+$(shell mkdir -p build; echo '$(DEFS)' | cmp -s - build/defs.txt || echo '$(DEFS)' > build/defs.txt)
+build/obj/title.o: build/defs.txt
+
 build/obj/%.o: src/%.c src/*.h
 	@mkdir -p build/obj
 	$(CC) $(CFLAGS) -c $< -o $@

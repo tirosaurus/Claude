@@ -4,4 +4,3 @@
 #include "ui.h"
 #include "dialogue.h"
 
-void ending_scene(void* a) { (void)a; scene_request(SC_TITLE); }

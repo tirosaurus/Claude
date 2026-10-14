@@ -45,7 +45,7 @@ int main(void) {
 		gfx_vblank_hook = 0;
 		g_frame_hook = 0;
 		int id = task_spawn(scene_fn(sc), 0, TASK_BIG);
-		while (task_alive(id)) {
+		while (task_alive(id) && g_scene_next < 0) {
 			vsync();
 			gfx_vblank();
 			input_poll();

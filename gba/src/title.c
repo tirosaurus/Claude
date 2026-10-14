@@ -210,6 +210,17 @@ void title_scene(void* a) {
 #ifdef START_PARTY
 			join_party(M_KAELEN); join_party(M_YARA);
 #endif
+#ifdef START_FLAGS
+			{ static const char* const FL[] = {START_FLAGS}; for (unsigned i = 0; i < sizeof FL / sizeof FL[0]; ++i) setf(FL[i]); }
+#endif
+#ifdef START_TOD
+			meta_set_s("tod", START_TOD);
+#endif
+#ifdef START_ENDING
+			setf("romance_yara"); setf("kaelen_oath"); G.cls = 0;
+			scene_request(SC_ENDING);
+			return;
+#endif
 #ifdef START_BATTLE
 			memset(&g_enc, 0, sizeof g_enc);
 			strcpy(g_enc.enemies[0], START_BATTLE); strcpy(g_enc.enemies[1], START_BATTLE); g_enc.n = 2;
